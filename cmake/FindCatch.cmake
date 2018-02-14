@@ -1,0 +1,4 @@
+include(GNUInstallDirs)
+find_path(CATCH_INCLUDE_DIR NAMES catch/catch.hpp)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Catch DEFAULT_MSG CATCH_INCLUDE_DIR)
