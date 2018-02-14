@@ -3,8 +3,8 @@
  *      Author: ricab
  */
 
-#ifndef SCOPEDGUARD_HPP_
-#define SCOPEDGUARD_HPP_
+#ifndef SCOPED_GUARD_HPP_
+#define SCOPED_GUARD_HPP_
 
 #include <type_traits>
 #include <functional>
@@ -18,36 +18,36 @@ namespace gproj
    * needs to be compatible with std::function<void()>.
    */
   template<typename Callable>
-  class ScopeGuard
+  class scope_guard
   {
   public:
     template<typename = typename std::enable_if<
       std::is_constructible<std::function<void()>, Callable>::value>::type>
-    explicit ScopeGuard(Callable&& resetter);
-    ScopeGuard(ScopeGuard&& other);
-    ~ScopeGuard();
+    explicit scope_guard(Callable&& resetter);
+    scope_guard(scope_guard&& other);
+    ~scope_guard();
 
   private:
     bool m_active;
     Callable m_resetter;
   };
 
-  /// helper to create ScopeGuard and deduce template params
+  /// helper to create scope_guard and deduce template params
   template<typename Callable>
-  ScopeGuard<Callable> make_scope_guard(Callable&& resetter);
+  scope_guard<Callable> make_scope_guard(Callable&& resetter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
 template<typename>
-gproj::ScopeGuard<Callable>::ScopeGuard(Callable&& resetter)
+gproj::scope_guard<Callable>::scope_guard(Callable&& resetter)
   : m_active{true}
   , m_resetter{std::forward<Callable>(resetter)}
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
-gproj::ScopeGuard<Callable>::~ScopeGuard()
+gproj::scope_guard<Callable>::~scope_guard()
 {
   if(m_active)
     m_resetter();
@@ -55,7 +55,7 @@ gproj::ScopeGuard<Callable>::~ScopeGuard()
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
-gproj::ScopeGuard<Callable>::ScopeGuard(ScopeGuard&& other)
+gproj::scope_guard<Callable>::scope_guard(scope_guard&& other)
   : m_active{other.m_active}
   , m_resetter{std::move(other.m_resetter)}
 {
@@ -64,9 +64,9 @@ gproj::ScopeGuard<Callable>::ScopeGuard(ScopeGuard&& other)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
-inline auto gproj::make_scope_guard(Callable&& resetter) -> ScopeGuard<Callable>
+inline auto gproj::make_scope_guard(Callable&& resetter) -> scope_guard<Callable>
 {
-  return ScopeGuard<Callable>{std::forward<Callable>(resetter)};
+  return scope_guard<Callable>{std::forward<Callable>(resetter)};
 }
 
-#endif /* SCOPEDGUARD_HPP_ */
+#endif /* SCOPED_GUARD_HPP_ */
