@@ -3,8 +3,8 @@
  *      Author: ricab
  */
 
-#ifndef SCOPED_GUARD_HPP_
-#define SCOPED_GUARD_HPP_
+#ifndef SCOPE_GUARD_HPP_
+#define SCOPE_GUARD_HPP_
 
 #include <type_traits>
 #include <functional>
@@ -69,4 +69,4 @@ inline auto gproj::make_scope_guard(Callable&& resetter) -> scope_guard<Callable
   return scope_guard<Callable>{std::forward<Callable>(resetter)};
 }
 
-#endif /* SCOPED_GUARD_HPP_ */
+#endif /* SCOPE_GUARD_HPP_ */
