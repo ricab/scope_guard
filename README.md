@@ -2,20 +2,26 @@
 A C++11 scope guard.
 
 #### Usage
-To use simply clone this repository, copy the header file within, and include 
+To use, simply clone this repository, copy the header file within, and include 
 it.
 
 #### Running tests
 To execute the tests:
 
-1. obtain a copy of [Catch](https://github.com/catchorg/Catch2) and install it
-with `cmake ...`, `make`, `make install` (refer to their instructions for 
-details)
-2. clone this repo into a directory of your choice (let's call this 
-`<src_path>`)
-2. create a directory of your choice to build the tests (let's call this 
-`<build_path>`)
-3. `cd <build_path>`
-4. `cmake <src_path>`
-5. `make`
-6. `make test`
+* Get and install [Catch2](https://github.com/catchorg/Catch2):
+
+        $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
+        $ mkdir <catch_bin_dir>
+        $ cd <catch_bin_dir>
+        $ cmake <catch_src_dir>
+        $ make
+        $ make install
+
+* Clone and build this repo:
+
+        $ git clone https://github.com/ricab/scope_guard.git <guard_src_dir>
+        $ mkdir <guard_bin_dir>
+        $ cd <guard_bin_dir>
+        $ cmake <guard_src_dir>
+        $ make
+        $ make test
