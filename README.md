@@ -1,5 +1,5 @@
 # scope_guard
-A C++11 scope guard.
+A C++11 scope guard. [under construction]
 
 #### Usage
 To use, simply clone this repository, copy the header file within, and include 
