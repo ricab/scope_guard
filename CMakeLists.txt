@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.1)
 project(scope_guard)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # find catch 
 include(GNUInstallDirs)
