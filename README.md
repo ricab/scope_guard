@@ -2,20 +2,23 @@
 A C++11 scope guard.
 
 ## [Intended] features
-- [ ] &ge; C++11
+- [x] &ge; C++11
 - [ ] Exception safe
-- [ ] Simple (as simple as possible while maintaining safety)
-- [ ] Fast (no runtime `std::function` penalties)
-- [ ] No dependencies to use
-- [ ] No implicitly ignored return - callback must return `void` (clients can
+- [x] Simple (as simple as possible while maintaining safety)
+- [x] General (accepts anything that can be bound to a
+`std::function<void()noexcept>`)
+- [x] Fast (no runtime `std::function` penalties)
+- [x] No dependencies to use (besides C++11 compiler and standard library)
+- [x] No implicitly ignored return - callback must return `void` (clients can
 write a lambda to explicitly ignore it if they want)
 - [ ] No exceptions - callback must be noexcept (clients have to explicitly
 handle any exceptions)
-- [ ] `snake_case` style (except for template arguments - just like the
+- [x] `snake_case` style (except for template arguments - just like the
 standard library)
-- [ ] No macros - just write explicit lambda or bind or what have you
-- [ ] Auxiliary `make` function to deduce template parameters in pre-C++17
-- [ ] Unlicense(d)
+- [x] Auxiliary `make` function to deduce template parameters in pre-C++17
+- [x] No macros - just write explicit lambda or bind or what have you
+- [ ] Tested
+- [x] Unlicense(d)
 
 ## Usage
 To use,  simply clone this repository, copy the header file within, and include 
