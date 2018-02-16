@@ -88,3 +88,27 @@ TEST_CASE("Test lambda function calling regular function")
   REQUIRE(f_called);
   REQUIRE(lambda_called);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test redundant guards")
+{
+  f_called = false;
+  bool lambda_called = false;
+
+  {
+    REQUIRE_FALSE(f_called);
+    REQUIRE_FALSE(lambda_called);
+    auto g1 = make_scope_guard([&lambda_called](){f(); lambda_called=true;});
+    REQUIRE_FALSE(f_called);
+    REQUIRE_FALSE(lambda_called);
+    auto g2 = make_scope_guard([&lambda_called](){lambda_called=true; f();});
+    REQUIRE_FALSE(f_called);
+    REQUIRE_FALSE(lambda_called);
+  }
+  REQUIRE(f_called);
+  REQUIRE(lambda_called);
+
+  auto g3 = make_scope_guard([&lambda_called](){lambda_called=true; f();});
+  REQUIRE(f_called);
+  REQUIRE(lambda_called);
+}
