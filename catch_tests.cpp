@@ -5,6 +5,10 @@
 
 using namespace sg;
 
+// TODO clarify test names with "guard"
+// TODO homogenize newlines
+// TODO replace booleans with counts where appropriate
+
 namespace
 {
   //////////////////////////////////////////////////////////////////////////////
