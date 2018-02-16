@@ -112,3 +112,78 @@ TEST_CASE("Test redundant guards")
   REQUIRE(f_called);
   REQUIRE(lambda_called);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test nested scopes")
+{
+  bool lvl0_called = false;
+  bool lvl1_called = false;
+  bool lvl2a_called = false;
+  bool lvl2b_called = false;
+  bool lvl3a_called = false;
+  bool lvl3b_called = false;
+  bool lvl3c_called = false;
+
+  // TODO replace with binds
+  auto lvl0_guard = make_scope_guard([&lvl0_called](){lvl0_called = true;});
+  REQUIRE_FALSE(lvl0_called);
+
+  {
+    auto lvl1_guard = make_scope_guard([&lvl1_called](){lvl1_called = true;});
+    REQUIRE_FALSE(lvl1_called);
+
+    {
+      auto lvl2a_guard =
+          make_scope_guard([&lvl2a_called](){lvl2a_called = true;});
+      REQUIRE_FALSE(lvl2a_called);
+
+      {
+        auto lvl3a_guard =
+          make_scope_guard([&lvl3a_called](){lvl3a_called = true;});
+        REQUIRE_FALSE(lvl3a_called);
+      }
+
+      REQUIRE(lvl3a_called);
+      REQUIRE_FALSE(lvl2a_called);
+    }
+
+    REQUIRE(lvl2a_called);
+    REQUIRE_FALSE(lvl1_called);
+    REQUIRE_FALSE(lvl0_called);
+
+    {
+      auto lvl2b_guard =
+          make_scope_guard([&lvl2b_called](){lvl2b_called = true;});
+      REQUIRE_FALSE(lvl2b_called);
+
+      {
+        auto lvl3b_guard =
+            make_scope_guard([&lvl3b_called](){lvl3b_called = true;});
+        REQUIRE_FALSE(lvl3b_called);
+
+        auto lvl3c_guard =
+            make_scope_guard([&lvl3c_called](){lvl3c_called = true;});
+        REQUIRE_FALSE(lvl3c_called);
+      }
+
+      REQUIRE(lvl3b_called);
+      REQUIRE(lvl3c_called);
+      REQUIRE_FALSE(lvl2b_called);
+
+    }
+
+    REQUIRE(lvl2b_called);
+    REQUIRE_FALSE(lvl1_called);
+    REQUIRE_FALSE(lvl0_called);
+
+  }
+
+  REQUIRE(lvl1_called);
+  REQUIRE(lvl2a_called);
+  REQUIRE(lvl2b_called);
+  REQUIRE(lvl3a_called);
+  REQUIRE(lvl3b_called);
+  REQUIRE(lvl3c_called);
+  REQUIRE_FALSE(lvl0_called);
+
+}
