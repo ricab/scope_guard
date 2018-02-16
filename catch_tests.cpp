@@ -5,7 +5,6 @@
 
 using namespace sg;
 
-// TODO { cosmetics; }
 // TODO split construction tests into ctor and make
 // TODO split make tests into rvalue and lvalue
 // TODO replace auto with const auto where possible
@@ -107,7 +106,7 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 {
   {
     REQUIRE_FALSE(lambda_no_capture_count);
-    auto guard = make_scope_guard([](){incc(lambda_no_capture_count);});
+    auto guard = make_scope_guard([](){ incc(lambda_no_capture_count); });
     REQUIRE_FALSE(lambda_no_capture_count);
   }
 
@@ -127,7 +126,7 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
   auto lambda_count = 0u;
 
   {
-    auto guard = make_scope_guard([&lambda_count](){incc(lambda_count);});
+    auto guard = make_scope_guard([&lambda_count](){ incc(lambda_count); });
     REQUIRE_FALSE(lambda_count);
   }
 
@@ -222,10 +221,10 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   auto lambda_count = 0u;
 
   {
-    auto g1 = make_scope_guard([&lambda_count](){inc(); incc(lambda_count);});
+    auto g1 = make_scope_guard([&lambda_count](){ inc(); incc(lambda_count); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
-    auto g2 = make_scope_guard([&lambda_count](){incc(lambda_count); inc();});
+    auto g2 = make_scope_guard([&lambda_count](){ incc(lambda_count); inc(); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
     auto g3 = make_scope_guard(inc);
@@ -235,7 +234,7 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 
-  auto g4 = make_scope_guard([&lambda_count](){incc(lambda_count); inc();});
+  auto g4 = make_scope_guard([&lambda_count](){ incc(lambda_count); inc(); });
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 }
@@ -259,21 +258,21 @@ TEST_CASE("Test nested scopes")
   auto lvl3c_count = 0u;
 
   // TODO replace with binds
-  auto lvl0_guard = make_scope_guard([&lvl0_count](){incc(lvl0_count);});
+  auto lvl0_guard = make_scope_guard([&lvl0_count](){ incc(lvl0_count); });
   REQUIRE_FALSE(lvl0_count);
 
   {
-    auto lvl1_guard = make_scope_guard([&lvl1_count](){incc(lvl1_count);});
+    auto lvl1_guard = make_scope_guard([&lvl1_count](){ incc(lvl1_count); });
     REQUIRE_FALSE(lvl1_count);
 
     {
       auto lvl2a_guard =
-          make_scope_guard([&lvl2a_count](){incc(lvl2a_count);});
+          make_scope_guard([&lvl2a_count](){ incc(lvl2a_count); });
       REQUIRE_FALSE(lvl2a_count);
 
       {
         auto lvl3a_guard =
-          make_scope_guard([&lvl3a_count](){incc(lvl3a_count);});
+          make_scope_guard([&lvl3a_count](){ incc(lvl3a_count); });
         REQUIRE_FALSE(lvl3a_count);
       }
 
@@ -287,16 +286,16 @@ TEST_CASE("Test nested scopes")
 
     {
       auto lvl2b_guard =
-          make_scope_guard([&lvl2b_count](){incc(lvl2b_count);});
+          make_scope_guard([&lvl2b_count](){ incc(lvl2b_count); });
       REQUIRE_FALSE(lvl2b_count);
 
       {
         auto lvl3b_guard =
-            make_scope_guard([&lvl3b_count](){incc(lvl3b_count);});
+            make_scope_guard([&lvl3b_count](){ incc(lvl3b_count); });
         REQUIRE_FALSE(lvl3b_count);
 
         auto lvl3c_guard =
-            make_scope_guard([&lvl3c_count](){incc(lvl3c_count);});
+            make_scope_guard([&lvl3c_count](){ incc(lvl3c_count); });
         REQUIRE_FALSE(lvl3c_count);
       }
 
