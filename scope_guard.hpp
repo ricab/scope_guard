@@ -24,12 +24,14 @@ namespace sg
     template<typename = typename std::enable_if<
       std::is_constructible<std::function<void()>, Callable>::value>::type>
     explicit scope_guard(Callable&& resetter);
+
     scope_guard(scope_guard&& other);
     ~scope_guard();
 
   private:
     Callable m_resetter;
     bool m_active;
+
   };
 
   /// helper to create scope_guard and deduce template params

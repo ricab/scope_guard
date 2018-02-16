@@ -5,7 +5,6 @@
 
 using namespace sg;
 
-// TODO homogenize newlines
 // TODO split construction tests into ctor and make
 // TODO split make tests into rvalue and lvalue
 // TODO replace booleans with counts
@@ -147,6 +146,7 @@ TEST_CASE("A scope_guard created with a lambda that calls a regular function "
     REQUIRE_FALSE(f_called);
     REQUIRE_FALSE(lambda_called);
   }
+
   REQUIRE(f_called);
   REQUIRE(lambda_called);
 }
@@ -184,10 +184,12 @@ TEST_CASE("A bound-function-based scope_guard calls the bound function when "
           "leaving scope")
 {
   bool boundf_called = false;
+
   {
     auto guard = make_scope_guard(std::bind(negate_f, std::ref(boundf_called)));
     REQUIRE_FALSE(boundf_called);
   }
+
   REQUIRE(boundf_called);
 }
 
@@ -202,11 +204,13 @@ TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda when "
           "leaving scope")
 {
   bool boundl_called = false;
+
   {
     auto negate_l = [](bool& b){b = !b;};
     auto guard = make_scope_guard(std::bind(negate_l, std::ref(boundl_called)));
     REQUIRE_FALSE(boundl_called);
   }
+
   REQUIRE(boundl_called);
 }
 
@@ -234,6 +238,7 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
     auto g3 = make_scope_guard(f);
     REQUIRE_FALSE(f_called);
   }
+
   REQUIRE(f_called);
   REQUIRE(lambda_called);
 
