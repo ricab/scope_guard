@@ -27,3 +27,47 @@ TEST_CASE("Plain function")
   }
   REQUIRE(f_called);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Simple std::function")
+{
+  f_called = false;
+
+  {
+    REQUIRE_FALSE(f_called);
+    auto guard = make_scope_guard(std::function<decltype(f)>(f));
+    REQUIRE_FALSE(f_called);
+  }
+
+  REQUIRE(f_called);
+}
+
+namespace
+{
+  //////////////////////////////////////////////////////////////////////////////
+  bool lambda_no_capture_called = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test lambda function with no capture")
+{
+  {
+    REQUIRE_FALSE(lambda_no_capture_called);
+    auto guard = make_scope_guard([](){lambda_no_capture_called = true;});
+    REQUIRE_FALSE(lambda_no_capture_called);
+  }
+
+  REQUIRE(lambda_no_capture_called);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test lambda function with capture")
+{
+  bool lambda_called = false;
+
+  {
+    auto guard = make_scope_guard([&lambda_called](){lambda_called=true;});
+    REQUIRE_FALSE(lambda_called);
+  }
+  REQUIRE(lambda_called);
+}
