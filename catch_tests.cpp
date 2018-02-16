@@ -80,7 +80,6 @@ TEST_CASE("Test lambda function calling regular function")
 
   {
     REQUIRE_FALSE(f_called);
-    REQUIRE_FALSE(lambda_called);
     auto guard = make_scope_guard([&lambda_called](){f(); lambda_called=true;});
     REQUIRE_FALSE(f_called);
     REQUIRE_FALSE(lambda_called);
