@@ -7,11 +7,11 @@ using namespace sg;
 
 // TODO split construction tests into ctor and make
 // TODO split make tests into rvalue and lvalue
-// TODO replace auto with const auto where possible
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
 // TODO add custom functor tests
+// TODO add const functor test
 // TODO add member function tests
 // TODO add actual exception test
 // TODO add actual rollback test
@@ -49,7 +49,7 @@ TEST_CASE("A plain-function-based scope_guard executes the function exactly "
   reset();
 
   {
-    auto guard = make_scope_guard(inc);
+    const auto guard = make_scope_guard(inc);
     REQUIRE_FALSE(count);
   }
 
@@ -67,7 +67,7 @@ TEST_CASE("A std::function that wraps a regular function can be used to create "
 TEST_CASE("An lvalue std::function that wraps a regular function can be used "
           "to create a scope_guard")
 {
-  auto stdf = std::function<decltype(inc)>{inc};
+  const auto stdf = std::function<decltype(inc)>{inc};
   make_scope_guard(stdf);
 }
 
@@ -80,7 +80,7 @@ TEST_CASE("A scope_guard that is created with a regular-function-wrapping "
 
   {
     REQUIRE_FALSE(count);
-    auto guard = make_scope_guard(std::function<decltype(inc)>{inc});
+    const auto guard = make_scope_guard(std::function<decltype(inc)>{inc});
     REQUIRE_FALSE(count);
   }
 
@@ -97,7 +97,7 @@ namespace
 TEST_CASE("A lambda function with no capture can be used to create a "
           "scope_guard")
 {
-  auto guard = make_scope_guard([](){});
+  const auto guard = make_scope_guard([](){});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 {
   {
     REQUIRE_FALSE(lambda_no_capture_count);
-    auto guard = make_scope_guard([](){ incc(lambda_no_capture_count); });
+    const auto guard = make_scope_guard([](){ incc(lambda_no_capture_count); });
     REQUIRE_FALSE(lambda_no_capture_count);
   }
 
@@ -126,7 +126,8 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
   auto lambda_count = 0u;
 
   {
-    auto guard = make_scope_guard([&lambda_count](){ incc(lambda_count); });
+    const auto guard = make_scope_guard([&lambda_count]()
+                                        { incc(lambda_count); });
     REQUIRE_FALSE(lambda_count);
   }
 
@@ -142,8 +143,8 @@ TEST_CASE("A scope_guard created with a regular-function-wrapping lambda, "
   auto lambda_count = 0u;
 
   {
-    auto guard = make_scope_guard([&lambda_count]()
-                                  { inc(); incc(lambda_count); });
+    const auto guard = make_scope_guard([&lambda_count]()
+                                        { inc(); incc(lambda_count); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
   }
@@ -178,7 +179,8 @@ TEST_CASE("A bound-function-based scope_guard calls the bound function exactly "
   auto boundf_count = 0u;
 
   {
-    auto guard = make_scope_guard(std::bind(incc, std::ref(boundf_count)));
+    const auto guard = make_scope_guard(std::bind(incc,
+                                                  std::ref(boundf_count)));
     REQUIRE_FALSE(boundf_count);
   }
 
@@ -198,8 +200,9 @@ TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
   auto boundl_count = 0u;
 
   {
-    auto incc_l = [](unsigned& c){ incc(c); };
-    auto guard = make_scope_guard(std::bind(incc_l, std::ref(boundl_count)));
+    const auto incc_l = [](unsigned& c){ incc(c); };
+    const auto guard = make_scope_guard(std::bind(incc_l,
+                                                  std::ref(boundl_count)));
     REQUIRE_FALSE(boundl_count);
   }
 
@@ -221,20 +224,23 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   auto lambda_count = 0u;
 
   {
-    auto g1 = make_scope_guard([&lambda_count](){ inc(); incc(lambda_count); });
+    const auto g1 = make_scope_guard([&lambda_count]()
+                                     { inc(); incc(lambda_count); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
-    auto g2 = make_scope_guard([&lambda_count](){ incc(lambda_count); inc(); });
+    const auto g2 = make_scope_guard([&lambda_count]()
+                                     { incc(lambda_count); inc(); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
-    auto g3 = make_scope_guard(inc);
+    const auto g3 = make_scope_guard(inc);
     REQUIRE_FALSE(count);
   }
 
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 
-  auto g4 = make_scope_guard([&lambda_count](){ incc(lambda_count); inc(); });
+  const auto g4 = make_scope_guard([&lambda_count]()
+                                   { incc(lambda_count); inc(); });
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 }
@@ -258,21 +264,23 @@ TEST_CASE("Test nested scopes")
   auto lvl3c_count = 0u;
 
   // TODO replace with binds
-  auto lvl0_guard = make_scope_guard([&lvl0_count](){ incc(lvl0_count); });
+  const auto lvl0_guard = make_scope_guard([&lvl0_count]()
+                                           { incc(lvl0_count); });
   REQUIRE_FALSE(lvl0_count);
 
   {
-    auto lvl1_guard = make_scope_guard([&lvl1_count](){ incc(lvl1_count); });
+    const auto lvl1_guard = make_scope_guard([&lvl1_count]()
+                                             { incc(lvl1_count); });
     REQUIRE_FALSE(lvl1_count);
 
     {
-      auto lvl2a_guard =
-          make_scope_guard([&lvl2a_count](){ incc(lvl2a_count); });
+      const auto lvl2a_guard = make_scope_guard([&lvl2a_count]()
+                                                { incc(lvl2a_count); });
       REQUIRE_FALSE(lvl2a_count);
 
       {
-        auto lvl3a_guard =
-          make_scope_guard([&lvl3a_count](){ incc(lvl3a_count); });
+        const auto lvl3a_guard = make_scope_guard([&lvl3a_count]()
+                                                  { incc(lvl3a_count); });
         REQUIRE_FALSE(lvl3a_count);
       }
 
@@ -285,17 +293,17 @@ TEST_CASE("Test nested scopes")
     REQUIRE_FALSE(lvl0_count);
 
     {
-      auto lvl2b_guard =
-          make_scope_guard([&lvl2b_count](){ incc(lvl2b_count); });
+      const auto lvl2b_guard = make_scope_guard([&lvl2b_count]()
+                                                { incc(lvl2b_count); });
       REQUIRE_FALSE(lvl2b_count);
 
       {
-        auto lvl3b_guard =
-            make_scope_guard([&lvl3b_count](){ incc(lvl3b_count); });
+        const auto lvl3b_guard = make_scope_guard([&lvl3b_count]()
+                                                  { incc(lvl3b_count); });
         REQUIRE_FALSE(lvl3b_count);
 
-        auto lvl3c_guard =
-            make_scope_guard([&lvl3c_count](){ incc(lvl3c_count); });
+        const auto lvl3c_guard = make_scope_guard([&lvl3c_count]()
+                                                  { incc(lvl3c_count); });
         REQUIRE_FALSE(lvl3c_count);
       }
 
