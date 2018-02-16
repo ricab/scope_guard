@@ -11,7 +11,7 @@
 #include <utility>
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace scope_guard
+namespace sg
 {
   /**
    * RAII class to call a resetter function when leaving scope. The resetter
@@ -40,14 +40,14 @@ namespace scope_guard
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
 template<typename>
-scope_guard::scope_guard<Callable>::scope_guard(Callable&& resetter)
+sg::scope_guard<Callable>::scope_guard(Callable&& resetter)
   : m_active{true}
   , m_resetter{std::forward<Callable>(resetter)}
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
-scope_guard::scope_guard<Callable>::~scope_guard()
+sg::scope_guard<Callable>::~scope_guard()
 {
   if(m_active)
     m_resetter();
@@ -55,7 +55,7 @@ scope_guard::scope_guard<Callable>::~scope_guard()
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
-scope_guard::scope_guard<Callable>::scope_guard(scope_guard&& other)
+sg::scope_guard<Callable>::scope_guard(scope_guard&& other)
   : m_active{other.m_active}
   , m_resetter{std::move(other.m_resetter)}
 {
@@ -64,7 +64,7 @@ scope_guard::scope_guard<Callable>::scope_guard(scope_guard&& other)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
-inline auto scope_guard::make_scope_guard(Callable&& resetter) -> scope_guard<Callable>
+inline auto sg::make_scope_guard(Callable&& resetter) -> scope_guard<Callable>
 {
   return scope_guard<Callable>{std::forward<Callable>(resetter)};
 }
