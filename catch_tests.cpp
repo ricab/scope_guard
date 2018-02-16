@@ -5,9 +5,9 @@
 
 using namespace sg;
 
+// TODO { cosmetics; }
 // TODO split construction tests into ctor and make
 // TODO split make tests into rvalue and lvalue
-// TODO replace booleans with counts
 // TODO replace auto with const auto where possible
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
@@ -25,71 +25,73 @@ using namespace sg;
 // TODO add tests for descending guard
 // TODO add tests for required noexcept
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
+// TODO for bonus, support function overloads (not sure how)
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  bool f_called = false;
-  void f()
-  {
-    f_called = true;
-  }
+  auto count = 0u;
+  void incc(unsigned& c) { ++c; }
+  void inc() { incc(count); }
+  void resetc(unsigned& c) { c = 0u; }
+  void reset() { resetc(count); }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain function can be used to create a scope_guard")
 {
-  make_scope_guard(f);
+  make_scope_guard(inc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A plain-function-based scope_guard executes the function when "
-          "leaving scope") // TODO exactly once
+TEST_CASE("A plain-function-based scope_guard executes the function exactly "
+          "once when leaving scope")
 {
-  f_called = false;
+  reset();
 
   {
-    auto guard = make_scope_guard(f);
-    REQUIRE_FALSE(f_called);
+    auto guard = make_scope_guard(inc);
+    REQUIRE_FALSE(count);
   }
 
-  REQUIRE(f_called);
+  REQUIRE(count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A std::function that wraps a regular function can be used to create "
           "a scope_guard")
 {
-  make_scope_guard(std::function<decltype(f)>{f});
+  make_scope_guard(std::function<decltype(inc)>{inc});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue std::function that wraps a regular function can be used "
           "to create a scope_guard")
 {
-  auto stdf = std::function<decltype(f)>{f};
+  auto stdf = std::function<decltype(inc)>{inc};
   make_scope_guard(stdf);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard that is created with a regular-function-wrapping "
-          "std::function executes the function when leaving scope")
+          "std::function executes that std::function exactly once when leaving "
+          "scope")
 {
-  f_called = false;
+  count = 0u;
 
   {
-    REQUIRE_FALSE(f_called);
-    auto guard = make_scope_guard(std::function<decltype(f)>{f});
-    REQUIRE_FALSE(f_called);
+    REQUIRE_FALSE(count);
+    auto guard = make_scope_guard(std::function<decltype(inc)>{inc});
+    REQUIRE_FALSE(count);
   }
 
-  REQUIRE(f_called);
+  REQUIRE(count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  bool lambda_no_capture_called = false;
+  auto lambda_no_capture_count = 0u;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -100,16 +102,16 @@ TEST_CASE("A lambda function with no capture can be used to create a "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda when "
-          "leaving scope")
+TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
+          "once when leaving scope")
 {
   {
-    REQUIRE_FALSE(lambda_no_capture_called);
-    auto guard = make_scope_guard([](){lambda_no_capture_called = true;});
-    REQUIRE_FALSE(lambda_no_capture_called);
+    REQUIRE_FALSE(lambda_no_capture_count);
+    auto guard = make_scope_guard([](){incc(lambda_no_capture_count);});
+    REQUIRE_FALSE(lambda_no_capture_count);
   }
 
-  REQUIRE(lambda_no_capture_called);
+  REQUIRE(lambda_no_capture_count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,33 +124,33 @@ TEST_CASE("A lambda function with capture can be used to create a scope_guard")
 TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
           "leaving scope")
 {
-  bool lambda_called = false;
+  auto lambda_count = 0u;
 
   {
-    auto guard = make_scope_guard([&lambda_called](){lambda_called=true;});
-    REQUIRE_FALSE(lambda_called);
+    auto guard = make_scope_guard([&lambda_count](){incc(lambda_count);});
+    REQUIRE_FALSE(lambda_count);
   }
 
-  REQUIRE(lambda_called);
+  REQUIRE(lambda_count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A scope_guard created with a lambda that calls a regular function "
-          "calls the lambda when leaving scope, which in turn calls the "
-          "regular function")
+TEST_CASE("A scope_guard created with a regular-function-wrapping lambda, "
+          "calls the lambda exactly once when leaving scope, which in turn "
+          "calls the regular function")
 {
-  f_called = false;
-  bool lambda_called = false;
+  count = 0u;
+  auto lambda_count = 0u;
 
   {
-    REQUIRE_FALSE(f_called);
-    auto guard = make_scope_guard([&lambda_called](){f(); lambda_called=true;});
-    REQUIRE_FALSE(f_called);
-    REQUIRE_FALSE(lambda_called);
+    auto guard = make_scope_guard([&lambda_count]()
+                                  { inc(); incc(lambda_count); });
+    REQUIRE_FALSE(count);
+    REQUIRE_FALSE(lambda_count);
   }
 
-  REQUIRE(f_called);
-  REQUIRE(lambda_called);
+  REQUIRE(count == lambda_count);
+  REQUIRE(count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -164,33 +166,24 @@ TEST_CASE("Test std::function calling lambda function")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace
-{
-  void negate_f(bool& b)
-  {
-    b = !b;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound function can be used to create a scope_guard")
 {
-  bool boundf_called;
-  make_scope_guard(std::bind(negate_f, std::ref(boundf_called)));
+  auto boundf_count = 0u;
+  make_scope_guard(std::bind(incc, std::ref(boundf_count)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A bound-function-based scope_guard calls the bound function when "
-          "leaving scope")
+TEST_CASE("A bound-function-based scope_guard calls the bound function exactly "
+          "once when leaving scope")
 {
-  bool boundf_called = false;
+  auto boundf_count = 0u;
 
   {
-    auto guard = make_scope_guard(std::bind(negate_f, std::ref(boundf_called)));
-    REQUIRE_FALSE(boundf_called);
+    auto guard = make_scope_guard(std::bind(incc, std::ref(boundf_count)));
+    REQUIRE_FALSE(boundf_count);
   }
 
-  REQUIRE(boundf_called);
+  REQUIRE(boundf_count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -200,18 +193,18 @@ TEST_CASE("A bound lambda can be used to create a scope_guard")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda when "
-          "leaving scope")
+TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
+          "once when leaving scope")
 {
-  bool boundl_called = false;
+  auto boundl_count = 0u;
 
   {
-    auto negate_l = [](bool& b){b = !b;};
-    auto guard = make_scope_guard(std::bind(negate_l, std::ref(boundl_called)));
-    REQUIRE_FALSE(boundl_called);
+    auto incc_l = [](unsigned& c){ incc(c); };
+    auto guard = make_scope_guard(std::bind(incc_l, std::ref(boundl_count)));
+    REQUIRE_FALSE(boundl_count);
   }
 
-  REQUIRE(boundl_called);
+  REQUIRE(boundl_count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -225,26 +218,26 @@ TEST_CASE("several levels of indirection involving lambdas, binds, "
 TEST_CASE("Redundant scope_guards do not interfere with each other - their "
           "combined post-condition holds")
 {
-  f_called = false;
-  bool lambda_called = false;
+  count = 0u;
+  auto lambda_count = 0u;
 
   {
-    auto g1 = make_scope_guard([&lambda_called](){f(); lambda_called=true;});
-    REQUIRE_FALSE(f_called);
-    REQUIRE_FALSE(lambda_called);
-    auto g2 = make_scope_guard([&lambda_called](){lambda_called=true; f();});
-    REQUIRE_FALSE(f_called);
-    REQUIRE_FALSE(lambda_called);
-    auto g3 = make_scope_guard(f);
-    REQUIRE_FALSE(f_called);
+    auto g1 = make_scope_guard([&lambda_count](){inc(); incc(lambda_count);});
+    REQUIRE_FALSE(count);
+    REQUIRE_FALSE(lambda_count);
+    auto g2 = make_scope_guard([&lambda_count](){incc(lambda_count); inc();});
+    REQUIRE_FALSE(count);
+    REQUIRE_FALSE(lambda_count);
+    auto g3 = make_scope_guard(inc);
+    REQUIRE_FALSE(count);
   }
 
-  REQUIRE(f_called);
-  REQUIRE(lambda_called);
+  REQUIRE(count == 3u);
+  REQUIRE(lambda_count == 2u);
 
-  auto g4 = make_scope_guard([&lambda_called](){lambda_called=true; f();});
-  REQUIRE(f_called);
-  REQUIRE(lambda_called);
+  auto g4 = make_scope_guard([&lambda_count](){incc(lambda_count); inc();});
+  REQUIRE(count == 3u);
+  REQUIRE(lambda_count == 2u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,74 +250,74 @@ TEST_CASE("Multiple independent scope_guards do not interfere with each "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Test nested scopes")
 {
-  bool lvl0_called = false;
-  bool lvl1_called = false;
-  bool lvl2a_called = false;
-  bool lvl2b_called = false;
-  bool lvl3a_called = false;
-  bool lvl3b_called = false;
-  bool lvl3c_called = false;
+  auto lvl0_count  = 0u;
+  auto lvl1_count  = 0u;
+  auto lvl2a_count = 0u;
+  auto lvl2b_count = 0u;
+  auto lvl3a_count = 0u;
+  auto lvl3b_count = 0u;
+  auto lvl3c_count = 0u;
 
   // TODO replace with binds
-  auto lvl0_guard = make_scope_guard([&lvl0_called](){lvl0_called = true;});
-  REQUIRE_FALSE(lvl0_called);
+  auto lvl0_guard = make_scope_guard([&lvl0_count](){incc(lvl0_count);});
+  REQUIRE_FALSE(lvl0_count);
 
   {
-    auto lvl1_guard = make_scope_guard([&lvl1_called](){lvl1_called = true;});
-    REQUIRE_FALSE(lvl1_called);
+    auto lvl1_guard = make_scope_guard([&lvl1_count](){incc(lvl1_count);});
+    REQUIRE_FALSE(lvl1_count);
 
     {
       auto lvl2a_guard =
-          make_scope_guard([&lvl2a_called](){lvl2a_called = true;});
-      REQUIRE_FALSE(lvl2a_called);
+          make_scope_guard([&lvl2a_count](){incc(lvl2a_count);});
+      REQUIRE_FALSE(lvl2a_count);
 
       {
         auto lvl3a_guard =
-          make_scope_guard([&lvl3a_called](){lvl3a_called = true;});
-        REQUIRE_FALSE(lvl3a_called);
+          make_scope_guard([&lvl3a_count](){incc(lvl3a_count);});
+        REQUIRE_FALSE(lvl3a_count);
       }
 
-      REQUIRE(lvl3a_called);
-      REQUIRE_FALSE(lvl2a_called);
+      REQUIRE(lvl3a_count == 1);
+      REQUIRE_FALSE(lvl2a_count);
     }
 
-    REQUIRE(lvl2a_called);
-    REQUIRE_FALSE(lvl1_called);
-    REQUIRE_FALSE(lvl0_called);
+    REQUIRE(lvl2a_count == 1);
+    REQUIRE_FALSE(lvl1_count);
+    REQUIRE_FALSE(lvl0_count);
 
     {
       auto lvl2b_guard =
-          make_scope_guard([&lvl2b_called](){lvl2b_called = true;});
-      REQUIRE_FALSE(lvl2b_called);
+          make_scope_guard([&lvl2b_count](){incc(lvl2b_count);});
+      REQUIRE_FALSE(lvl2b_count);
 
       {
         auto lvl3b_guard =
-            make_scope_guard([&lvl3b_called](){lvl3b_called = true;});
-        REQUIRE_FALSE(lvl3b_called);
+            make_scope_guard([&lvl3b_count](){incc(lvl3b_count);});
+        REQUIRE_FALSE(lvl3b_count);
 
         auto lvl3c_guard =
-            make_scope_guard([&lvl3c_called](){lvl3c_called = true;});
-        REQUIRE_FALSE(lvl3c_called);
+            make_scope_guard([&lvl3c_count](){incc(lvl3c_count);});
+        REQUIRE_FALSE(lvl3c_count);
       }
 
-      REQUIRE(lvl3b_called);
-      REQUIRE(lvl3c_called);
-      REQUIRE_FALSE(lvl2b_called);
+      REQUIRE(lvl3b_count == 1);
+      REQUIRE(lvl3c_count == 1);
+      REQUIRE_FALSE(lvl2b_count);
 
     }
 
-    REQUIRE(lvl2b_called);
-    REQUIRE_FALSE(lvl1_called);
-    REQUIRE_FALSE(lvl0_called);
+    REQUIRE(lvl2b_count == 1);
+    REQUIRE_FALSE(lvl1_count);
+    REQUIRE_FALSE(lvl0_count);
 
   }
 
-  REQUIRE(lvl1_called);
-  REQUIRE(lvl2a_called);
-  REQUIRE(lvl2b_called);
-  REQUIRE(lvl3a_called);
-  REQUIRE(lvl3b_called);
-  REQUIRE(lvl3c_called);
-  REQUIRE_FALSE(lvl0_called);
+  REQUIRE(lvl1_count  == 1);
+  REQUIRE(lvl2a_count == 1);
+  REQUIRE(lvl2b_count == 1);
+  REQUIRE(lvl3a_count == 1);
+  REQUIRE(lvl3b_count == 1);
+  REQUIRE(lvl3c_count == 1);
+  REQUIRE_FALSE(lvl0_count);
 
 }
