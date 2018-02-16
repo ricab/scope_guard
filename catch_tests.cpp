@@ -5,11 +5,14 @@
 
 using namespace sg;
 
-// TODO clarify test names with "guard"
 // TODO homogenize newlines
-// TODO separate into construction and call tests
+// TODO split construction tests into ctor and make
+// TODO split make tests into rvalue and lvalue
 // TODO replace booleans with counts
 // TODO replace auto with const auto where possible
+// TODO add static_tests for disallowed copy and assignment
+// TODO add test moved guard has no effect
+// TODO add test to show function can still be called multiple times outside scope guard
 // TODO add custom functor tests
 // TODO add member function tests
 // TODO add actual exception test
@@ -35,24 +38,41 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Plain function")
+TEST_CASE("A plain function can be used to create a scope_guard")
 {
+  make_scope_guard(f);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A plain-function-based scope_guard executes the function when "
+          "leaving scope") // TODO exactly once
+{
+  f_called = false;
+
   {
-    REQUIRE_FALSE(f_called);
     auto guard = make_scope_guard(f);
     REQUIRE_FALSE(f_called);
   }
+
   REQUIRE(f_called);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Simple std::function")
+TEST_CASE("A std::function that wraps a regular function can be used to create "
+          "a scope_guard")
+{
+  make_scope_guard(std::function<decltype(f)>{f});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is created with a regular-function-wrapping "
+          "std::function executes the function when leaving scope")
 {
   f_called = false;
 
   {
     REQUIRE_FALSE(f_called);
-    auto guard = make_scope_guard(std::function<decltype(f)>(f));
+    auto guard = make_scope_guard(std::function<decltype(f)>{f});
     REQUIRE_FALSE(f_called);
   }
 
@@ -66,7 +86,15 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test lambda function with no capture")
+TEST_CASE("A lambda function with no capture can be used to create a "
+          "scope_guard")
+{
+  auto guard = make_scope_guard([](){});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda when "
+          "leaving scope")
 {
   {
     REQUIRE_FALSE(lambda_no_capture_called);
@@ -78,7 +106,14 @@ TEST_CASE("Test lambda function with no capture")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test lambda function with capture")
+TEST_CASE("A lambda function with capture can be used to create a scope_guard")
+{
+  make_scope_guard([&](){});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
+          "leaving scope")
 {
   bool lambda_called = false;
 
@@ -86,11 +121,14 @@ TEST_CASE("Test lambda function with capture")
     auto guard = make_scope_guard([&lambda_called](){lambda_called=true;});
     REQUIRE_FALSE(lambda_called);
   }
+
   REQUIRE(lambda_called);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test lambda function calling regular function")
+TEST_CASE("A scope_guard created with a lambda that calls a regular function "
+          "calls the lambda when leaving scope, which in turn calls the "
+          "regular function")
 {
   f_called = false;
   bool lambda_called = false;
@@ -106,6 +144,18 @@ TEST_CASE("Test lambda function calling regular function")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test lambda function calling std::function")
+{
+  // TODO
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test std::function calling lambda function")
+{
+  // TODO
+}
+
+////////////////////////////////////////////////////////////////////////////////
 namespace
 {
   void negate_f(bool& b)
@@ -115,51 +165,80 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test binded function")
+TEST_CASE("A bound function can be used to create a scope_guard")
 {
-  bool binded_called = false;
-  {
-    auto guard = make_scope_guard(std::bind(negate_f, std::ref(binded_called)));
-    REQUIRE_FALSE(binded_called);
-  }
-  REQUIRE(binded_called);
+  bool boundf_called;
+  make_scope_guard(std::bind(negate_f, std::ref(boundf_called)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test binded lambda")
+TEST_CASE("A bound-function-based scope_guard calls the bound function when "
+          "leaving scope")
 {
-  bool binded_called = false;
+  bool boundf_called = false;
   {
-    auto negate_lambda = [](bool& b){b = !b;};
-    auto guard = make_scope_guard(std::bind(negate_lambda,
-                                            std::ref(binded_called)));
-    REQUIRE_FALSE(binded_called);
+    auto guard = make_scope_guard(std::bind(negate_f, std::ref(boundf_called)));
+    REQUIRE_FALSE(boundf_called);
   }
-  REQUIRE(binded_called);
+  REQUIRE(boundf_called);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test redundant guards")
+TEST_CASE("A bound lambda can be used to create a scope_guard")
+{
+  make_scope_guard(std::bind([](int /*unused*/){}, 42));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda when "
+          "leaving scope")
+{
+  bool boundl_called = false;
+  {
+    auto negate_l = [](bool& b){b = !b;};
+    auto guard = make_scope_guard(std::bind(negate_l, std::ref(boundl_called)));
+    REQUIRE_FALSE(boundl_called);
+  }
+  REQUIRE(boundl_called);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("several levels of indirection involving lambdas, binds, "
+          "std::functions, custom functors, and regular functions")
+{
+  // TODO
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Redundant scope_guards do not interfere with each other - their "
+          "combined post-condition holds")
 {
   f_called = false;
   bool lambda_called = false;
 
   {
-    REQUIRE_FALSE(f_called);
-    REQUIRE_FALSE(lambda_called);
     auto g1 = make_scope_guard([&lambda_called](){f(); lambda_called=true;});
     REQUIRE_FALSE(f_called);
     REQUIRE_FALSE(lambda_called);
     auto g2 = make_scope_guard([&lambda_called](){lambda_called=true; f();});
     REQUIRE_FALSE(f_called);
     REQUIRE_FALSE(lambda_called);
+    auto g3 = make_scope_guard(f);
+    REQUIRE_FALSE(f_called);
   }
   REQUIRE(f_called);
   REQUIRE(lambda_called);
 
-  auto g3 = make_scope_guard([&lambda_called](){lambda_called=true; f();});
+  auto g4 = make_scope_guard([&lambda_called](){lambda_called=true; f();});
   REQUIRE(f_called);
   REQUIRE(lambda_called);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Multiple independent scope_guards do not interfere with each "
+          "other - each of their post-conditions holds")
+{
+  // TODO
 }
 
 ////////////////////////////////////////////////////////////////////////////////
