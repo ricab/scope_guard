@@ -5,8 +5,9 @@ A C++11 scope guard.
 - [x] &ge; C++11
 - [ ] Exception safe
 - [x] Simple (as simple as possible while maintaining safety)
-- [x] General (accepts anything that can be bound to a
-`std::function<void()noexcept>`)
+- [x] General: accepts anything that can be bound to a
+`std::function<void()noexcept>`
+    * [x] both rvalue and lvalues supported
 - [x] Fast (no runtime `std::function` penalties)
 - [x] No dependencies to use (besides C++11 compiler and standard library)
 - [x] No implicitly ignored return - callback must return `void` (clients can

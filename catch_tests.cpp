@@ -65,6 +65,14 @@ TEST_CASE("A std::function that wraps a regular function can be used to create "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue std::function that wraps a regular function can be used "
+          "to create a scope_guard")
+{
+  auto stdf = std::function<decltype(f)>{f};
+  make_scope_guard(stdf);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard that is created with a regular-function-wrapping "
           "std::function executes the function when leaving scope")
 {

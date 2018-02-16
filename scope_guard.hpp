@@ -56,7 +56,7 @@ sg::scope_guard<Callable>::~scope_guard()
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callable>
 sg::scope_guard<Callable>::scope_guard(scope_guard&& other)
-  : m_resetter{std::move(other.m_resetter)}
+  : m_resetter{std::forward<Callable>(other.m_resetter)}
   , m_active{std::move(other.m_active)}
 {
   other.m_active = false;
