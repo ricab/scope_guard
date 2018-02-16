@@ -24,7 +24,7 @@ using namespace sg;
 // TODO add tests for descending guard
 // TODO add tests for required noexcept
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
-// TODO for bonus, support function overloads (not sure how)
+// TODO for bonus, support function overloads (not sure how or if at all possible)
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
