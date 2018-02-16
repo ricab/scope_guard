@@ -88,6 +88,39 @@ TEST_CASE("Test lambda function calling regular function")
   REQUIRE(lambda_called);
 }
 
+namespace
+{
+  //////////////////////////////////////////////////////////////////////////////
+  void negate_f(bool& b)
+  {
+    b = !b;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test binded function")
+{
+  bool binded_called = false;
+  {
+    auto guard = make_scope_guard(std::bind(negate_f, std::ref(binded_called)));
+    REQUIRE_FALSE(binded_called);
+  }
+  REQUIRE(binded_called);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test binded lambda")
+{
+  bool binded_called = false;
+  {
+    auto negate_lambda = [](bool& b){b = !b;};
+    auto guard = make_scope_guard(std::bind(negate_lambda,
+                                            std::ref(binded_called)));
+    REQUIRE_FALSE(binded_called);
+  }
+  REQUIRE(binded_called);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Test redundant guards")
 {
