@@ -7,14 +7,27 @@ using namespace sg;
 
 // TODO clarify test names with "guard"
 // TODO homogenize newlines
-// TODO replace booleans with counts where appropriate
+// TODO separate into construction and call tests
+// TODO replace booleans with counts
+// TODO replace auto with const auto where possible
+// TODO add custom functor tests
+// TODO add member function tests
+// TODO add actual exception test
+// TODO add actual rollback test
+// TODO add temporary test
+// TODO add new/delete tests
+// TODO add unique_ptr tests
+// TODO add shared_ptr tests
+// TODO add move into function tests
+// TODO add move into container tests
+// TODO add tests for descending guard
+// TODO add tests for required noexcept
+// TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 
+////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  //////////////////////////////////////////////////////////////////////////////
   bool f_called = false;
-
-  //////////////////////////////////////////////////////////////////////////////
   void f()
   {
     f_called = true;
@@ -46,9 +59,9 @@ TEST_CASE("Simple std::function")
   REQUIRE(f_called);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  //////////////////////////////////////////////////////////////////////////////
   bool lambda_no_capture_called = false;
 }
 
@@ -92,9 +105,9 @@ TEST_CASE("Test lambda function calling regular function")
   REQUIRE(lambda_called);
 }
 
+////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  //////////////////////////////////////////////////////////////////////////////
   void negate_f(bool& b)
   {
     b = !b;
