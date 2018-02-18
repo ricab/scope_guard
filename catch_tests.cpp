@@ -82,10 +82,89 @@ TEST_CASE("A plain-function-based scope_guard executes the function exactly "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A std::function that wraps a regular function can be used to create "
+TEST_CASE("An lvalue reference to a plain function can be used to create a "
+          "scope_guard")
+{
+  auto& inc_ref = inc;
+  make_scope_guard(inc_ref);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue-reference-to-plain-function-based scope_guard executes "
+          "the function exactly once when leaving scope")
+{
+  reset();
+
+  {
+    auto& inc_ref = inc;
+    const auto guard = make_scope_guard(inc_ref);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An rvalue reference to a plain function can be used to create a "
+          "scope_guard")
+{
+  make_scope_guard(std::move(inc)); // rvalue ref to function treated as lvalue
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An rvalue-reference-to-plain-function-based scope_guard executes "
+          "the function exactly once when leaving scope")
+{
+  reset();
+
+  {
+    const auto guard = make_scope_guard(std::move(inc));
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A reference wrapper to a plain function can be used to create a "
+          "scope_guard")
+{
+  make_scope_guard(std::ref(inc));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A reference-wrapper-to-plain-function-based scope_guard executes "
+          "the function exactly once when leaving scope")
+{
+  reset();
+
+  {
+    const auto guard = make_scope_guard(std::ref(inc));
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const reference wrapper to a plain function can be used to create "
           "a scope_guard")
 {
-  make_scope_guard(std::function<decltype(inc)>{inc});
+  make_scope_guard(std::cref(inc));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
+          "executes the function exactly once when leaving scope")
+{
+  reset();
+
+  {
+    const auto guard = make_scope_guard(std::cref(inc));
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,15 +176,91 @@ TEST_CASE("An lvalue std::function that wraps a regular function can be used "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A scope_guard that is created with a regular-function-wrapping "
-          "std::function executes that std::function exactly once when leaving "
-          "scope")
+TEST_CASE("A scope_guard that is created with an "
+          "regular-function-wrapping lvalue std::function executes that "
+          "std::function exactly once when leaving scope")
+{
+  count = 0u;
+
+  {
+    REQUIRE_FALSE(count);
+    const auto stdf = std::function<decltype(inc)>{inc};
+    const auto guard = make_scope_guard(stdf);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An rvalue std::function that wraps a regular function can be used "
+          "to create a scope_guard")
+{
+  make_scope_guard(std::function<decltype(inc)>{inc});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is created with an "
+          "regular-function-wrapping rvalue std::function executes that "
+          "std::function exactly once when leaving scope")
 {
   count = 0u;
 
   {
     REQUIRE_FALSE(count);
     const auto guard = make_scope_guard(std::function<decltype(inc)>{inc});
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue reference to a std::function that wraps a regular "
+          "function can be used to create a scope_guard")
+{
+  const auto stdf = std::function<decltype(inc)>{inc};
+  const auto& stdf_ref = stdf;
+  make_scope_guard(stdf_ref);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is created with an "
+          "regular-function-wrapping std::function lvalue reference "
+          "executes that std::function exactly once when leaving scope")
+{
+  count = 0u;
+
+  {
+    REQUIRE_FALSE(count);
+    const auto stdf = std::function<decltype(inc)>{inc};
+    const auto& stdf_ref = stdf;
+    const auto guard = make_scope_guard(stdf_ref);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An rvalue reference to a std::function that wraps a regular "
+          "function can be used to create a scope_guard")
+{
+  const auto stdf = std::function<decltype(inc)>{inc};
+  make_scope_guard(std::move(stdf));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is created with an "
+          "regular-function-wrapping std::function rvalue reference"
+          "executes that std::function exactly once when leaving scope")
+{
+  count = 0u;
+
+  {
+    REQUIRE_FALSE(count);
+    const auto stdf = std::function<decltype(inc)>{inc};
+    const auto guard = make_scope_guard(std::move(stdf));
     REQUIRE_FALSE(count);
   }
 
