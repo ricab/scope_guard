@@ -180,7 +180,7 @@ TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping lvalue std::function executes that "
           "std::function exactly once when leaving scope")
 {
-  count = 0u;
+  reset();
 
   {
     REQUIRE_FALSE(count);
@@ -204,7 +204,7 @@ TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping rvalue std::function executes that "
           "std::function exactly once when leaving scope")
 {
-  count = 0u;
+  reset();
 
   {
     REQUIRE_FALSE(count);
@@ -229,7 +229,7 @@ TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping std::function lvalue reference "
           "executes that std::function exactly once when leaving scope")
 {
-  count = 0u;
+  reset();
 
   {
     REQUIRE_FALSE(count);
@@ -255,7 +255,7 @@ TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping std::function rvalue reference"
           "executes that std::function exactly once when leaving scope")
 {
-  count = 0u;
+  reset();
 
   {
     REQUIRE_FALSE(count);
@@ -319,7 +319,7 @@ TEST_CASE("A scope_guard created with a regular-function-wrapping lambda, "
           "calls the lambda exactly once when leaving scope, which in turn "
           "calls the regular function")
 {
-  count = 0u;
+  reset();
   auto lambda_count = 0u;
 
   {
@@ -400,7 +400,7 @@ TEST_CASE("several levels of indirection involving lambdas, binds, "
 TEST_CASE("Redundant scope_guards do not interfere with each other - their "
           "combined post-condition holds")
 {
-  count = 0u;
+  reset();
   auto lambda_count = 0u;
 
   {
