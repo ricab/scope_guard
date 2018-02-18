@@ -5,8 +5,9 @@
 
 using namespace sg;
 
-// TODO split construction tests into ctor and make
+// TODO run tests showing names and check they are correct
 // TODO split make tests into rvalue and lvalue
+// TODO add function pointer test
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
