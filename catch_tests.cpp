@@ -5,8 +5,6 @@
 
 using namespace sg;
 
-// TODO run tests showing names and check they are correct
-// TODO split make tests into rvalue and lvalue
 // TODO add function pointer test
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
@@ -38,14 +36,14 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A plain function can be used to create a scope_guard")
+TEST_CASE("A plain function can be used to create a scope_guard.")
 {
   make_scope_guard(inc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Demonstration that direct constructor call is possible, but not "
-          "advisable")
+          "advisable.")
 {
 //  scope_guard{inc}; // Error... besides not deducing template args (at least
                       // before C++17), it does not accept everything...
@@ -69,7 +67,7 @@ TEST_CASE("Demonstration that direct constructor call is possible, but not "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain-function-based scope_guard executes the function exactly "
-          "once when leaving scope")
+          "once when leaving scope.")
 {
   reset();
 
@@ -83,7 +81,7 @@ TEST_CASE("A plain-function-based scope_guard executes the function exactly "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue reference to a plain function can be used to create a "
-          "scope_guard")
+          "scope_guard.")
 {
   auto& inc_ref = inc;
   make_scope_guard(inc_ref);
@@ -91,7 +89,7 @@ TEST_CASE("An lvalue reference to a plain function can be used to create a "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue-reference-to-plain-function-based scope_guard executes "
-          "the function exactly once when leaving scope")
+          "the function exactly once when leaving scope.")
 {
   reset();
 
@@ -106,14 +104,14 @@ TEST_CASE("An lvalue-reference-to-plain-function-based scope_guard executes "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue reference to a plain function can be used to create a "
-          "scope_guard")
+          "scope_guard.")
 {
   make_scope_guard(std::move(inc)); // rvalue ref to function treated as lvalue
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue-reference-to-plain-function-based scope_guard executes "
-          "the function exactly once when leaving scope")
+          "the function exactly once when leaving scope.")
 {
   reset();
 
@@ -127,14 +125,14 @@ TEST_CASE("An rvalue-reference-to-plain-function-based scope_guard executes "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A reference wrapper to a plain function can be used to create a "
-          "scope_guard")
+          "scope_guard.")
 {
   make_scope_guard(std::ref(inc));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A reference-wrapper-to-plain-function-based scope_guard executes "
-          "the function exactly once when leaving scope")
+          "the function exactly once when leaving scope.")
 {
   reset();
 
@@ -148,14 +146,14 @@ TEST_CASE("A reference-wrapper-to-plain-function-based scope_guard executes "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A const reference wrapper to a plain function can be used to create "
-          "a scope_guard")
+          "a scope_guard.")
 {
   make_scope_guard(std::cref(inc));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
-          "executes the function exactly once when leaving scope")
+          "executes the function exactly once when leaving scope.")
 {
   reset();
 
@@ -169,7 +167,7 @@ TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue std::function that wraps a regular function can be used "
-          "to create a scope_guard")
+          "to create a scope_guard.")
 {
   const auto stdf = std::function<decltype(inc)>{inc};
   make_scope_guard(stdf);
@@ -178,7 +176,7 @@ TEST_CASE("An lvalue std::function that wraps a regular function can be used "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping lvalue std::function executes that "
-          "std::function exactly once when leaving scope")
+          "std::function exactly once when leaving scope.")
 {
   reset();
 
@@ -194,7 +192,7 @@ TEST_CASE("A scope_guard that is created with an "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue std::function that wraps a regular function can be used "
-          "to create a scope_guard")
+          "to create a scope_guard.")
 {
   make_scope_guard(std::function<decltype(inc)>{inc});
 }
@@ -202,7 +200,7 @@ TEST_CASE("An rvalue std::function that wraps a regular function can be used "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping rvalue std::function executes that "
-          "std::function exactly once when leaving scope")
+          "std::function exactly once when leaving scope.")
 {
   reset();
 
@@ -217,7 +215,7 @@ TEST_CASE("A scope_guard that is created with an "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue reference to a std::function that wraps a regular "
-          "function can be used to create a scope_guard")
+          "function can be used to create a scope_guard.")
 {
   const auto stdf = std::function<decltype(inc)>{inc};
   const auto& stdf_ref = stdf;
@@ -227,7 +225,7 @@ TEST_CASE("An lvalue reference to a std::function that wraps a regular "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping std::function lvalue reference "
-          "executes that std::function exactly once when leaving scope")
+          "executes that std::function exactly once when leaving scope.")
 {
   reset();
 
@@ -244,7 +242,7 @@ TEST_CASE("A scope_guard that is created with an "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue reference to a std::function that wraps a regular "
-          "function can be used to create a scope_guard")
+          "function can be used to create a scope_guard.")
 {
   const auto stdf = std::function<decltype(inc)>{inc};
   make_scope_guard(std::move(stdf));
@@ -253,7 +251,7 @@ TEST_CASE("An rvalue reference to a std::function that wraps a regular "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard that is created with an "
           "regular-function-wrapping std::function rvalue reference"
-          "executes that std::function exactly once when leaving scope")
+          "executes that std::function exactly once when leaving scope.")
 {
   reset();
 
@@ -275,14 +273,14 @@ namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda function with no capture can be used to create a "
-          "scope_guard")
+          "scope_guard.")
 {
   const auto guard = make_scope_guard([](){});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
-          "once when leaving scope")
+          "once when leaving scope.")
 {
   {
     REQUIRE_FALSE(lambda_no_capture_count);
@@ -294,14 +292,14 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A lambda function with capture can be used to create a scope_guard")
+TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
   make_scope_guard([&](){});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
-          "leaving scope")
+          "leaving scope.")
 {
   auto lambda_count = 0u;
 
@@ -317,7 +315,7 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard created with a regular-function-wrapping lambda, "
           "calls the lambda exactly once when leaving scope, which in turn "
-          "calls the regular function")
+          "calls the regular function.")
 {
   reset();
   auto lambda_count = 0u;
@@ -334,19 +332,19 @@ TEST_CASE("A scope_guard created with a regular-function-wrapping lambda, "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test lambda function calling std::function")
+TEST_CASE("Test lambda function calling std::function.")
 {
   // TODO
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test std::function calling lambda function")
+TEST_CASE("Test std::function calling lambda function.")
 {
   // TODO
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A bound function can be used to create a scope_guard")
+TEST_CASE("A bound function can be used to create a scope_guard.")
 {
   auto boundf_count = 0u;
   make_scope_guard(std::bind(incc, std::ref(boundf_count)));
@@ -354,7 +352,7 @@ TEST_CASE("A bound function can be used to create a scope_guard")
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound-function-based scope_guard calls the bound function exactly "
-          "once when leaving scope")
+          "once when leaving scope.")
 {
   auto boundf_count = 0u;
 
@@ -368,14 +366,14 @@ TEST_CASE("A bound-function-based scope_guard calls the bound function exactly "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A bound lambda can be used to create a scope_guard")
+TEST_CASE("A bound lambda can be used to create a scope_guard.")
 {
   make_scope_guard(std::bind([](int /*unused*/){}, 42));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
-          "once when leaving scope")
+          "once when leaving scope.")
 {
   auto boundl_count = 0u;
 
@@ -391,14 +389,14 @@ TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("several levels of indirection involving lambdas, binds, "
-          "std::functions, custom functors, and regular functions")
+          "std::functions, custom functors, and regular functions.")
 {
   // TODO
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Redundant scope_guards do not interfere with each other - their "
-          "combined post-condition holds")
+          "combined post-condition holds.")
 {
   reset();
   auto lambda_count = 0u;
@@ -427,7 +425,7 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Multiple independent scope_guards do not interfere with each "
-          "other - each of their post-conditions holds")
+          "other - each of their post-conditions holds.")
 {
   // TODO
 }
