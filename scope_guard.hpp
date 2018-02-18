@@ -18,7 +18,7 @@ namespace sg
    * needs to be compatible with std::function<void()>.
    */
   template<typename Callable>
-  class scope_guard // TODO put into default namespace
+  class scope_guard // TODO put into detail namespace
   {
   public:
     template<typename = typename std::enable_if<
