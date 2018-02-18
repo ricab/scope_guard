@@ -44,6 +44,30 @@ TEST_CASE("A plain function can be used to create a scope_guard")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Demonstration that direct constructor call is possible, but not "
+          "advisable")
+{
+//  scope_guard{inc}; // Error... besides not deducing template args (at least
+                      // before C++17), it does not accept everything...
+
+//  scope_guard<decltype(inc)>{inc}; // Error: cannot instantiate data field
+                                     //        with function type...
+
+  scope_guard<void(&)()>{
+      static_cast<void(&)()>(inc)}; // ... could use ref cast...
+
+  auto& inc_ref = inc;
+  scope_guard<decltype(inc_ref)>{inc_ref}; // ... or actual ref...
+
+  scope_guard<decltype(inc)&&>{std::move(inc)}; // ... or even rvalue ref, which
+                                                // with functions is treated
+                                                // just like an lvalue...
+
+
+  make_scope_guard(inc); // ... but the BEST is really to use the make function
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain-function-based scope_guard executes the function exactly "
           "once when leaving scope")
 {
