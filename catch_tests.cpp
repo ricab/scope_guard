@@ -5,13 +5,13 @@
 
 using namespace sg;
 
-// TODO add function pointer test
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
 // TODO add custom functor tests
 // TODO add const functor test
 // TODO add member function tests
+// TODO add boost tests on conditional boost include finding
 // TODO add actual exception test
 // TODO add actual rollback test
 // TODO add temporary test
@@ -159,6 +159,98 @@ TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
 
   {
     const auto guard = make_scope_guard(std::cref(inc));
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue plain function pointer can be used to create a "
+          "scope_guard.")
+{
+  const auto fp = &inc;
+  make_scope_guard(fp);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue-plain-function-pointer-based scope_guard executes the "
+          "function exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto fp = &inc;
+    const auto guard = make_scope_guard(fp);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An rvalue plain function pointer can be used to create a "
+          "scope_guard.")
+{
+  make_scope_guard(&inc);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An rvalue-plain-function-pointer-based scope_guard executes the "
+          "function exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto guard = make_scope_guard(&inc);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue reference to a plain function pointer can be used to "
+          "create a scope_guard.")
+{
+  const auto fp = &inc;
+  const auto& fp_ref = fp;
+  make_scope_guard(fp_ref);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An plain-function-pointer-lvalue-reference-based scope_guard "
+          "executes the function exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto fp = &inc;
+    const auto& fp_ref = fp;
+    const auto guard = make_scope_guard(fp_ref);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An rvalue reference to a plain function pointer can be used to "
+          "create a scope_guard.")
+{
+  const auto fp = &inc;
+  make_scope_guard(std::move(fp));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
+          "executes the function exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto fp = &inc;
+    const auto guard = make_scope_guard(std::move(fp));
     REQUIRE_FALSE(count);
   }
 
