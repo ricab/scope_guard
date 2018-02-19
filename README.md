@@ -30,7 +30,7 @@ There are two dependencies to execute the tests:
     * Catch2
     
 #### Instructions (for GNU/Linux, should be analogous in other systems):
-1. Install [cmake](https://cmake.org/)
+1. Install [cmake](https://cmake.org/) (&ge; v3.1)
 2. Get and install [Catch2](https://github.com/catchorg/Catch2):
     ```
     $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
