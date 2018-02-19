@@ -465,9 +465,32 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Multiple independent scope_guards do not interfere with each "
-          "other - each of their post-conditions holds.")
+          "other - each of their post-conditions hold.")
 {
-  // TODO
+  auto a = 0u;
+  auto b = 0u;
+  auto c = 0u;
+
+  {
+    auto guard_a = make_scope_guard(std::bind(incc, std::ref(a)));
+    REQUIRE_FALSE(a);
+    REQUIRE_FALSE(b);
+    REQUIRE_FALSE(c);
+  }
+  REQUIRE(a == 1u);
+  REQUIRE_FALSE(b);
+  REQUIRE_FALSE(c);
+
+  {
+    auto guard_b = make_scope_guard(std::bind(incc, std::ref(b)));
+    auto guard_c = make_scope_guard(std::bind(incc, std::ref(c)));
+    REQUIRE(a == 1u);
+    REQUIRE_FALSE(b);
+    REQUIRE_FALSE(c);
+  }
+  REQUIRE(a == 1u);
+  REQUIRE(b == 1u);
+  REQUIRE(c == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
