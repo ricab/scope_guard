@@ -174,7 +174,7 @@ TEST_CASE("An lvalue std::function that wraps a regular function can be used "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A scope_guard that is created with an "
+TEST_CASE("A scope_guard that is created with a "
           "regular-function-wrapping lvalue std::function executes that "
           "std::function exactly once when leaving scope.")
 {
@@ -294,7 +294,7 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
-  make_scope_guard([&](){});
+  make_scope_guard([](){});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -313,7 +313,7 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A scope_guard created with a regular-function-wrapping lambda, "
+TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
           "calls the lambda exactly once when leaving scope, which in turn "
           "calls the regular function.")
 {
@@ -332,15 +332,55 @@ TEST_CASE("A scope_guard created with a regular-function-wrapping lambda, "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test lambda function calling std::function.")
+TEST_CASE("A lambda function calling a std::function can be used to create a "
+          "scope_guard.")
 {
-  // TODO
+  make_scope_guard([](){ std::function<decltype(inc)>{inc}(); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Test std::function calling lambda function.")
+TEST_CASE("A scope_guard created with a std::function-calling lambda calls "
+          "the lambda exactly once when leaving scope, which in turn calls the "
+          "std::function.")
 {
-  // TODO
+  reset();
+  auto lambda_count = 0u;
+
+  {
+    const auto guard = make_scope_guard(
+      [&lambda_count]()
+      {
+        incc(lambda_count);
+        std::function<decltype(inc)>{inc}();
+      });
+
+    REQUIRE_FALSE(count);
+    REQUIRE_FALSE(lambda_count);
+  }
+
+  REQUIRE(count == lambda_count);
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A std::function wrapping a lambda function can be used to create a "
+          "scope_guard.")
+{
+  make_scope_guard(std::function<void()>([](){}));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard created with a lambda-wrapping std::function calls "
+          "the std::function exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto guard = make_scope_guard(std::function<void()>([](){ inc(); }));
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
