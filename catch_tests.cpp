@@ -5,6 +5,13 @@
 
 using namespace sg;
 
+// TODO require callback not to throw - undefined behavior otherwise - same as unique_ptr
+// TODO provide preprocessor option to reject anything that is not noexcept in C++17 - excludes std::function and result of std::bind, works for functions, custom functors, and lambdas
+// TODO add tests for this that are only run when specific define is provided
+// TODO update CMakeLists to try and use this if possible (if C++17 is available)
+// TODO add corresponding implementation along with documentation (using __cplusplus or similar)
+
+// TODO add tests for leaving scope through exception
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
@@ -12,7 +19,6 @@ using namespace sg;
 // TODO add const functor test
 // TODO add member function tests
 // TODO add boost tests on conditional boost include finding
-// TODO add actual exception test
 // TODO add actual rollback test
 // TODO add temporary test
 // TODO add new/delete tests
@@ -24,7 +30,6 @@ using namespace sg;
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)
 
-// TODO add tests for required noexcept - only possible with C++17 (noexcept not part of signature before that)
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
