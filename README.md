@@ -1,28 +1,27 @@
 # scope_guard [under construction]
 A C++11 scope guard.
 
-## [Intended] features
+## Main features
 - [x] &ge; C++11
-- [ ] Exception safe
-- [x] Simple (as simple as possible while maintaining safety)
-- [x] General: accepts anything that can be bound to a
-`std::function<void()noexcept>`
+- [ ] Simple single make function interface
 - [x] Fast (no runtime `std::function` penalties)
-- [x] No dependencies to use (besides C++11 compiler and standard library)
+- [x] General: accepts any callable (that respects the restrictions below)
 - [x] No implicitly ignored return - callback must return `void` (clients can
 write a lambda to explicitly ignore it if they want)
-- [ ] No exceptions - callback must be noexcept (clients have to explicitly
-handle any exceptions)
-- [x] `snake_case` style (except for template arguments - just like the
-standard library)
-- [x] Auxiliary `make` function to deduce template parameters in pre-C++17
+- [ ] Exception safe in C++17 (callback must be noexcept)
+- [ ] dtor conditionally noexcept in &lt;C++17
+- [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
+
+### Other characteristics
+- [x] `snake_case` style
+- [x] Auxiliary `make` function
 - [x] No macros - just write explicit lambda or bind or what have you
-- [ ] Tested
+- [ ] Extensively tested
 - [x] Unlicense(d)
 
 ## Usage
 To use,  simply clone this repository, copy the header file within, and include 
-it. There are no dependencies (besides a &ge; C++11 compiler).
+it. There are no dependencies (besides a &ge;C++11 compiler).
 
 ## Running tests
 There are two dependencies to execute the tests:
