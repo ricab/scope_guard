@@ -17,58 +17,58 @@ namespace sg
    * RAII class to call a resetter function when leaving scope. The resetter
    * needs to be compatible with std::function<void()>.
    */
-  template<typename Callable>
+  template<typename Callback>
   class scope_guard // TODO put into detail namespace
   {
   public:
     template<typename = typename std::enable_if<
-      std::is_constructible<std::function<void()>, Callable>::value>::type>
-    explicit scope_guard(Callable&& resetter);
+      std::is_constructible<std::function<void()>, Callback>::value>::type>
+    explicit scope_guard(Callback&& callback);
 
     scope_guard(scope_guard&& other);
     ~scope_guard();
 
   private:
-    Callable m_resetter;
+    Callback m_callback;
     bool m_active;
 
   };
 
   /// helper to create scope_guard and deduce template params
-  template<typename Callable>
-  scope_guard<Callable> make_scope_guard(Callable&& resetter);
+  template<typename Callback>
+  scope_guard<Callback> make_scope_guard(Callback&& resetter);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template<typename Callable>
+template<typename Callback>
 template<typename>
-sg::scope_guard<Callable>::scope_guard(Callable&& resetter)
-  : m_resetter{std::forward<Callable>(resetter)}
+sg::scope_guard<Callback>::scope_guard(Callback&& callback)
+  : m_callback{std::forward<Callback>(callback)}
   , m_active{true}
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
-template<typename Callable>
-sg::scope_guard<Callable>::~scope_guard()
+template<typename Callback>
+sg::scope_guard<Callback>::~scope_guard()
 {
   if(m_active)
-    m_resetter();
+    m_callback();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template<typename Callable>
-sg::scope_guard<Callable>::scope_guard(scope_guard&& other)
-  : m_resetter{std::forward<Callable>(other.m_resetter)}
+template<typename Callback>
+sg::scope_guard<Callback>::scope_guard(scope_guard&& other)
+  : m_callback{std::forward<Callback>(other.m_callback)}
   , m_active{std::move(other.m_active)}
 {
   other.m_active = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template<typename Callable>
-inline auto sg::make_scope_guard(Callable&& resetter) -> scope_guard<Callable>
+template<typename Callback>
+inline auto sg::make_scope_guard(Callback&& resetter) -> scope_guard<Callback>
 {
-  return scope_guard<Callable>{std::forward<Callable>(resetter)};
+  return scope_guard<Callback>{std::forward<Callback>(resetter)};
 }
 
 #endif /* SCOPE_GUARD_HPP_ */
