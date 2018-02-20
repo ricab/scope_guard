@@ -29,10 +29,10 @@ using namespace sg;
 namespace
 {
   auto count = 0u;
-  void incc(unsigned& c) { ++c; }
-  void inc() { incc(count); }
-  void resetc(unsigned& c) { c = 0u; }
-  void reset() { resetc(count); }
+  void incc(unsigned& c) noexcept { ++c; }
+  void inc() noexcept { incc(count); }
+  void resetc(unsigned& c) noexcept { c = 0u; }
+  void reset() noexcept { resetc(count); }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
