@@ -18,12 +18,13 @@ using namespace sg;
 // TODO add new/delete tests
 // TODO add unique_ptr tests
 // TODO add shared_ptr tests
-// TODO add move into function tests
-// TODO add move into container tests
+// TODO add move guard into function tests
+// TODO add move guard into container tests
 // TODO add tests for descending guard
-// TODO add tests for required noexcept
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)
+
+// TODO add tests for required noexcept - only possible with C++17 (noexcept not part of signature before that)
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
