@@ -3,7 +3,7 @@ A C++11 scope guard.
 
 ## Main features
 - [x] &ge; C++11
-- [ ] Simple single make function interface
+- [ ] Single `make_scope_guard` function interface
 - [x] Fast (no runtime `std::function` penalties)
 - [x] General: accepts any callable (that respects the restrictions below)
 - [x] No implicitly ignored return - callback must return `void` (clients can
@@ -14,14 +14,18 @@ write a lambda to explicitly ignore it if they want)
 
 ### Other characteristics
 - [x] `snake_case` style
-- [x] Auxiliary `make` function
 - [x] No macros - just write explicit lambda or bind or what have you
 - [ ] Extensively tested
 - [x] Unlicense(d)
 
 ## Usage
 To use,  simply clone this repository, copy the header file within, and include 
-it. There are no dependencies (besides a &ge;C++11 compiler).
+it - there are no dependencies (besides a &ge;C++11 compiler). Then do something
+like:
+
+    auto guard = make_scope_guard([]()noexcept{ std::cout << "bye scope\n"; });
+
+The tests in catch_tests.cpp have many code examples.
 
 ## Running tests
 There are two dependencies to execute the tests:
