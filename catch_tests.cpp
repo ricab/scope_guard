@@ -6,7 +6,7 @@
 using namespace sg;
 
 // TODO require callback not to throw - undefined behavior otherwise - same as unique_ptr
-// TODO provide preprocessor option to reject anything that is not noexcept in C++17 - excludes std::function and result of std::bind, works for functions, custom functors, and lambdas
+// TODO provide preprocessor option to reject anything that is not noexcept in C++17
 // TODO add tests for this that are only run when specific define is provided
 // TODO update CMakeLists to try and use this if possible (if C++17 is available)
 // TODO add corresponding implementation along with documentation (using __cplusplus or similar)

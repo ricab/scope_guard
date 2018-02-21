@@ -9,7 +9,7 @@ A C++11 scope guard.
 - [x] No implicitly ignored return - callback must return `void`; clients can
 write a lambda to explicitly ignore it if they want
 - [ ] Requires non-throwing callback (just like e.g. custom deleters in `unique_ptr` and `shared_ptr`);
-- [ ] Option to enforce `noexcept` in C++17
+- [ ] Option to enforce `noexcept` in C++17 (see [below](#considerations-on-noexcept))
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 
 ### Other characteristics
@@ -23,7 +23,9 @@ To use,  simply clone this repository, copy the header file within, and include
 it - there are no dependencies (besides a &ge;C++11 compiler). Then do something
 like:
 
-    auto guard = make_scope_guard([]()noexcept{ std::cout << "bye scope\n"; });
+```c++
+auto guard = make_scope_guard([]()noexcept{ std::cout << "bye scope\n"; });
+```
 
 The tests in catch_tests.cpp have many code examples.
 
@@ -64,7 +66,7 @@ So, even though the callback _is_ required not to throw, by default this is not
 checked or protected against. `noexcept(false)` callbacks will still be
 accepted by the compiler by default, causing undefined behavior if they do
 throw. This is the same approach that the standard library takes e.g. with
-`unique_ptr` (see _[unique.ptr.single.ctor]_ and _[unique.ptr.single.dtor]_ in
+`unique_ptr` (search for `[unique.ptr.single.ctor]` and `[unique.ptr.single.dtor]` in
 the C++ standard.)
 
 #### Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
@@ -77,10 +79,12 @@ exception specification is not propagated to types like `std::function` or
 the result of `std::bind`. For instance, the following code does not compile
 in C++17:
 
-    void f() noexcept { }
-    auto stdf_noexc = std::function<void(&)()noexcept>{f}; // Error (at least in g++ and clang++)
-    auto stdf_declt = std::function<decltype(f)>{f};       // Error (at least in g++ and clang++)
-    auto stdf = std::function<void()>{f};                  // ok, but drops noexcept info
+```c++
+void f() noexcept { }
+auto stdf_noexc = std::function<void(&)()noexcept>{f}; // Error (at least in g++ and clang++)
+auto stdf_declt = std::function<decltype(f)>{f};       // Error (at least in g++ and clang++)
+auto stdf = std::function<void()>{f};                  // ok, but drops noexcept info
+```
 
 Since `SG_REQUIRE_NOEXCEPT_IN_CPP17` means rejecting anything that
 is not known to possess an `operator()` that is `noexcept`, the additional
