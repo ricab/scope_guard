@@ -6,10 +6,10 @@ A C++11 scope guard.
 - [ ] Single `make_scope_guard` function interface
 - [x] Fast (no runtime `std::function` penalties)
 - [x] General: accepts any callable (that respects the restrictions below)
-- [x] No implicitly ignored return - callback must return `void` (clients can
-write a lambda to explicitly ignore it if they want)
-- [ ] Exception safe in C++17 (callback must be noexcept)
-- [ ] dtor conditionally noexcept in &lt;C++17
+- [x] No implicitly ignored return - callback must return `void`; clients can
+write a lambda to explicitly ignore it if they want
+- [ ] Requires non-throwing callback (just like e.g. custom deleters in `unique_ptr` and `shared_ptr`);
+- [ ] Option to enforce `noexcept` in C++17
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 
 ### Other characteristics
@@ -52,3 +52,39 @@ There are two dependencies to execute the tests:
     $ make
     $ make tests
     ```
+
+## Considerations on `noexcept`
+
+Much as I would like to enforce at compile-time that the callback be
+`noexcept`, to my knowledge that is not possible until C++17. This is because
+the exception specification is not part of the type system
+[until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
+
+So, even though the callback _is_ required not to throw, by default this is not
+checked or protected against. `noexcept(false)` callbacks will still be
+accepted by the compiler by default, causing undefined behavior if they do
+throw. This is the same approach that the standard library takes e.g. with
+`unique_ptr` (see _[unique.ptr.single.ctor]_ and _[unique.ptr.single.dtor]_ in
+the C++ standard.)
+
+#### Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
+
+If &ge;C++17 is used, the preprocessor macro `SG_REQUIRE_NOEXCEPT_IN_CPP17`
+can be defined to reject any callable that is not
+[nothrow invocable](http://en.cppreference.com/w/cpp/types/is_invocable).
+Unfortunately, even in C++17 things are far from ideal, and information on
+exception specification is not propagated to types like `std::function` or
+the result of `std::bind`. For instance, the following code does not compile
+in C++17:
+
+    void f() noexcept { }
+    auto stdf_noexc = std::function<void(&)()noexcept>{f}; // Error (at least in g++ and clang++)
+    auto stdf_declt = std::function<decltype(f)>{f};       // Error (at least in g++ and clang++)
+    auto stdf = std::function<void()>{f};                  // ok, but drops noexcept info
+
+Since `SG_REQUIRE_NOEXCEPT_IN_CPP17` means rejecting anything that
+is not known to possess an `operator()` that is `noexcept`, the additional
+safety sacrifices generality. The user can still use lambdas to wrap anything
+else, e.g.:
+
+    make_scope_guard([&foo](){std::bind(bar, foo)})
