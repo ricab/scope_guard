@@ -42,5 +42,4 @@ add_custom_command(TARGET tests
                    ARGS "--use-colour" "yes" "--order" "lex"
                         "--filenames-as-tags")
 
-#add_test(NAME ScopeGuardTest COMMAND "scope_guard_test" "--nonsense --use-colour yes --order lex")
 enable_testing()
