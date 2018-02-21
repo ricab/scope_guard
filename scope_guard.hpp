@@ -16,8 +16,11 @@ namespace sg
   namespace detail
   {
     /**
-     * RAII class to call a resetter function when leaving scope. The resetter
-     * needs to be compatible with std::function<void()>.
+     * A scope_guard - an RAII object that executes a provided callback upon
+     * destruction.
+     *
+     * @see make_scope_guard for further info
+     * @see tests for usage examples
      */
     template<typename Callback>
     class scope_guard
@@ -38,9 +41,24 @@ namespace sg
 
   } // namespace detail
 
-  /// helper to create scope_guard and deduce template params
+  /**
+   * Function to create a scope_guard.
+   *
+   * @param callback A callable function, function pointer, functor, or
+   * reference thereof, that must:
+   * @li require no parameters;
+   * @li return void;
+   * @li not throw.
+   * The latter is not enforced upon compilation unless >=C++17 is used and the
+   * preprocessor macro SG_REQUIRE_NOEXCEPT_IN_CPP17 is defined. If the callback
+   * throws the behavior is undefined. @note check the documentation in the
+   * readme for more details).
+   *
+   * @return A scope_guard - an RAII object that executes a provided callback
+   * when leaving scope.
+   */
   template<typename Callback>
-  detail::scope_guard<Callback> make_scope_guard(Callback&& resetter);
+  detail::scope_guard<Callback> make_scope_guard(Callback&& callback);
 
 } // namespace sg
 
@@ -71,10 +89,10 @@ sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-inline auto sg::make_scope_guard(Callback&& resetter)
+inline auto sg::make_scope_guard(Callback&& callback)
 -> detail::scope_guard<Callback>
 {
-  return detail::scope_guard<Callback>{std::forward<Callback>(resetter)};
+  return detail::scope_guard<Callback>{std::forward<Callback>(callback)};
 }
 
 #endif /* SCOPE_GUARD_HPP_ */

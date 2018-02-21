@@ -5,7 +5,6 @@
 
 using namespace sg;
 
-// TODO require callback not to throw - undefined behavior otherwise - same as unique_ptr
 // TODO make existing code compatible with C++17 out of the box
 // TODO provide preprocessor option to reject anything that is not noexcept in C++17
 // TODO add tests for this that are only run when specific define is provided
@@ -30,6 +29,7 @@ using namespace sg;
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)
+// TODO add doxygen file and check correct documentation
 
 
 ////////////////////////////////////////////////////////////////////////////////
