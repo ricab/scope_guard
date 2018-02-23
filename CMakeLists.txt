@@ -1,8 +1,15 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.8) # for CXX_STANDARD 17
 
 project(scope_guard)
 
-set(CMAKE_CXX_STANDARD 11)
+option(CXX17 "option to compile using c++17 rather than c++11" OFF)
+
+if(CXX17)
+  set(CMAKE_CXX_STANDARD 17)
+else()
+  set(CMAKE_CXX_STANDARD 11)
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
