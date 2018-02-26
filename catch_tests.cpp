@@ -59,7 +59,8 @@ namespace
   std::function<remove_noexcept_t<Fun>>
   make_std_function(Fun& f) // ref prevents decay to pointer (no move needed)
   {
-    return std::function<remove_noexcept_t<std::remove_reference_t<Fun>>>{f}; /*
+    return std::function<
+      remove_noexcept_t<typename std::remove_reference<Fun>::type>>{f}; /*
     unfortunately in C++17 std::function does not accept a noexcept target type
     (results in incomplete type - at least in gcc and clang) */
   }
