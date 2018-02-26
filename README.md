@@ -1,41 +1,126 @@
-# scope_guard [under construction]
-A C++11 scope guard.
+# scope_guard intro [under construction]
+A C++11 scope guard. [TODO]
 
-## Main features
+### Main features
 - [x] &ge; C++11
 - [ ] Single `make_scope_guard` function interface
-- [x] Fast (no runtime `std::function` penalties)
-- [x] General: accepts any callable (that respects the restrictions below)
-- [x] No implicitly ignored return - callback must return `void`; clients can
-write a lambda to explicitly ignore it if they want
-- [ ] Requires non-throwing callback (just like e.g. custom deleters in `unique_ptr` and `shared_ptr`);
-- [ ] Option to enforce `noexcept` in C++17 (see [below](#considerations-on-noexcept))
-- [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
+- [x] Fast (no added runtime `std::function` penalties)
+- [x] General: accepts any callable that respects the preconditions
+[below](#preconditions)
+- [x] no implicitly ignored return (see [below](#void-return))
+- [ ] Option to enforce `noexcept` in C++17
+(see [below](#option-sg_require_noexcept_in_cpp17))
 
 ### Other characteristics
-- [x] `snake_case` style
-- [x] No macros - just write explicit lambda or bind or what have you
-- [ ] Extensively tested
+- [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
+- [x] No macros to make guard - just write explicit lambda or bind or what have
+you
+- [ ] Extensively tested [TODO link to tests]
 - [x] Unlicense(d)
+- [x] `snake_case` style
 
-## Usage
+# Usage
 To use,  simply clone this repository, copy the header file within, and include 
 it - there are no dependencies (besides a &ge;C++11 compiler). Then do something
 like:
 
 ```c++
-auto guard = make_scope_guard([]()noexcept{ std::cout << "bye scope\n"; });
+auto guard1 = make_scope_guard(my_callback);
+auto guard2 = make_scope_guard([]()noexcept{ /* do something */ });
+...
 ```
 
-The tests in catch_tests.cpp have many code examples.
+See tests for more examples [TODO link tests].
 
-## Running tests
+## Preconditions
+
+Besides being invocable with no arguments, the callback that is used to create a `scope_guard` must respect the following preconditions.
+
+### void return
+
+The callback must return void. Returning anything else is intentionally not
+accepted. This forces the client to confirm their intention, by explicitly
+writing code to ignore a return, if that really is what they want. For example:
+
+```c++
+bool foo() noexcept; // definition elsewhere
+make_scope_guard(foo); // ERROR: does not return void
+make_scope_guard(()[] noexcept {/*bool ignored =*/ foo();}); // OK
+```
+
+The idea is not only to catch unintentional cases but also to highlight
+intentional ones for code readers.
+
+### no throw
+
+The callback _is required_ not to throw. Notice,
+however, that this is not checked by default and throwing from a
+`scope_guard` callback formally causes  _undefined behavior_. This follows the
+same approach as custom deleters in such standard library types as `unique_ptr`
+and `shared_ptr` (see `[unique.ptr.single.ctor]` and
+`[unique.ptr.single.dtor]` in the C++ standard.).
+
+I acknowledge that the destructor for `scope_guard` could
+be conditionally `noexcept` instead, but that is not advisable either and would
+create a false sense of safety (better _fail-fast_-ish, I suppose).
+
+Personally, I prefer to enforce that the callback be
+`noexcept` at compile-time, but this not only restricts acceptable callback
+types, to my knowledge it is not even possible until C++17. That is because the
+exception specification is not part of the type system
+[until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
+
+## Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
+
+If &ge;C++17 is used, the preprocessor macro
+`SG_REQUIRE_NOEXCEPT_IN_CPP17` can be defined to
+make `scope_guard`'s constructor require a
+[nothrow invocable](http://en.cppreference.com/w/cpp/types/is_invocable)
+at compile-time, e.g.
+
+```c++
+#define SG_REQUIRE_NOEXCEPT_IN_CPP17 // only meaningful in >=C++17
+#include "scope_guard.hpp"
+make_scope_guard([](){}); // ERROR: need noexcept
+make_scope_guard([]() noexcept {}); // OK
+```
+
+Notice however, that this restricts the types that `scope_guard` accepts
+considerably. That is one of the reasons why it is disabled by default. The
+other is to maintain the same behavior as in &lt;C++17.
+
+This option has no effect unless &ge;C++17 is used.
+
+### Implications
+
+Unfortunately, even in C++17 things are not ideal, and information on
+exception specification is not propagated to types like `std::function` or
+the result of `std::bind`. For instance, the following code does not compile
+in C++17:
+
+```c++
+void f() noexcept { }
+auto stdf_noexc = std::function<void(&)()noexcept>{f}; // ERROR (at least in g++ and clang++)
+auto stdf_declt = std::function<decltype(f)>{f};       // ERROR (at least in g++ and clang++)
+auto stdf = std::function<void()>{f};                  // fine, but drops noexcept info
+```
+
+Since `SG_REQUIRE_NOEXCEPT_IN_CPP17` means rejecting anything that
+is not known to possess an `operator() noexcept`, the additional
+safety sacrifices generality. Of course the user can still use functions and
+lambdas to wrap anything else, e.g.:
+
+    make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
+
+# Running tests
 There are two dependencies to execute the tests:
-    * Cmake (at least version 3.1)
-    * Catch2
+- Cmake (at least version 3.1)
+- Catch2
     
-#### Instructions (for GNU/Linux, should be analogous in other systems):
-1. Install [cmake](https://cmake.org/) (&ge; v3.1)
+## Instructions
+(For GNU/Linux, should be analogous in other systems.)
+
+1. Install [cmake](https://cmake.org/) (&ge; v3.8)
 2. Get and install [Catch2](https://github.com/catchorg/Catch2):
     ```
     $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
@@ -50,51 +135,17 @@ There are two dependencies to execute the tests:
     $ git clone https://github.com/ricab/scope_guard.git <guard_src_dir>
     $ mkdir <guard_bin_dir>
     $ cd <guard_bin_dir>
-    $ cmake <guard_src_dir>
+    $ cmake [options] <guard_src_dir>
     $ make
     $ make tests
     ```
 
-## Considerations on `noexcept`
+### cmake Options
+The custom cmake option `SG_CXX17` is available to compile with C++17 (or
+c++1z in earlier compilers). When `SG_CXX17` is on, the dependent option
+`SG_REQUIRE_NOEXCEPT_IN_CPP17` becomes available. This is translated to the
+preprocessor define of the same name, with the effect documented
+[above](#option-sg_require_noexcept_in_cpp17).
 
-Much as I would like to enforce at compile-time that the callback be
-`noexcept`, to my knowledge that is not possible until C++17. This is because
-the exception specification is not part of the type system
-[until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
 
-So, even though the callback _is_ required not to throw, by default this is not
-checked or protected-against. `noexcept(false)` callbacks will still be
-accepted by the compiler by default, causing undefined behavior if they do
-throw. This is the same approach that the standard library takes e.g. with
-`unique_ptr` (search for `[unique.ptr.single.ctor]` and `[unique.ptr.single.dtor]` in
-the C++ standard.)
 
-#### Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
-
-If &ge;C++17 is used, the cmake option `SG_REQUIRE_NOEXCEPT_IN_CPP17` can be
-turned on to to reject any callable that is not
-[nothrow invocable](http://en.cppreference.com/w/cpp/types/is_invocable). It has
-no effect if an ealier C++ standard is used.
-
-The option `SG_REQUIRE_NOEXCEPT_IN_CPP17` is translated to the preprocessor
-define of the same name. This option has its downsides, as discussed
-below, and is turned off by default to provide the same behavior as in C++11.
-
-Unfortunately, even in C++17 things are far from ideal, and information on
-exception specification is not propagated to types like `std::function` or
-the result of `std::bind`. For instance, the following code does not compile
-in C++17:
-
-```c++
-void f() noexcept { }
-auto stdf_noexc = std::function<void(&)()noexcept>{f}; // Error (at least in g++ and clang++)
-auto stdf_declt = std::function<decltype(f)>{f};       // Error (at least in g++ and clang++)
-auto stdf = std::function<void()>{f};                  // ok, but drops noexcept info
-```
-
-Since `SG_REQUIRE_NOEXCEPT_IN_CPP17` means rejecting anything that
-is not known to possess an `operator()` that is `noexcept`, the additional
-safety sacrifices generality. Of course the user can still use functions and 
-lambdas to wrap anything else, e.g.:
-
-    make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
