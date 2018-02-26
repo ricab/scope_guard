@@ -63,7 +63,7 @@ the exception specification is not part of the type system
 [until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
 
 So, even though the callback _is_ required not to throw, by default this is not
-checked or protected against. `noexcept(false)` callbacks will still be
+checked or protected-against. `noexcept(false)` callbacks will still be
 accepted by the compiler by default, causing undefined behavior if they do
 throw. This is the same approach that the standard library takes e.g. with
 `unique_ptr` (search for `[unique.ptr.single.ctor]` and `[unique.ptr.single.dtor]` in
@@ -71,9 +71,15 @@ the C++ standard.)
 
 #### Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
 
-If &ge;C++17 is used, the preprocessor macro `SG_REQUIRE_NOEXCEPT_IN_CPP17`
-can be defined to reject any callable that is not
-[nothrow invocable](http://en.cppreference.com/w/cpp/types/is_invocable).
+If &ge;C++17 is used, the cmake option `SG_REQUIRE_NOEXCEPT_IN_CPP17` can be
+turned on to to reject any callable that is not
+[nothrow invocable](http://en.cppreference.com/w/cpp/types/is_invocable). It has
+no effect if an ealier C++ standard is used.
+
+The option `SG_REQUIRE_NOEXCEPT_IN_CPP17` is translated to the preprocessor
+define of the same name. This option has its downsides, as discussed
+below, and is turned off by default to provide the same behavior as in C++11.
+
 Unfortunately, even in C++17 things are far from ideal, and information on
 exception specification is not propagated to types like `std::function` or
 the result of `std::bind`. For instance, the following code does not compile
@@ -88,7 +94,7 @@ auto stdf = std::function<void()>{f};                  // ok, but drops noexcept
 
 Since `SG_REQUIRE_NOEXCEPT_IN_CPP17` means rejecting anything that
 is not known to possess an `operator()` that is `noexcept`, the additional
-safety sacrifices generality. The user can still use lambdas to wrap anything
-else, e.g.:
+safety sacrifices generality. Of course the user can still use functions and 
+lambdas to wrap anything else, e.g.:
 
-    make_scope_guard([&foo](){std::bind(bar, foo)})
+    make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
