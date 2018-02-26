@@ -318,6 +318,7 @@ TEST_CASE("An rvalue std::function that wraps a regular function can be used "
           "to create a scope_guard.")
 {
   make_scope_guard(make_std_function(inc));
+  make_scope_guard(std::function<void()>{inc});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
