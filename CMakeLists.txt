@@ -16,10 +16,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -pedantic \
                                           -Wno-c++98-compat \
-                                          -Wno-unreachable-code\
+                                          -Wno-unreachable-code \
                                           -Wno-padded")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wno-noexcept-type")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
