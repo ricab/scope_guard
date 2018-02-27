@@ -55,7 +55,7 @@ intentional ones for code readers.
 
 The callback _is required_ not to throw. Notice,
 however, that this is not checked by default and throwing from a
-`scope_guard` callback formally causes  _undefined behavior_. This follows the
+`scope_guard` callback results in a call to std::terminate. This follows the
 same approach as custom deleters in such standard library types as `unique_ptr`
 and `shared_ptr` (see `[unique.ptr.single.ctor]` and
 `[unique.ptr.single.dtor]` in the C++ standard.).
