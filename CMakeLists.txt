@@ -3,11 +3,21 @@ cmake_minimum_required(VERSION 3.8) # for CXX_STANDARD 17
 project(scope_guard)
 
 option(SG_CXX17 "option to compile using c++17 rather than c++11" OFF)
+include(CMakeDependentOption)
+
+CMAKE_DEPENDENT_OPTION(SG_REQUIRE_NOEXCEPT_IN_CPP17
+  "option to make scope_guard reject, at compile-time, anything that is not \
+  guaranteed to be noexcept invocable (see project documentation)" OFF
+  "SG_CXX17" OFF)
 
 if(SG_CXX17)
   set(CMAKE_CXX_STANDARD 17)
 else()
   set(CMAKE_CXX_STANDARD 11)
+endif()
+
+if(SG_REQUIRE_NOEXCEPT_IN_CPP17)
+  add_definitions(-DSG_REQUIRE_NOEXCEPT_IN_CPP17)
 endif()
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
