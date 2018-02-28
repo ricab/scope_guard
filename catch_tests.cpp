@@ -1,3 +1,8 @@
+/*
+ *  Created on: 13/02/2018
+ *      Author: ricab
+ */
+
 #include "scope_guard.hpp"
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
@@ -5,7 +10,6 @@
 
 using namespace sg;
 
-// TODO make existing code compatible with C++17 out of the box
 // TODO provide preprocessor option to reject anything that is not noexcept in C++17
 // TODO add tests for this that are only run when specific define is provided
 // TODO update CMakeLists to try and use this if possible (if C++17 is available)
@@ -40,6 +44,31 @@ namespace
   void inc() noexcept { incc(count); }
   void resetc(unsigned& c) noexcept { c = 0u; }
   void reset() noexcept { resetc(count); }
+
+  template<typename Fun>
+  struct remove_noexcept
+  {
+    using type = Fun;
+  };
+
+  template<typename Ret, typename... Args>
+  struct remove_noexcept<Ret(Args...) noexcept(true)>
+  {
+    using type = Ret(Args...);
+  };
+
+  template<typename Fun>
+  using remove_noexcept_t = typename remove_noexcept<Fun>::type;
+
+  template<typename Fun>
+  std::function<remove_noexcept_t<Fun>>
+  make_std_function(Fun& f) // ref prevents decay to pointer (no move needed)
+  {
+    return std::function<
+      remove_noexcept_t<typename std::remove_reference<Fun>::type>>{f}; /*
+    unfortunately in C++17 std::function does not accept a noexcept target type
+    (results in incomplete type - at least in gcc and clang) */
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -269,7 +298,7 @@ TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
 TEST_CASE("An lvalue std::function that wraps a regular function can be used "
           "to create a scope_guard.")
 {
-  const auto stdf = std::function<decltype(inc)>{inc};
+  const auto stdf = make_std_function(inc);
   make_scope_guard(stdf);
 }
 
@@ -282,7 +311,7 @@ TEST_CASE("A scope_guard that is created with a "
 
   {
     REQUIRE_FALSE(count);
-    const auto stdf = std::function<decltype(inc)>{inc};
+    const auto stdf = make_std_function(inc);
     const auto guard = make_scope_guard(stdf);
     REQUIRE_FALSE(count);
   }
@@ -294,7 +323,8 @@ TEST_CASE("A scope_guard that is created with a "
 TEST_CASE("An rvalue std::function that wraps a regular function can be used "
           "to create a scope_guard.")
 {
-  make_scope_guard(std::function<decltype(inc)>{inc});
+  make_scope_guard(make_std_function(inc));
+  make_scope_guard(std::function<void()>{inc});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -306,7 +336,8 @@ TEST_CASE("A scope_guard that is created with an "
 
   {
     REQUIRE_FALSE(count);
-    const auto guard = make_scope_guard(std::function<decltype(inc)>{inc});
+    const auto guard =
+        make_scope_guard(make_std_function(inc));
     REQUIRE_FALSE(count);
   }
 
@@ -317,7 +348,7 @@ TEST_CASE("A scope_guard that is created with an "
 TEST_CASE("An lvalue reference to a std::function that wraps a regular "
           "function can be used to create a scope_guard.")
 {
-  const auto stdf = std::function<decltype(inc)>{inc};
+  const auto stdf = make_std_function(inc);
   const auto& stdf_ref = stdf;
   make_scope_guard(stdf_ref);
 }
@@ -331,7 +362,7 @@ TEST_CASE("A scope_guard that is created with an "
 
   {
     REQUIRE_FALSE(count);
-    const auto stdf = std::function<decltype(inc)>{inc};
+    const auto stdf = make_std_function(inc);
     const auto& stdf_ref = stdf;
     const auto guard = make_scope_guard(stdf_ref);
     REQUIRE_FALSE(count);
@@ -344,7 +375,7 @@ TEST_CASE("A scope_guard that is created with an "
 TEST_CASE("An rvalue reference to a std::function that wraps a regular "
           "function can be used to create a scope_guard.")
 {
-  const auto stdf = std::function<decltype(inc)>{inc};
+  const auto stdf = make_std_function(inc);
   make_scope_guard(std::move(stdf));
 }
 
@@ -357,7 +388,7 @@ TEST_CASE("A scope_guard that is created with an "
 
   {
     REQUIRE_FALSE(count);
-    const auto stdf = std::function<decltype(inc)>{inc};
+    const auto stdf = make_std_function(inc);
     const auto guard = make_scope_guard(std::move(stdf));
     REQUIRE_FALSE(count);
   }
@@ -435,7 +466,7 @@ TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
 TEST_CASE("A lambda function calling a std::function can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard([](){ std::function<decltype(inc)>{inc}(); });
+  make_scope_guard([](){ make_std_function(inc)(); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -451,7 +482,7 @@ TEST_CASE("A scope_guard created with a std::function-calling lambda calls "
       [&lambda_count]()
       {
         incc(lambda_count);
-        std::function<decltype(inc)>{inc}();
+        make_std_function(inc)();
       });
 
     REQUIRE_FALSE(count);

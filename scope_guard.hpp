@@ -51,7 +51,7 @@ namespace sg
    * @li not throw.
    * The latter is not enforced upon compilation unless >=C++17 is used and the
    * preprocessor macro SG_REQUIRE_NOEXCEPT_IN_CPP17 is defined. If the callback
-   * throws the behavior is undefined. @note check the documentation in the
+   * throws, std::terminate is called. @note check the documentation in the
    * readme for more details).
    *
    * @return A scope_guard - an RAII object that executes a provided callback
