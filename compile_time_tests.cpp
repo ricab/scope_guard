@@ -12,6 +12,7 @@
 #define SG_ENABLE(test) !SG_REQUIRE_NOEXCEPT || test
 
 #include "scope_guard.hpp"
+using namespace sg;
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -49,76 +50,76 @@ namespace
     void operator()() { meh(); }
   } meh_functor;
 
-//  /**
-//   * Things that should fail compilation when noexcept is required and pass
-//   * compilation otherwise, resulting in a call to std::terminate
-//   */
-//  namespace test_bad
-//  {
-//    void test()
-//    {
-//      make_scope_guard(throwing);
-//      make_scope_guard(throwing_stdfun);
-//      make_scope_guard(throwing_lambda);
-//      make_scope_guard(throwing_bound);
-//      make_scope_guard(throwing_functor);
-//    }
-//  }
-//
-//  /**
-//   * Things that should fail compilation when noexcept is required, even
-//   * though they don't throw, because they should have been marked noexcept but
-//   * weren't
-//   */
-//  namespace test_fixable
-//  {
-//    void test()
-//    {
-//      make_scope_guard(meh);
-//      make_scope_guard(meh_stdfun);
-//      make_scope_guard(meh_lambda);
-//      make_scope_guard(meh_bound);
-//      make_scope_guard(meh_functor);
-//    }
-//  }
-//
-//  /**
-//   * Things that should be ok but aren't because they cannot be marked noexcept
-//   */
-//  namespace test_unfortunate
-//  {
-//    void test()
-//    {
-//      make_scope_guard(non_throwing_stdfun);
-//      make_scope_guard(non_throwing_bound);
-//    }
-//  }
-//
-//
-//  /**
-//   * Things that should pass compilation and run successfully in all cases
-//   */
-//  namespace test_good
-//  {
-//    void test()
-//    {
-//      make_scope_guard(non_throwing);
-//      make_scope_guard(non_throwing_lambda);
-//      make_scope_guard(non_throwing_functor);
-//    }
-//  }
+  /**
+   * Things that should fail compilation when noexcept is required and pass
+   * compilation otherwise, resulting in a call to std::terminate
+   */
+  namespace test_bad
+  {
+    void test()
+    {
+#if SG_ENABLE(test1)
+      make_scope_guard(throwing);
+      make_scope_guard(throwing_stdfun);
+      make_scope_guard(throwing_lambda);
+      make_scope_guard(throwing_bound);
+      make_scope_guard(throwing_functor);
+#endif
+    }
+  }
+
+  /**
+   * Things that should fail compilation when noexcept is required, even
+   * though they don't throw, because they should have been marked noexcept but
+   * weren't
+   */
+  namespace test_fixable
+  {
+    void test()
+    {
+#if SG_ENABLE(test2)
+      make_scope_guard(meh);
+      make_scope_guard(meh_stdfun);
+      make_scope_guard(meh_lambda);
+      make_scope_guard(meh_bound);
+      make_scope_guard(meh_functor);
+#endif
+    }
+  }
+
+  /**
+   * Things that should be ok but aren't because they cannot be marked noexcept
+   */
+  namespace test_unfortunate
+  {
+    void test()
+    {
+      make_scope_guard(non_throwing_stdfun);
+      make_scope_guard(non_throwing_bound);
+    }
+  }
+
+  /**
+   * Things that should pass compilation and run successfully in all cases
+   */
+  namespace test_good
+  {
+    void test()
+    {
+      make_scope_guard(non_throwing);
+      make_scope_guard(non_throwing_lambda);
+      make_scope_guard(non_throwing_functor);
+    }
+  }
 }
 
 int main()
 {
-//  test_good::test();
-//
-//#if __cplusplus < 201703L || !SG_REQUIRE_NOEXCEPT_IN_CPP17
-//  test_fixable::test();
-//  test_unfortunate::test();
-//#endif
-//
-//  // test_bad::test(); // this would result in a call to std::terminate
+  test_good::test();
+  test_fixable::test();
+  test_unfortunate::test();
+
+  // test_bad::test(); // this would result in a call to std::terminate
 
   return 0;
 }
