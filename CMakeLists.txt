@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.8) # for CXX_STANDARD 17
-
 project(scope_guard)
 
-option(SG_CXX17 "option to compile using c++17 rather than c++11" OFF)
 include(CMakeDependentOption)
+
+option(SG_CXX17 "option to compile using c++17 rather than c++11" OFF)
 
 CMAKE_DEPENDENT_OPTION(SG_REQUIRE_NOEXCEPT_IN_CPP17
   "option to make scope_guard reject, at compile-time, anything that is not \
@@ -38,15 +38,33 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   endif()
 endif()
 
+# setup compilation tests
+macro(add_compilation_test tgt src willfail)
+  add_executable(${tgt} ${src})
+  target_compile_options(${tgt} PRIVATE "-Wno-unused-variable")
+  set_target_properties(${tgt}
+                        PROPERTIES EXCLUDE_FROM_ALL ON
+                        EXCLUDE_FROM_DEFAULT_BUILD ON)
+
+  add_test(NAME test_${tgt}
+           COMMAND ${CMAKE_COMMAND} --build . --target ${tgt} --config $<CONFIG>
+           WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+
+  if(${willfail})
+    set_tests_properties(test_${tgt} PROPERTIES WILL_FAIL TRUE)
+  else()
+    set_tests_properties(test_${tgt}
+                         PROPERTIES FAIL_REGULAR_EXPRESSION "warn;Warn;WARN")
+  endif()
+endmacro()
+
 # find catch 
 include(GNUInstallDirs)
 find_package(Catch2 REQUIRED)
 
-# setup an executable for catch tests
+# setup catch tests
 add_executable(catch_tests catch_tests.cpp)
 add_test(NAME catch_tests
          COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
-
-add_custom_target(sgtests COMMAND ctest --verbose)
 
 enable_testing()

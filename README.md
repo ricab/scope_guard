@@ -137,7 +137,7 @@ There are two dependencies to execute the tests:
     $ cd <guard_bin_dir>
     $ cmake [options] <guard_src_dir>
     $ make
-    $ make sgtests
+    $ make test
     ```
 
 ### cmake Options
