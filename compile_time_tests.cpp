@@ -126,13 +126,13 @@ namespace
   {
     void test()
     {
-#if SG_COND_NOEXC_COMPILATION_TEST(test_success1)
+#if test_success1
       make_scope_guard(non_throwing);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_success2)
+#if test_success2
       make_scope_guard(non_throwing_lambda);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_success3)
+#if test_success3
       make_scope_guard(non_throwing_functor);
 #endif
     }
