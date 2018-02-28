@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8) # for CXX_STANDARD 17
 project(scope_guard)
 
 include(CMakeDependentOption)
+include(CheckCXXCompilerFlag)
 
 option(SG_CXX17 "option to compile using c++17 rather than c++11" OFF)
 
@@ -29,7 +30,12 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
                                           -Wno-unreachable-code \
                                           -Wno-padded")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wno-noexcept-type")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic \
+                                          -Wno-unused")
+  check_cxx_compiler_flag("-Wnoexcept-type" HAS_NOEXCEPT_TYPE_WARNING)
+  if(HAS_NOEXCEPT_TYPE_WARNING)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-noexcept-type")
+  endif()
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
