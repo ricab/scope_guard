@@ -58,6 +58,9 @@ macro(add_compilation_test tgt src willfail)
   endif()
 endmacro()
 
+add_compilation_test(compile_success compile_time_tests.cpp FALSE)
+
+
 # find catch 
 include(GNUInstallDirs)
 find_package(Catch2 REQUIRED)
