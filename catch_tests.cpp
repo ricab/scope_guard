@@ -1,3 +1,8 @@
+/*
+ *  Created on: 13/02/2018
+ *      Author: ricab
+ */
+
 #include "scope_guard.hpp"
 
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
@@ -689,20 +694,4 @@ TEST_CASE("Test nested scopes")
   REQUIRE(lvl3c_count == 1);
   REQUIRE_FALSE(lvl0_count);
 
-}
-
-////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("test SG_REQUIRE_NOEXCEPT_IN_CPP17 tests only run when macro defined",
-          "[.][require_noexcept]")
-{
-#ifndef SG_REQUIRE_NOEXCEPT_IN_CPP17
-  REQUIRE(false);
-#endif
-}
-
-////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("test SG_REQUIRE_NOEXCEPT_IN_CPP17 tests only run in >=c++17",
-          "[.][require_noexcept]")
-{
-  REQUIRE(__cplusplus >= 201703L);
 }
