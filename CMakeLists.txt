@@ -45,13 +45,20 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 # setup compilation tests
-macro(add_compilation_test tgt src willfail)
+function(add_compilation_test tgt src willfail)
+  # create and configure underlying executable target
   add_executable(${tgt} ${src})
-  target_compile_options(${tgt} PRIVATE "-Wno-unused-variable")
   set_target_properties(${tgt}
                         PROPERTIES EXCLUDE_FROM_ALL ON
                         EXCLUDE_FROM_DEFAULT_BUILD ON)
 
+  if(${ARGC} GREATER 3)
+    target_compile_definitions(${tgt} PRIVATE ${ARGV3})
+  endif()
+
+  target_compile_options(${tgt} PRIVATE "-Wno-unused-variable")
+
+  # create and configure test
   add_test(NAME test_${tgt}
            COMMAND ${CMAKE_COMMAND} --build . --target ${tgt} --config $<CONFIG>
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -62,9 +69,13 @@ macro(add_compilation_test tgt src willfail)
     set_tests_properties(test_${tgt}
                          PROPERTIES FAIL_REGULAR_EXPRESSION "warn;Warn;WARN")
   endif()
-endmacro()
+endfunction()
 
 add_compilation_test(compile_success compile_time_tests.cpp FALSE)
+if(SG_CXX17 AND SG_REQUIRE_NOEXCEPT_IN_CPP17)
+  add_compilation_test(compile_failure1 compile_time_tests.cpp TRUE test1)
+  add_compilation_test(compile_failure2 compile_time_tests.cpp TRUE test2)
+endif()
 
 
 # find catch 
