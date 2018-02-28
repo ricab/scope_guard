@@ -65,7 +65,6 @@ function(add_compilation_test src should_succeed count)
                         PROPERTIES EXCLUDE_FROM_ALL ON
                         EXCLUDE_FROM_DEFAULT_BUILD ON)
   target_compile_definitions(${exe} PRIVATE ${def})
-  target_compile_options(${exe} PRIVATE "-Wno-unused-variable") # TODO this assumes GCC!
 
   # create and configure test
   add_test(NAME ${tst}
