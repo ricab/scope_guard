@@ -76,4 +76,6 @@ add_executable(catch_tests catch_tests.cpp)
 add_test(NAME catch_tests
          COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
 
+add_custom_target(test_verbose COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
+
 enable_testing()
