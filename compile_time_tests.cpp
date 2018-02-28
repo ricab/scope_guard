@@ -9,8 +9,7 @@
 #define SG_REQUIRE_NOEXCEPT 0
 #endif
 
-// TODO rename macro
-#define SG_ENABLE(test) !SG_REQUIRE_NOEXCEPT || test
+#define SG_COND_NOEXC_COMPILATION_TEST(test) !SG_REQUIRE_NOEXCEPT || test
 
 #include "scope_guard.hpp"
 using namespace sg;
@@ -59,19 +58,19 @@ namespace
   {
     void test()
     {
-#if SG_ENABLE(test_failure1)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure1)
       make_scope_guard(throwing);
 #endif
-#if SG_ENABLE(test_failure2)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure2)
       make_scope_guard(throwing_stdfun);
 #endif
-#if SG_ENABLE(test_failure3)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure3)
       make_scope_guard(throwing_lambda);
 #endif
-#if SG_ENABLE(test_failure4)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure4)
       make_scope_guard(throwing_bound);
 #endif
-#if SG_ENABLE(test_failure5)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure5)
       make_scope_guard(throwing_functor);
 #endif
     }
@@ -86,19 +85,19 @@ namespace
   {
     void test()
     {
-#if SG_ENABLE(test_failure6)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure6)
       make_scope_guard(meh);
 #endif
-#if SG_ENABLE(test_failure7)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure7)
       make_scope_guard(meh_stdfun);
 #endif
-#if SG_ENABLE(test_failure8)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure8)
       make_scope_guard(meh_lambda);
 #endif
-#if SG_ENABLE(test_failure9)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure9)
       make_scope_guard(meh_bound);
 #endif
-#if SG_ENABLE(test_failure10)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure10)
       make_scope_guard(meh_functor);
 #endif
     }
@@ -111,10 +110,10 @@ namespace
   {
     void test()
     {
-#if SG_ENABLE(test_failure11)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure11)
       make_scope_guard(non_throwing_stdfun);
 #endif
-#if SG_ENABLE(test_failure12)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_failure12)
       make_scope_guard(non_throwing_bound);
 #endif
     }
@@ -127,13 +126,13 @@ namespace
   {
     void test()
     {
-#if SG_ENABLE(test_success1)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_success1)
       make_scope_guard(non_throwing);
 #endif
-#if SG_ENABLE(test_success2)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_success2)
       make_scope_guard(non_throwing_lambda);
 #endif
-#if SG_ENABLE(test_success3)
+#if SG_COND_NOEXC_COMPILATION_TEST(test_success3)
       make_scope_guard(non_throwing_functor);
 #endif
     }
