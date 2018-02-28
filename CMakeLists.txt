@@ -45,41 +45,50 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 endif()
 
 # setup compilation tests
-function(add_compilation_test tgt src willfail)
+# each test activates a specific preprocessor macro that can be used to select
+# different sections of the code to compile
+function(add_compilation_test src should_succeed count)
+  # derive executable, test, and macro names
+  if(${should_succeed})
+    set(expect "success")
+  else()
+    set(expect "failure")
+  endif()
+
+  string(CONCAT exe "compilation_" ${expect} ${count})
+  string(CONCAT tst "test_" ${exe})
+  string(CONCAT def "test_" ${expect} ${count})
+
   # create and configure underlying executable target
-  add_executable(${tgt} ${src})
-  set_target_properties(${tgt}
+  add_executable(${exe} ${src})
+  set_target_properties(${exe}
                         PROPERTIES EXCLUDE_FROM_ALL ON
                         EXCLUDE_FROM_DEFAULT_BUILD ON)
-
-  if(${ARGC} GREATER 3)
-    target_compile_definitions(${tgt} PRIVATE ${ARGV3})
-  endif()
-
-  target_compile_options(${tgt} PRIVATE "-Wno-unused-variable")
+  target_compile_definitions(${exe} PRIVATE ${def})
+  target_compile_options(${exe} PRIVATE "-Wno-unused-variable") # TODO this assumes GCC!
 
   # create and configure test
-  add_test(NAME test_${tgt}
-           COMMAND ${CMAKE_COMMAND} --build . --target ${tgt} --config $<CONFIG>
+  add_test(NAME ${tst}
+           COMMAND ${CMAKE_COMMAND} --build . --target ${exe} --config $<CONFIG>
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
-  if(${willfail})
-    set_tests_properties(test_${tgt} PROPERTIES WILL_FAIL TRUE)
-  else()
-    set_tests_properties(test_${tgt}
+  if(${should_succeed})
+    set_tests_properties(${tst} # confirm no warnings in successful test
                          PROPERTIES FAIL_REGULAR_EXPRESSION "warn;Warn;WARN")
+  else()
+    set_tests_properties(${tst} PROPERTIES WILL_FAIL TRUE) # expect a failure
   endif()
+
 endfunction()
 
 # add compile time tests
-add_compilation_test(compile_success compile_time_tests.cpp FALSE)
+foreach(count_success RANGE 0 3) # ints in [0, 3]
+  add_compilation_test(compile_time_tests.cpp TRUE ${count_success})
+endforeach()
+
 if(SG_CXX17 AND SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  foreach(count RANGE 1 12) # 12 failing compilation tests (starting at 1)
-    add_compilation_test(compile_failure${count}
-                         compile_time_tests.cpp
-                         TRUE test_failure${count})
-                         # TODO derive macro in function
-                         # TODO same for good tests
+  foreach(count_failure RANGE 1 12) # ints in [1, 12]
+    add_compilation_test(compile_time_tests.cpp FALSE ${count_failure})
   endforeach()
 endif()
 
