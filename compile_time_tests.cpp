@@ -4,7 +4,12 @@
  */
 
 #if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
+#define SG_REQUIRE_NOEXCEPT 1
+#else
+#define SG_REQUIRE_NOEXCEPT 0
 #endif
+
+#define SG_ENABLE(test) !SG_REQUIRE_NOEXCEPT || test
 
 #include "scope_guard.hpp"
 
