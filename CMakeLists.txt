@@ -42,21 +42,11 @@ endif()
 include(GNUInstallDirs)
 find_package(Catch2 REQUIRED)
 
-# setup an executable for the tests
-add_executable(scope_guard_test catch_tests.cpp)
+# setup an executable for catch tests
+add_executable(catch_tests catch_tests.cpp)
+add_test(NAME catch_tests
+         COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
 
-# Create a target to run the tests. Not using ctest, prefer to run executable 
-# directly to get better output from catch
-add_custom_target(tests)
-
-# add dependency to executable target
-add_dependencies(tests scope_guard_test)
-
-# add the actual command to run
-add_custom_command(TARGET tests
-                   POST_BUILD
-                   COMMAND scope_guard_test
-                   ARGS "--use-colour" "yes" "--order" "lex"
-                        "--filenames-as-tags")
+add_custom_target(sgtests COMMAND ctest --verbose)
 
 enable_testing()
