@@ -9,6 +9,7 @@
 #define SG_REQUIRE_NOEXCEPT 0
 #endif
 
+// TODO rename macro
 #define SG_ENABLE(test) !SG_REQUIRE_NOEXCEPT || test
 
 #include "scope_guard.hpp"
@@ -58,11 +59,19 @@ namespace
   {
     void test()
     {
-#if SG_ENABLE(test1)
+#if SG_ENABLE(test_failure1)
       make_scope_guard(throwing);
+#endif
+#if SG_ENABLE(test_failure2)
       make_scope_guard(throwing_stdfun);
+#endif
+#if SG_ENABLE(test_failure3)
       make_scope_guard(throwing_lambda);
+#endif
+#if SG_ENABLE(test_failure4)
       make_scope_guard(throwing_bound);
+#endif
+#if SG_ENABLE(test_failure5)
       make_scope_guard(throwing_functor);
 #endif
     }
@@ -77,11 +86,19 @@ namespace
   {
     void test()
     {
-#if SG_ENABLE(test2)
+#if SG_ENABLE(test_failure6)
       make_scope_guard(meh);
+#endif
+#if SG_ENABLE(test_failure7)
       make_scope_guard(meh_stdfun);
+#endif
+#if SG_ENABLE(test_failure8)
       make_scope_guard(meh_lambda);
+#endif
+#if SG_ENABLE(test_failure9)
       make_scope_guard(meh_bound);
+#endif
+#if SG_ENABLE(test_failure10)
       make_scope_guard(meh_functor);
 #endif
     }
@@ -94,8 +111,12 @@ namespace
   {
     void test()
     {
+#if SG_ENABLE(test_failure11)
       make_scope_guard(non_throwing_stdfun);
+#endif
+#if SG_ENABLE(test_failure12)
       make_scope_guard(non_throwing_bound);
+#endif
     }
   }
 
@@ -106,9 +127,15 @@ namespace
   {
     void test()
     {
+#if SG_ENABLE(test_success1)
       make_scope_guard(non_throwing);
+#endif
+#if SG_ENABLE(test_success2)
       make_scope_guard(non_throwing_lambda);
+#endif
+#if SG_ENABLE(test_success3)
       make_scope_guard(non_throwing_functor);
+#endif
     }
   }
 }

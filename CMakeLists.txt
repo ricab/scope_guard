@@ -71,12 +71,17 @@ function(add_compilation_test tgt src willfail)
   endif()
 endfunction()
 
+# add compile time tests
 add_compilation_test(compile_success compile_time_tests.cpp FALSE)
 if(SG_CXX17 AND SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  add_compilation_test(compile_failure1 compile_time_tests.cpp TRUE test1)
-  add_compilation_test(compile_failure2 compile_time_tests.cpp TRUE test2)
+  foreach(count RANGE 1 12) # 12 failing compilation tests (starting at 1)
+    add_compilation_test(compile_failure${count}
+                         compile_time_tests.cpp
+                         TRUE test_failure${count})
+                         # TODO derive macro in function
+                         # TODO same for good tests
+  endforeach()
 endif()
-
 
 # find catch 
 include(GNUInstallDirs)
