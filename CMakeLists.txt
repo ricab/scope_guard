@@ -82,12 +82,12 @@ endfunction()
 
 # add compile time tests
 foreach(count_success RANGE 0 3) # ints in [0, 3]
-  add_compilation_test(compile_time_tests.cpp TRUE ${count_success})
+  add_compilation_test(compile_time_noexcept_tests.cpp TRUE ${count_success})
 endforeach()
 
 if(SG_CXX17 AND SG_REQUIRE_NOEXCEPT_IN_CPP17)
   foreach(count_failure RANGE 1 12) # ints in [1, 12]
-    add_compilation_test(compile_time_tests.cpp FALSE ${count_failure})
+    add_compilation_test(compile_time_noexcept_tests.cpp FALSE ${count_failure})
   endforeach()
 endif()
 
