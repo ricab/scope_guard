@@ -1,29 +1,13 @@
 cmake_minimum_required(VERSION 3.8) # for CXX_STANDARD 17
 project(scope_guard)
 
-include(CMakeDependentOption)
 include(CheckCXXCompilerFlag)
 
-option(SG_CXX17 "option to compile using c++17 rather than c++11" OFF)
-
-CMAKE_DEPENDENT_OPTION(SG_REQUIRE_NOEXCEPT_IN_CPP17
-  "option to make scope_guard reject, at compile-time, anything that is not \
-  guaranteed to be noexcept invocable (see project documentation)" OFF
-  "SG_CXX17" OFF)
-
-if(SG_CXX17)
-  set(CMAKE_CXX_STANDARD 17)
-else()
-  set(CMAKE_CXX_STANDARD 11)
-endif()
-
+# global compiler configurations
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  add_definitions(-DSG_REQUIRE_NOEXCEPT_IN_CPP17)
-endif()
-
+# global compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -pedantic \
                                           -Wno-c++98-compat \
@@ -44,20 +28,43 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   endif()
 endif()
 
-# setup compilation tests
-# each test activates a specific preprocessor macro that can be used to select
-# different sections of the code to compile
-function(add_compilation_test src should_succeed count)
-  # derive executable, test, and macro names
+# find catch
+include(GNUInstallDirs)
+find_package(Catch2 REQUIRED)
+
+# setup catch tests
+add_executable(catch_tests catch_tests.cpp)
+target_compile_features(catch_tests PRIVATE cxx_std_11) # TODO other options
+add_test(NAME catch_tests
+         COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
+
+# setup a compilation test, choosing a source file, whether the compilation
+# should succeed, whether to require C++17, whether to require noexcept, and
+# providing a counter that identifies what parts of the code to activate
+function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
+  # calculate components and names of executable, test, and define
   if(${should_succeed})
     set(expect "success")
   else()
     set(expect "failure")
   endif()
 
-  string(CONCAT exe "compilation_" ${expect} ${count})
+  if(${cxx17})
+    set(std "cxx_std_17")
+  else()
+    set(std "cxx_std_11")
+  endif()
+
+  if(${require_noexcept})
+    set(except "reqnoexc")
+  else()
+    set(except "allowexc")
+  endif()
+
+  string(CONCAT exe
+         "compilation_" ${expect} "_" ${std} "_" ${except} "_" ${countid})
   string(CONCAT tst "test_" ${exe})
-  string(CONCAT def "test_" ${expect} ${count})
+  string(CONCAT def "test_" ${expect} ${countid})
 
   # create and configure underlying executable target
   add_executable(${exe} ${src})
@@ -65,6 +72,10 @@ function(add_compilation_test src should_succeed count)
                         PROPERTIES EXCLUDE_FROM_ALL ON
                         EXCLUDE_FROM_DEFAULT_BUILD ON)
   target_compile_definitions(${exe} PRIVATE ${def})
+  target_compile_features(${exe} PRIVATE ${std})
+  if(${require_noexcept})
+    target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
+  endif()
 
   # create and configure test
   add_test(NAME ${tst}
@@ -80,26 +91,24 @@ function(add_compilation_test src should_succeed count)
 
 endfunction()
 
-# add compile time tests
-foreach(count_success RANGE 0 3) # ints in [0, 3]
-  add_compilation_test(compile_time_noexcept_tests.cpp TRUE ${count_success})
+# add pertinent versions of compile time tests, in what concerns c++ standard
+# and whether to require noexcept
+function(add_pertinent_compilation_tests src should_succeed countid)
+  add_compilation_test(${src} ${should_succeed} FALSE FALSE ${countid})
+  add_compilation_test(${src} ${should_succeed} TRUE FALSE ${countid})
+  add_compilation_test(${src} ${should_succeed} TRUE TRUE ${countid})
+endfunction()
+
+# success tests, the first one (test_success0) with no corresponding pp check
+# in the code, in order to test everything that is not disabled
+foreach(sid RANGE 0 3) # ints in [0, 3]
+  add_pertinent_compilation_tests(compile_time_noexcept_tests.cpp TRUE ${sid})
 endforeach()
 
-if(SG_CXX17 AND SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  foreach(count_failure RANGE 1 12) # ints in [1, 12]
-    add_compilation_test(compile_time_noexcept_tests.cpp FALSE ${count_failure})
-  endforeach()
-endif()
-
-# find catch 
-include(GNUInstallDirs)
-find_package(Catch2 REQUIRED)
-
-# setup catch tests
-add_executable(catch_tests catch_tests.cpp)
-add_test(NAME catch_tests
-         COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
+# failure tests
+foreach(fid RANGE 1 12) # ints in [1, 12]
+  add_pertinent_compilation_tests(compile_time_noexcept_tests.cpp FALSE ${fid})
+endforeach()
 
 add_custom_target(test_verbose COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
-
 enable_testing()
