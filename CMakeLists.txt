@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8) # for CXX_STANDARD 17
+cmake_minimum_required(VERSION 3.8) # for cxx_std_17 in CMAKE_CXX_KNOWN_FEATURES
 project(scope_guard)
 
 include(CheckCXXCompilerFlag)
@@ -38,33 +38,48 @@ target_compile_features(catch_tests PRIVATE cxx_std_11) # TODO other options
 add_test(NAME catch_tests
          COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
 
+# helper function
+function(expect_str ret should_succeed)
+  if(${should_succeed})
+    set(${ret} "success" PARENT_SCOPE)
+  else()
+    set(${ret} "failure" PARENT_SCOPE)
+  endif()
+endfunction()
+
+#helper function
+function(std_num ret use_cxx17)
+  if(${use_cxx17})
+    set(${ret} 17 PARENT_SCOPE)
+  else()
+    set(${ret} 11 PARENT_SCOPE)
+  endif()
+endfunction()
+
+#helper function
+function(noexc_str ret require_noexcept)
+  if(${require_noexcept})
+    set(${ret} "reqnoexc" PARENT_SCOPE)
+  else()
+    set(${ret} "allowexc" PARENT_SCOPE)
+  endif()
+endfunction()
+
 # setup a compilation test, choosing a source file, whether the compilation
 # should succeed, whether to require C++17, whether to require noexcept, and
 # providing a counter that identifies what parts of the code to activate
 function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
   # calculate components and names of executable, test, and define
-  if(${should_succeed})
-    set(expect "success")
-  else()
-    set(expect "failure")
-  endif()
+  expect_str(expect ${should_succeed})
+  noexc_str(noexc ${require_noexcept})
+  std_num(stdn ${cxx17})
+  set(stdstr cpp${stdn})
+  set(stdftr cxx_std_${stdn})
 
-  if(${cxx17})
-    set(std "cxx_std_17")
-  else()
-    set(std "cxx_std_11")
-  endif()
-
-  if(${require_noexcept})
-    set(except "reqnoexc")
-  else()
-    set(except "allowexc")
-  endif()
-
-  string(CONCAT exe
-         "compilation_" ${expect} "_" ${std} "_" ${except} "_" ${countid})
+  string(CONCAT exe "compilation_" ${expect} "_" ${stdstr} "_" ${noexc} "_"
+         ${countid})
   string(CONCAT tst "test_" ${exe})
-  string(CONCAT def "test_" ${expect} ${countid})
+  string(CONCAT def "test_" ${noexc} ${countid})
 
   # create and configure underlying executable target
   add_executable(${exe} ${src})
@@ -72,7 +87,7 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
                         PROPERTIES EXCLUDE_FROM_ALL ON
                         EXCLUDE_FROM_DEFAULT_BUILD ON)
   target_compile_definitions(${exe} PRIVATE ${def})
-  target_compile_features(${exe} PRIVATE ${std})
+  target_compile_features(${exe} PRIVATE ${stdftr})
   if(${require_noexcept})
     target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
   endif()
