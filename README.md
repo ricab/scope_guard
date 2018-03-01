@@ -140,6 +140,10 @@ There are two dependencies to execute the tests:
     $ make test
     ```
 
+Note: to obtain more output (e.g. because there was a failure), run
+`VERBOSE=1 make test_verbose` instead, to get the command lines used in
+compilation tests as well as the test output.
+
 ### cmake Options
 The custom cmake option `SG_CXX17` is available to compile with C++17 (or
 c++1z in earlier compilers). When `SG_CXX17` is on, the dependent option

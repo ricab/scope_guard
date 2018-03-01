@@ -9,7 +9,6 @@ find_package(Catch2 REQUIRED)
 # global configurations
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-SET(CMAKE_VERBOSE_MAKEFILE TRUE)
 
 # global compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
