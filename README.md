@@ -1,10 +1,12 @@
 # scope_guard [under construction]
-## Intro
+## TLDR
 A general, safe, and easy to use C++11/14/17 scope guard. Example:
 
 ```c++
 auto guard = make_scope_guard(my_callback);
 ```
+
+<a href="https://github.com/ricab/scope_guard/blob/master/README.md">Single header</a> (remaining code is for tests)
 
 ## Table of contents
 
