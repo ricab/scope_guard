@@ -28,6 +28,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   endif()
 endif()
 
+# TODO next up, run catch tests in all cxx17/require_noexcept combinations
 # find catch
 include(GNUInstallDirs)
 find_package(Catch2 REQUIRED)
@@ -38,7 +39,7 @@ target_compile_features(catch_tests PRIVATE cxx_std_11) # TODO other options
 add_test(NAME catch_tests
          COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
 
-# helper function
+# utility to derive a string with success or failure from boolean param
 function(expect_str ret should_succeed)
   if(${should_succeed})
     set(${ret} "success" PARENT_SCOPE)
@@ -47,7 +48,7 @@ function(expect_str ret should_succeed)
   endif()
 endfunction()
 
-#helper function
+# utility to derive standard number from boolean param
 function(std_num ret use_cxx17)
   if(${use_cxx17})
     set(${ret} 17 PARENT_SCOPE)
@@ -56,7 +57,7 @@ function(std_num ret use_cxx17)
   endif()
 endfunction()
 
-#helper function
+# utility to derive noexcept requirement status string from boolean param
 function(noexc_str ret require_noexcept)
   if(${require_noexcept})
     set(${ret} "reqnoexc" PARENT_SCOPE)
@@ -65,9 +66,10 @@ function(noexc_str ret require_noexcept)
   endif()
 endfunction()
 
-# setup a compilation test, choosing a source file, whether the compilation
-# should succeed, whether to require C++17, whether to require noexcept, and
-# providing a counter that identifies what parts of the code to activate
+# utility to setup a compilation test, choosing a source file, whether the
+# compilation should succeed, whether to require C++17, whether to require
+# noexcept, and providing a counter that identifies what parts of the code to
+# activate
 function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
   # calculate components and names of executable, test, and define
   expect_str(expect ${should_succeed})
@@ -106,7 +108,7 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
 
 endfunction()
 
-# determine whether a test should expect a compilation to fail.
+# utility to determine whether a test should expect a compilation to fail.
 function(expect_success ret count cxx17 reqne)
   set(${ret} TRUE PARENT_SCOPE)
   if(${count} GREATER 3 AND ${cxx17} AND ${reqne})
