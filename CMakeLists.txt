@@ -106,30 +106,24 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
 
 endfunction()
 
-# Add tests for compilations that are always expected to succeed. Note that the
-# tests that are added on the first outer iteration (test_0) have no
-# corresponding preprocessor check in the code and serve to test compilation
-# when no test macro is explicitly defined.
-foreach(count RANGE 0 3) # range is inclusive on both ends in cmake
-  foreach(cxx17 FALSE TRUE)
-    foreach(reqne FALSE TRUE)
-      add_compilation_test(compile_time_noexcept_tests.cpp TRUE ${cxx17}
-                           ${reqne} ${count})
-    endforeach()
-  endforeach()
-endforeach()
+# determine whether a test should expect a compilation to fail.
+function(expect_success ret count cxx17 reqne)
+  set(${ret} TRUE PARENT_SCOPE)
+  if(${count} GREATER 3 AND ${cxx17} AND ${reqne})
+    set(${ret} FALSE PARENT_SCOPE)
+  endif()
+endfunction()
 
-# Add tests for compilations that are expected to fail when using
-# SG_REQUIRE_NOEXCEPT_IN_CPP17 in C++17 and succeed otherwise
-foreach(count RANGE 4 15) # range is inclusive on both ends in cmake
-  foreach(cxx17 FALSE TRUE)
-    foreach(reqne FALSE TRUE)
-      set(success TRUE)
-      if(cxx17 AND reqne)
-        set(success FALSE) # compilation should fail only in this case
-      endif()
-      add_compilation_test(compile_time_noexcept_tests.cpp ${success} ${cxx17}
-                           ${reqne} ${count})
+# actually add the compilation tests
+foreach(cxx17 FALSE TRUE)
+  foreach(reqne FALSE TRUE)
+    foreach(count RANGE 0 15) # range inclusive in cmake
+                              # 0 - all test macros off;
+                              # [1,3] - always success;
+                              # [4-15] - fail when requiring noexcept
+      expect_success(success ${count} ${cxx17} ${reqne})
+      add_compilation_test(compile_time_noexcept_tests.cpp
+                           ${success} ${cxx17} ${reqne} ${count})
     endforeach()
   endforeach()
 endforeach()
