@@ -1,6 +1,6 @@
 # scope_guard [under construction]
 ## TLDR
-A general, safe, and easy to use C++11/14/17 scope guard. Example:
+A general, tested, and easy to use C++11/14/17 scope guard. Example:
 
 ```c++
 auto guard = make_scope_guard(my_callback);
