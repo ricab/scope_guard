@@ -68,10 +68,32 @@ function(std_ftr ret stdn)
   set(${ret} cxx_std_${stdn} PARENT_SCOPE)
 endfunction()
 
-# utility to setup a compilation test, choosing a source file, whether the
-# compilation should succeed, whether to require C++17, whether to require
-# noexcept, and providing a counter that identifies what parts of the code to
-# activate
+# utility to add a batch of catch tests with the specified c++ standard and
+# noexcept requirement
+function(add_catch_tests_batch src cxx17 require_noexcept)
+  # calculate names and components thereof
+  noexc_str(noexc ${require_noexcept})
+  std_num(stdn ${cxx17})
+  std_str(stdstr ${stdn})
+  std_ftr(stdftr ${stdn})
+
+  string(CONCAT exe "catch_tests_batch_" ${stdstr} "_" ${noexc})
+  string(CONCAT tst "test_" ${exe})
+
+  # create and configure underlying executable target
+  add_executable(${exe} ${src})
+  target_compile_features(${exe} PRIVATE ${stdftr})
+  if(${require_noexcept})
+    target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
+  endif()
+
+  # add the actual test
+  add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
+endfunction()
+
+# utility to setup a compilation test, with the specified C++ standard and
+# noexcept requirement, along with an expectation of success and a counter that
+# identifies what parts of the code to activate
 function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
   # calculate names and components thereof
   expect_str(expect ${should_succeed})
@@ -116,29 +138,6 @@ function(expect_success ret count cxx17 reqne)
   if(${count} GREATER 3 AND ${cxx17} AND ${reqne})
     set(${ret} FALSE PARENT_SCOPE)
   endif()
-endfunction()
-
-# utility to add a batch of catch tests with the specified c++ standard and
-# noexcept requirement activation
-function(add_catch_tests_batch src cxx17 require_noexcept)
-  # calculate names and components thereof
-  noexc_str(noexc ${require_noexcept})
-  std_num(stdn ${cxx17})
-  std_str(stdstr ${stdn})
-  std_ftr(stdftr ${stdn})
-
-  string(CONCAT exe "catch_tests_batch_" ${stdstr} "_" ${noexc})
-  string(CONCAT tst "test_" ${exe})
-
-  # create and configure underlying executable target
-  add_executable(${exe} ${src})
-  target_compile_features(${exe} PRIVATE ${stdftr})
-  if(${require_noexcept})
-    target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  endif()
-
-  # add the actual test
-  add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
 endfunction()
 
 # actually add the tests
