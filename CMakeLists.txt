@@ -142,7 +142,7 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
 endfunction()
 
 # utility to determine whether a compilation test should expect building to fail
-function(expect_success ret count cxx17 reqne)
+function(expect_result ret count cxx17 reqne)
   set(${ret} TRUE PARENT_SCOPE)
   if(${count} GREATER 3 AND ${cxx17} AND ${reqne})
     set(${ret} FALSE PARENT_SCOPE)
@@ -160,7 +160,7 @@ foreach(cxx17 FALSE TRUE)
                               # 0 - all test macros off;
                               # [1,3] - always success;
                               # [4-15] - fail when requiring noexcept
-      expect_success(success ${count} ${cxx17} ${reqne})
+      expect_result(success ${count} ${cxx17} ${reqne})
       add_compilation_test(compile_time_noexcept_tests.cpp
                            ${success} ${cxx17} ${reqne} ${count})
     endforeach()
