@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 3.8) # for cxx_std_17 in CMAKE_CXX_KNOWN_FEATURES
 project(scope_guard)
 
+# handle inclusions and dependencies
 include(CheckCXXCompilerFlag)
+include(GNUInstallDirs)
+find_package(Catch2 REQUIRED)
 
 # global compiler configurations
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -28,32 +31,12 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   endif()
 endif()
 
-# TODO next up, run catch tests in all cxx17/require_noexcept combinations
-# find catch
-include(GNUInstallDirs)
-find_package(Catch2 REQUIRED)
-
-# setup catch tests
-add_executable(catch_tests catch_tests.cpp)
-target_compile_features(catch_tests PRIVATE cxx_std_11) # TODO other options
-add_test(NAME catch_tests
-         COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
-
 # utility to derive a string with success or failure from boolean param
 function(expect_str ret should_succeed)
   if(${should_succeed})
     set(${ret} "success" PARENT_SCOPE)
   else()
     set(${ret} "failure" PARENT_SCOPE)
-  endif()
-endfunction()
-
-# utility to derive standard number from boolean param
-function(std_num ret use_cxx17)
-  if(${use_cxx17})
-    set(${ret} 17 PARENT_SCOPE)
-  else()
-    set(${ret} 11 PARENT_SCOPE)
   endif()
 endfunction()
 
@@ -66,17 +49,36 @@ function(noexc_str ret require_noexcept)
   endif()
 endfunction()
 
+# utility to derive standard number from boolean param
+function(std_num ret use_cxx17)
+  if(${use_cxx17})
+    set(${ret} 17 PARENT_SCOPE)
+  else()
+    set(${ret} 11 PARENT_SCOPE)
+  endif()
+endfunction()
+
+# utility to derive a string describing the c++ standard
+function(std_str ret stdn)
+  set(${ret} cpp${stdn} PARENT_SCOPE)
+endfunction()
+
+# utility to derive the c++ standard compile feature
+function(std_ftr ret stdn)
+  set(${ret} cxx_std_${stdn} PARENT_SCOPE)
+endfunction()
+
 # utility to setup a compilation test, choosing a source file, whether the
 # compilation should succeed, whether to require C++17, whether to require
 # noexcept, and providing a counter that identifies what parts of the code to
 # activate
 function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
-  # calculate components and names of executable, test, and define
+  # calculate names and components thereof
   expect_str(expect ${should_succeed})
   noexc_str(noexc ${require_noexcept})
   std_num(stdn ${cxx17})
-  set(stdstr cpp${stdn})
-  set(stdftr cxx_std_${stdn})
+  std_str(stdstr ${stdn})
+  std_ftr(stdftr ${stdn})
 
   string(CONCAT exe "compilation_" ${expect} "_" ${stdstr} "_" ${noexc} "_"
          ${countid})
@@ -116,9 +118,36 @@ function(expect_success ret count cxx17 reqne)
   endif()
 endfunction()
 
-# actually add the compilation tests
+# utility to add a batch of catch tests with the specified c++ standard and
+# noexcept requirement activation
+function(add_catch_tests_batch src cxx17 require_noexcept)
+  # calculate names and components thereof
+  noexc_str(noexc ${require_noexcept})
+  std_num(stdn ${cxx17})
+  std_str(stdstr ${stdn})
+  std_ftr(stdftr ${stdn})
+
+  string(CONCAT exe "catch_tests_batch_" ${stdstr} "_" ${noexc})
+  string(CONCAT tst "test_" ${exe})
+
+  # create and configure underlying executable target
+  add_executable(${exe} ${src})
+  target_compile_features(${exe} PRIVATE ${stdftr})
+  if(${require_noexcept})
+    target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
+  endif()
+
+  # add the actual test
+  add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
+endfunction()
+
+# actually add the tests
 foreach(cxx17 FALSE TRUE)
   foreach(reqne FALSE TRUE)
+    # add catch tests for this standard/noexcept-requirement combination
+    add_catch_tests_batch(catch_tests.cpp ${cxx17} ${reqne})
+
+    # add compilation tests for this standard/noexcept-requirement combination
     foreach(count RANGE 0 15) # range inclusive in cmake
                               # 0 - all test macros off;
                               # [1,3] - always success;
