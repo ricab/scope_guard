@@ -1,5 +1,32 @@
-# scope_guard intro [under construction]
-A C++11 scope guard. [TODO]
+# scope_guard [under construction]
+## Intro
+A general, safe, and easy to use C++11/14/17 scope guard. Example:
+
+```c++
+auto guard = make_scope_guard(my_callback);
+```
+
+## Table of contents
+
+- [scope_guard [under construction]](#scope-guard--under-construction-)
+  * [Intro](#intro)
+  * [Table of contents](#table-of-contents)
+  * [Features](#features)
+    + [Main features](#main-features)
+    + [Other characteristics](#other-characteristics)
+  * [Usage](#usage)
+    + [Preconditions](#preconditions)
+      - [void return](#void-return)
+      - [no throw](#no-throw)
+    + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option--sg-require-noexcept-in-cpp17-)
+      - [Implications](#implications)
+  * [Running tests](#running-tests)
+    + [Instructions](#instructions)
+      - [cmake Options](#cmake-options)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+## Features
 
 ### Main features
 - [x] &ge; C++11
@@ -19,7 +46,7 @@ you
 - [x] Unlicense(d)
 - [x] `snake_case` style
 
-# Usage
+## Usage
 To use,  simply clone this repository, copy the header file within, and include 
 it - there are no dependencies (besides a &ge;C++11 compiler). Then do something
 like:
@@ -32,11 +59,11 @@ auto guard2 = make_scope_guard([]()noexcept{ /* do something */ });
 
 See tests for more examples [TODO link tests].
 
-## Preconditions
+### Preconditions
 
 Besides being invocable with no arguments, the callback that is used to create a `scope_guard` must respect the following preconditions.
 
-### void return
+#### void return
 
 The callback must return void. Returning anything else is intentionally not
 accepted. This forces the client to confirm their intention, by explicitly
@@ -51,7 +78,7 @@ make_scope_guard(()[] noexcept {/*bool ignored =*/ foo();}); // OK
 The idea is not only to catch unintentional cases but also to highlight
 intentional ones for code readers.
 
-### no throw
+#### no throw
 
 The callback _is required_ not to throw. Notice,
 however, that this is not checked by default and throwing from a
@@ -70,7 +97,7 @@ types, to my knowledge it is not even possible until C++17. That is because the
 exception specification is not part of the type system
 [until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
 
-## Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
+### Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
 
 If &ge;C++17 is used, the preprocessor macro
 `SG_REQUIRE_NOEXCEPT_IN_CPP17` can be defined to
@@ -91,7 +118,7 @@ other is to maintain the same behavior as in &lt;C++17.
 
 This option has no effect unless &ge;C++17 is used.
 
-### Implications
+#### Implications
 
 Unfortunately, even in C++17 things are not ideal, and information on
 exception specification is not propagated to types like `std::function` or
@@ -112,12 +139,12 @@ lambdas to wrap anything else, e.g.:
 
     make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
 
-# Running tests
+## Running tests
 There are two dependencies to execute the tests:
 - Cmake (at least version 3.1)
 - Catch2
     
-## Instructions
+### Instructions
 (For GNU/Linux, should be analogous in other systems.)
 
 1. Install [cmake](https://cmake.org/) (&ge; v3.8)
@@ -144,7 +171,7 @@ Note: to obtain more output (e.g. because there was a failure), run
 `VERBOSE=1 make test_verbose` instead, to get the command lines used in
 compilation tests as well as the test output.
 
-### cmake Options
+#### cmake Options
 The custom cmake option `SG_CXX17` is available to compile with C++17 (or
 c++1z in earlier compilers). When `SG_CXX17` is on, the dependent option
 `SG_REQUIRE_NOEXCEPT_IN_CPP17` becomes available. This is translated to the
