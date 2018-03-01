@@ -1,29 +1,16 @@
-cmake_minimum_required(VERSION 3.8) # for CXX_STANDARD 17
+cmake_minimum_required(VERSION 3.8) # for cxx_std_17 in CMAKE_CXX_KNOWN_FEATURES
 project(scope_guard)
 
-include(CMakeDependentOption)
+# handle inclusions and dependencies
 include(CheckCXXCompilerFlag)
+include(GNUInstallDirs)
+find_package(Catch2 REQUIRED)
 
-option(SG_CXX17 "option to compile using c++17 rather than c++11" OFF)
-
-CMAKE_DEPENDENT_OPTION(SG_REQUIRE_NOEXCEPT_IN_CPP17
-  "option to make scope_guard reject, at compile-time, anything that is not \
-  guaranteed to be noexcept invocable (see project documentation)" OFF
-  "SG_CXX17" OFF)
-
-if(SG_CXX17)
-  set(CMAKE_CXX_STANDARD 17)
-else()
-  set(CMAKE_CXX_STANDARD 11)
-endif()
-
-if(SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  add_definitions(-DSG_REQUIRE_NOEXCEPT_IN_CPP17)
-endif()
-
+# global configurations
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# global compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -pedantic \
                                           -Wno-c++98-compat \
@@ -44,62 +31,141 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   endif()
 endif()
 
-# setup compilation tests
-# each test activates a specific preprocessor macro that can be used to select
-# different sections of the code to compile
-function(add_compilation_test src should_succeed count)
-  # derive executable, test, and macro names
+# utility to derive a string with success or failure from boolean param
+function(expect_str ret should_succeed)
   if(${should_succeed})
-    set(expect "success")
+    set(${ret} "success" PARENT_SCOPE)
   else()
-    set(expect "failure")
+    set(${ret} "failure" PARENT_SCOPE)
   endif()
+endfunction()
 
-  string(CONCAT exe "compilation_" ${expect} ${count})
-  string(CONCAT tst "test_" ${exe})
-  string(CONCAT def "test_" ${expect} ${count})
+# utility to derive noexcept requirement status string from boolean param
+function(noexc_str ret require_noexcept)
+  if(${require_noexcept})
+    set(${ret} "reqnoexc" PARENT_SCOPE)
+  else()
+    set(${ret} "allowexc" PARENT_SCOPE)
+  endif()
+endfunction()
 
-  # create and configure underlying executable target
+# utility to derive standard number from boolean param
+function(std_num ret use_cxx17)
+  if(${use_cxx17})
+    set(${ret} 17 PARENT_SCOPE)
+  else()
+    set(${ret} 11 PARENT_SCOPE)
+  endif()
+endfunction()
+
+# utility to derive a string describing the c++ standard
+function(std_str ret stdn)
+  set(${ret} cpp${stdn} PARENT_SCOPE)
+endfunction()
+
+# utility to derive the c++ standard compile feature
+function(std_ftr ret stdn)
+  set(${ret} cxx_std_${stdn} PARENT_SCOPE)
+endfunction()
+
+# utility to derive strings for test configuration
+function(derive_common_test_strings
+         tst_ret exe_ret ftr_ret # out params
+         base_name should_succeed cxx17 require_noexcept # in params
+         )
+  expect_str(expect ${should_succeed})
+  noexc_str(noexc ${require_noexcept})
+  std_num(stdn ${cxx17})
+  std_str(std ${stdn})
+  std_ftr(${ftr_ret} ${stdn})
+
+  string(CONCAT ${exe_ret} ${base_name} "_" ${expect} "_" ${std} "_"
+         ${noexc})
+  string(CONCAT ${tst_ret} "test_" ${${exe_ret}})
+
+  # return these
+  set(${tst_ret} ${${tst_ret}} PARENT_SCOPE)
+  set(${exe_ret} ${${exe_ret}} PARENT_SCOPE)
+  set(${ftr_ret} ${${ftr_ret}} PARENT_SCOPE)
+endfunction()
+
+# utility to add executable and configure common properties
+function(add_test_exe exe src ftr require_noexcept)
   add_executable(${exe} ${src})
+  target_compile_features(${exe} PRIVATE ${ftr})
+  if(${require_noexcept})
+    target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
+  endif()
+endfunction()
+
+# utility to add a batch of catch tests with the specified c++ standard and
+# noexcept requirement
+function(add_catch_tests_batch src cxx17 require_noexcept)
+  derive_common_test_strings(tst exe ftr # out params
+      "catch_batch" TRUE ${cxx17} ${require_noexcept}) # in params
+  add_test_exe(${exe} ${src} ${ftr} ${require_noexcept})
+  add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
+endfunction()
+
+# utility to add a compilation test, with the specified C++ standard and
+# noexcept requirement, along with a success/failure expectation and a counter
+# that identifies what parts of the code to activate
+function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
+  derive_common_test_strings(tst exe ftr # out params
+      "compilation" ${should_succeed} ${cxx17} ${require_noexcept}) # in params
+
+  string(APPEND tst "_" ${countid})
+  string(APPEND exe "_" ${countid})
+  string(CONCAT def "test_" ${countid})
+  add_test_exe(${exe} ${src} ${ftr} ${cxx17} ${require_noexcept})
+
+  # only build this when running tests (building _is_ the test)
   set_target_properties(${exe}
                         PROPERTIES EXCLUDE_FROM_ALL ON
                         EXCLUDE_FROM_DEFAULT_BUILD ON)
+
+  # add macro to select active code section
   target_compile_definitions(${exe} PRIVATE ${def})
 
-  # create and configure test
+  # create the test
   add_test(NAME ${tst}
            COMMAND ${CMAKE_COMMAND} --build . --target ${exe} --config $<CONFIG>
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
+  # configure the test to expect compilation success or failure
   if(${should_succeed})
     set_tests_properties(${tst} # confirm no warnings in successful test
                          PROPERTIES FAIL_REGULAR_EXPRESSION "warn;Warn;WARN")
   else()
     set_tests_properties(${tst} PROPERTIES WILL_FAIL TRUE) # expect a failure
   endif()
-
 endfunction()
 
-# add compile time tests
-foreach(count_success RANGE 0 3) # ints in [0, 3]
-  add_compilation_test(compile_time_noexcept_tests.cpp TRUE ${count_success})
+# utility to determine whether a compilation test should expect building to fail
+function(expect_success ret count cxx17 reqne)
+  set(${ret} TRUE PARENT_SCOPE)
+  if(${count} GREATER 3 AND ${cxx17} AND ${reqne})
+    set(${ret} FALSE PARENT_SCOPE)
+  endif()
+endfunction()
+
+# actually add the tests
+foreach(cxx17 FALSE TRUE)
+  foreach(reqne FALSE TRUE)
+    # add catch tests for this standard/noexcept-requirement combination
+    add_catch_tests_batch(catch_tests.cpp ${cxx17} ${reqne})
+
+    # add compilation tests for this standard/noexcept-requirement combination
+    foreach(count RANGE 0 15) # range inclusive in cmake
+                              # 0 - all test macros off;
+                              # [1,3] - always success;
+                              # [4-15] - fail when requiring noexcept
+      expect_success(success ${count} ${cxx17} ${reqne})
+      add_compilation_test(compile_time_noexcept_tests.cpp
+                           ${success} ${cxx17} ${reqne} ${count})
+    endforeach()
+  endforeach()
 endforeach()
 
-if(SG_CXX17 AND SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  foreach(count_failure RANGE 1 12) # ints in [1, 12]
-    add_compilation_test(compile_time_noexcept_tests.cpp FALSE ${count_failure})
-  endforeach()
-endif()
-
-# find catch 
-include(GNUInstallDirs)
-find_package(Catch2 REQUIRED)
-
-# setup catch tests
-add_executable(catch_tests catch_tests.cpp)
-add_test(NAME catch_tests
-         COMMAND "catch_tests" "--order" "lex" "--use-colour" "yes")
-
 add_custom_target(test_verbose COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
-
 enable_testing()

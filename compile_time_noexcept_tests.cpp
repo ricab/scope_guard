@@ -3,14 +3,6 @@
  *      Author: ricab
  */
 
-#if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
-#define SG_REQUIRE_NOEXCEPT 1
-#else
-#define SG_REQUIRE_NOEXCEPT 0
-#endif
-
-#define SG_COND_NOEXC_COMPILATION_TEST(test) !SG_REQUIRE_NOEXCEPT || test
-
 #include "scope_guard.hpp"
 using namespace sg;
 
@@ -51,6 +43,25 @@ namespace
   } meh_functor;
 
   /**
+   * Things that should pass compilation and run successfully in all cases
+   */
+  namespace test_good
+  {
+    void test()
+    {
+#if test_1
+      make_scope_guard(non_throwing);
+#endif
+#if test_2
+      make_scope_guard(non_throwing_lambda);
+#endif
+#if test_3
+      make_scope_guard(non_throwing_functor);
+#endif
+    }
+  }
+
+  /**
    * Things that should fail compilation when noexcept is required and pass
    * compilation otherwise, resulting in a call to std::terminate
    */
@@ -58,19 +69,19 @@ namespace
   {
     void test()
     {
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure1)
+#if test_4
       make_scope_guard(throwing);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure2)
+#if test_5
       make_scope_guard(throwing_stdfun);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure3)
+#if test_6
       make_scope_guard(throwing_lambda);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure4)
+#if test_7
       make_scope_guard(throwing_bound);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure5)
+#if test_8
       make_scope_guard(throwing_functor);
 #endif
     }
@@ -85,19 +96,19 @@ namespace
   {
     void test()
     {
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure6)
+#if test_9
       make_scope_guard(meh);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure7)
+#if test_10
       make_scope_guard(meh_stdfun);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure8)
+#if test_11
       make_scope_guard(meh_lambda);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure9)
+#if test_12
       make_scope_guard(meh_bound);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure10)
+#if test_13
       make_scope_guard(meh_functor);
 #endif
     }
@@ -110,30 +121,11 @@ namespace
   {
     void test()
     {
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure11)
+#if test_14
       make_scope_guard(non_throwing_stdfun);
 #endif
-#if SG_COND_NOEXC_COMPILATION_TEST(test_failure12)
+#if test_15
       make_scope_guard(non_throwing_bound);
-#endif
-    }
-  }
-
-  /**
-   * Things that should pass compilation and run successfully in all cases
-   */
-  namespace test_good
-  {
-    void test()
-    {
-#if test_success1
-      make_scope_guard(non_throwing);
-#endif
-#if test_success2
-      make_scope_guard(non_throwing_lambda);
-#endif
-#if test_success3
-      make_scope_guard(non_throwing_functor);
 #endif
     }
   }
