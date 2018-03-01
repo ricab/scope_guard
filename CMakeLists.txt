@@ -91,23 +91,32 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
 
 endfunction()
 
-# add pertinent versions of compile time tests, in what concerns c++ standard
-# and whether to require noexcept
-function(add_pertinent_compilation_tests src should_succeed countid)
-  add_compilation_test(${src} ${should_succeed} FALSE FALSE ${countid})
-  add_compilation_test(${src} ${should_succeed} TRUE FALSE ${countid})
-  add_compilation_test(${src} ${should_succeed} TRUE TRUE ${countid})
-endfunction()
-
-# success tests, the first one (test_success0) with no corresponding pp check
-# in the code, in order to test everything that is not disabled
-foreach(sid RANGE 0 3) # ints in [0, 3]
-  add_pertinent_compilation_tests(compile_time_noexcept_tests.cpp TRUE ${sid})
+# Add tests for compilations that are always expected to succeed. Note that the
+# tests that are added on the first outer iteration (test_0) have no
+# corresponding preprocessor check in the code and serve to test compilation
+# when no test macro is explicitly defined.
+foreach(count RANGE 0 3) # range is inclusive on both ends in cmake
+  foreach(cxx17 FALSE TRUE)
+    foreach(reqne FALSE TRUE)
+      add_compilation_test(compile_time_noexcept_tests.cpp TRUE ${cxx17}
+                           ${reqne} ${count})
+    endforeach()
+  endforeach()
 endforeach()
 
-# failure tests
-foreach(fid RANGE 1 12) # ints in [1, 12]
-  add_pertinent_compilation_tests(compile_time_noexcept_tests.cpp FALSE ${fid})
+# Add tests for compilations that are expected to fail when using
+# SG_REQUIRE_NOEXCEPT_IN_CPP17 in C++17 and succeed otherwise
+foreach(count RANGE 4 15) # range is inclusive on both ends in cmake
+  foreach(cxx17 FALSE TRUE)
+    foreach(reqne FALSE TRUE)
+      set(success TRUE)
+      if(cxx17 AND reqne)
+        set(success FALSE) # compilation should fail only in this case
+      endif()
+      add_compilation_test(compile_time_noexcept_tests.cpp ${success} ${cxx17}
+                           ${reqne} ${count})
+    endforeach()
+  endforeach()
 endforeach()
 
 add_custom_target(test_verbose COMMAND ${CMAKE_CTEST_COMMAND} --verbose)
