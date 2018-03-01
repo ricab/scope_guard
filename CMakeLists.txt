@@ -106,7 +106,7 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
   string(CONCAT exe "compilation_" ${expect} "_" ${stdstr} "_" ${noexc} "_"
          ${countid})
   string(CONCAT tst "test_" ${exe})
-  string(CONCAT def "test_" ${noexc} ${countid})
+  string(CONCAT def "test_" ${countid})
 
   # create and configure underlying executable target
   add_executable(${exe} ${src})
