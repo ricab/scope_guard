@@ -69,71 +69,80 @@ function(std_ftr ret stdn)
   set(${ret} cxx_std_${stdn} PARENT_SCOPE)
 endfunction()
 
-# utility to add a batch of catch tests with the specified c++ standard and
-# noexcept requirement
-function(add_catch_tests_batch src cxx17 require_noexcept)
-  # calculate names and components thereof
-  noexc_str(noexc ${require_noexcept})
-  std_num(stdn ${cxx17})
-  std_str(stdstr ${stdn})
-  std_ftr(stdftr ${stdn})
-
-  string(CONCAT exe "catch_tests_batch_" ${stdstr} "_" ${noexc})
-  string(CONCAT tst "test_" ${exe})
-
-  # create and configure underlying executable target
-  add_executable(${exe} ${src})
-  target_compile_features(${exe} PRIVATE ${stdftr})
-  if(${require_noexcept})
-    target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
-  endif()
-
-  # add the actual test
-  add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
-endfunction()
-
-# utility to setup a compilation test, with the specified C++ standard and
-# noexcept requirement, along with an expectation of success and a counter that
-# identifies what parts of the code to activate
-function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
-  # calculate names and components thereof
+# utility to derive strings for test configuration
+function(derive_common_test_strings
+         tst_ret exe_ret ftr_ret # out params
+         base_name should_succeed cxx17 require_noexcept # in params
+         )
   expect_str(expect ${should_succeed})
   noexc_str(noexc ${require_noexcept})
   std_num(stdn ${cxx17})
-  std_str(stdstr ${stdn})
-  std_ftr(stdftr ${stdn})
+  std_str(std ${stdn})
+  std_ftr(${ftr_ret} ${stdn})
 
-  string(CONCAT exe "compilation_" ${expect} "_" ${stdstr} "_" ${noexc} "_"
-         ${countid})
-  string(CONCAT tst "test_" ${exe})
-  string(CONCAT def "test_" ${countid})
+  string(CONCAT ${exe_ret} ${base_name} "_" ${expect} "_" ${std} "_"
+         ${noexc})
+  string(CONCAT ${tst_ret} "test_" ${${exe_ret}})
 
-  # create and configure underlying executable target
+  # return these
+  set(${tst_ret} ${${tst_ret}} PARENT_SCOPE)
+  set(${exe_ret} ${${exe_ret}} PARENT_SCOPE)
+  set(${ftr_ret} ${${ftr_ret}} PARENT_SCOPE)
+endfunction()
+
+# utility to add executable and configure common properties
+function(add_test_exe exe src ftr require_noexcept)
   add_executable(${exe} ${src})
-  set_target_properties(${exe}
-                        PROPERTIES EXCLUDE_FROM_ALL ON
-                        EXCLUDE_FROM_DEFAULT_BUILD ON)
-  target_compile_definitions(${exe} PRIVATE ${def})
-  target_compile_features(${exe} PRIVATE ${stdftr})
+  target_compile_features(${exe} PRIVATE ${ftr})
   if(${require_noexcept})
     target_compile_definitions(${exe} PRIVATE SG_REQUIRE_NOEXCEPT_IN_CPP17)
   endif()
+endfunction()
 
-  # create and configure test
+# utility to add a batch of catch tests with the specified c++ standard and
+# noexcept requirement
+function(add_catch_tests_batch src cxx17 require_noexcept)
+  derive_common_test_strings(tst exe ftr # out params
+      "catch_batch" TRUE ${cxx17} ${require_noexcept}) # in params
+  add_test_exe(${exe} ${src} ${ftr} ${require_noexcept})
+  add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
+endfunction()
+
+# utility to add a compilation test, with the specified C++ standard and
+# noexcept requirement, along with a success/failure expectation and a counter
+# that identifies what parts of the code to activate
+function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
+  derive_common_test_strings(tst exe ftr # out params
+      "compilation" ${should_succeed} ${cxx17} ${require_noexcept}) # in params
+
+  string(APPEND tst "_" ${countid})
+  string(APPEND exe "_" ${countid})
+  string(CONCAT def "test_" ${countid})
+  add_test_exe(${exe} ${src} ${ftr} ${cxx17} ${require_noexcept})
+
+  # only build this when running tests (building _is_ the test)
+  set_target_properties(${exe}
+                        PROPERTIES EXCLUDE_FROM_ALL ON
+                        EXCLUDE_FROM_DEFAULT_BUILD ON)
+
+  # add macro to select active code section
+  target_compile_definitions(${exe} PRIVATE ${def})
+
+  # create the test
   add_test(NAME ${tst}
            COMMAND ${CMAKE_COMMAND} --build . --target ${exe} --config $<CONFIG>
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
+  # configure the test to expect compilation success or failure
   if(${should_succeed})
     set_tests_properties(${tst} # confirm no warnings in successful test
                          PROPERTIES FAIL_REGULAR_EXPRESSION "warn;Warn;WARN")
   else()
     set_tests_properties(${tst} PROPERTIES WILL_FAIL TRUE) # expect a failure
   endif()
-
 endfunction()
 
-# utility to determine whether a test should expect a compilation to fail.
+# utility to determine whether a compilation test should expect building to fail
 function(expect_success ret count cxx17 reqne)
   set(${ret} TRUE PARENT_SCOPE)
   if(${count} GREATER 3 AND ${cxx17} AND ${reqne})
