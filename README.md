@@ -1,6 +1,6 @@
 # scope_guard [under construction]
 ## TLDR
-A general, easy to use, and exaustively tested C++11/14/17 scope guard maker 
+A general, easy to use, and exhaustively tested C++11/14/17 scope guard maker 
 function. Example:
 
 ```c++
@@ -34,19 +34,19 @@ auto guard = make_scope_guard(my_callback);
 
 ### Main features
 - [x] &ge; C++11
-- [ ] Single function interface (`make_scope_guard`)
+- [x] Single function interface (`make_scope_guard`)
 - [x] Fast (no added runtime `std::function` penalties)
 - [x] General: accepts any callable that respects the preconditions
 [below](#preconditions)
 - [x] no implicitly ignored return (see [below](#void-return))
-- [ ] Option to enforce `noexcept` in C++17
+- [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 - [x] No macros to make guard - just write explicit lambda or bind or what have
 you
-- [ ] Extensively tested [TODO link to tests]
+- [ ] Exhaustively tested [TODO link to tests]
 - [x] Unlicense(d)
 - [x] `snake_case` style
 
