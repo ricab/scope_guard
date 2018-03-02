@@ -36,10 +36,10 @@ namespace sg
     public:
       template<typename = typename std::enable_if<
         is_proper_sg_callback<Callback>::value>::type>
-      explicit scope_guard(Callback&& callback);
+      explicit scope_guard(Callback&& callback) noexcept;
 
-      scope_guard(scope_guard&& other);
-      ~scope_guard();
+      scope_guard(scope_guard&& other) noexcept;
+      ~scope_guard() noexcept; // highlight noexcept dtor
 
     private:
       Callback m_callback;
@@ -67,21 +67,21 @@ namespace sg
    * when leaving scope.
    */
   template<typename Callback>
-  detail::scope_guard<Callback> make_scope_guard(Callback&& callback);
+  detail::scope_guard<Callback> make_scope_guard(Callback&& callback) noexcept;
 
 } // namespace sg
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
 template<typename>
-sg::detail::scope_guard<Callback>::scope_guard(Callback&& callback)
+sg::detail::scope_guard<Callback>::scope_guard(Callback&& callback) noexcept
   : m_callback{std::forward<Callback>(callback)}
   , m_active{true}
 {}
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-sg::detail::scope_guard<Callback>::~scope_guard()
+sg::detail::scope_guard<Callback>::~scope_guard() noexcept
 {
   if(m_active)
     m_callback();
@@ -89,7 +89,7 @@ sg::detail::scope_guard<Callback>::~scope_guard()
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
+sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other) noexcept
   : m_callback{std::forward<Callback>(other.m_callback)}
   , m_active{std::move(other.m_active)}
 {
@@ -98,7 +98,7 @@ sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-inline auto sg::make_scope_guard(Callback&& callback)
+inline auto sg::make_scope_guard(Callback&& callback) noexcept
 -> detail::scope_guard<Callback>
 {
   return detail::scope_guard<Callback>{std::forward<Callback>(callback)};
