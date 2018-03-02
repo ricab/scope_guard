@@ -88,8 +88,8 @@ TEST_CASE("Demonstration that direct constructor call is possible, but not "
 //  scope_guard<decltype(inc)>{inc}; // ... Error: cannot instantiate data field
                                      // with function type...
 
-  scope_guard<void(&)()>{
-      static_cast<void(&)()>(inc)}; // ... could use ref cast...
+  scope_guard<void(&)()noexcept>{
+      static_cast<void(&)()noexcept>(inc)}; // ... could use ref cast...
 
   auto& inc_ref = inc;
   scope_guard<decltype(inc_ref)>{inc_ref}; // ... or actual ref...
@@ -160,6 +160,7 @@ TEST_CASE("An rvalue-reference-to-plain-function-based scope_guard executes "
   REQUIRE(count == 1u);
 }
 
+#ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A reference wrapper to a plain function can be used to create a "
           "scope_guard.")
@@ -201,6 +202,7 @@ TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
 
   REQUIRE(count == 1u);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue plain function pointer can be used to create a "
@@ -294,6 +296,7 @@ TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
   REQUIRE(count == 1u);
 }
 
+#ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue std::function that wraps a regular function can be used "
           "to create a scope_guard.")
@@ -395,6 +398,7 @@ TEST_CASE("A scope_guard that is created with an "
 
   REQUIRE(count == 1u);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -406,7 +410,7 @@ namespace
 TEST_CASE("A lambda function with no capture can be used to create a "
           "scope_guard.")
 {
-  const auto guard = make_scope_guard([](){});
+  const auto guard = make_scope_guard([]()noexcept{});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -415,7 +419,8 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 {
   {
     REQUIRE_FALSE(lambda_no_capture_count);
-    const auto guard = make_scope_guard([](){ incc(lambda_no_capture_count); });
+    const auto guard = make_scope_guard([]() noexcept
+                                        { incc(lambda_no_capture_count); });
     REQUIRE_FALSE(lambda_no_capture_count);
   }
 
@@ -425,7 +430,7 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
-  make_scope_guard([](){});
+  make_scope_guard([]()noexcept{});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -435,7 +440,7 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
   auto lambda_count = 0u;
 
   {
-    const auto guard = make_scope_guard([&lambda_count]()
+    const auto guard = make_scope_guard([&lambda_count]() noexcept
                                         { incc(lambda_count); });
     REQUIRE_FALSE(lambda_count);
   }
@@ -452,7 +457,7 @@ TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
   auto lambda_count = 0u;
 
   {
-    const auto guard = make_scope_guard([&lambda_count]()
+    const auto guard = make_scope_guard([&lambda_count]() noexcept
                                         { inc(); incc(lambda_count); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
@@ -466,7 +471,7 @@ TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
 TEST_CASE("A lambda function calling a std::function can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard([](){ make_std_function(inc)(); });
+  make_scope_guard([]()noexcept{ make_std_function(inc)(); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -479,7 +484,7 @@ TEST_CASE("A scope_guard created with a std::function-calling lambda calls "
 
   {
     const auto guard = make_scope_guard(
-      [&lambda_count]()
+      [&lambda_count]() noexcept
       {
         incc(lambda_count);
         make_std_function(inc)();
@@ -493,6 +498,7 @@ TEST_CASE("A scope_guard created with a std::function-calling lambda calls "
   REQUIRE(count == 1u);
 }
 
+#ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A std::function wrapping a lambda function can be used to create a "
           "scope_guard.")
@@ -557,6 +563,7 @@ TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
 
   REQUIRE(boundl_count == 1u);
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("several levels of indirection involving lambdas, binds, "
@@ -573,11 +580,11 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   auto lambda_count = 0u;
 
   {
-    const auto g1 = make_scope_guard([&lambda_count]()
+    const auto g1 = make_scope_guard([&lambda_count]() noexcept
                                      { inc(); incc(lambda_count); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
-    const auto g2 = make_scope_guard([&lambda_count]()
+    const auto g2 = make_scope_guard([&lambda_count]() noexcept
                                      { incc(lambda_count); inc(); });
     REQUIRE_FALSE(count);
     REQUIRE_FALSE(lambda_count);
@@ -588,12 +595,13 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 
-  const auto g4 = make_scope_guard([&lambda_count]()
+  const auto g4 = make_scope_guard([&lambda_count]() noexcept
                                    { incc(lambda_count); inc(); });
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 }
 
+#ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Multiple independent scope_guards do not interfere with each "
           "other - each of their post-conditions hold.")
@@ -695,3 +703,4 @@ TEST_CASE("Test nested scopes")
   REQUIRE_FALSE(lvl0_count);
 
 }
+#endif

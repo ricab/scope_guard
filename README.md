@@ -124,8 +124,8 @@ This option has no effect unless &ge;C++17 is used.
 
 Unfortunately, even in C++17 things are not ideal, and information on
 exception specification is not propagated to types like `std::function` or
-the result of `std::bind`. For instance, the following code does not compile
-in C++17:
+the result of `std::bind` and `std::ref`. For instance, the following code
+does not compile in C++17:
 
 ```c++
 void f() noexcept { }

@@ -10,6 +10,10 @@
 #include <functional>
 #include <utility>
 
+#if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
+#define SG_REQUIRE_NOEXCEPT
+#endif
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace sg
 {
@@ -28,7 +32,7 @@ namespace sg
     public:
       template<typename = typename std::enable_if<
         std::is_constructible<std::function<void()>, Callback>::value
-#if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
+#ifdef SG_REQUIRE_NOEXCEPT
         && std::is_nothrow_invocable_r<void, Callback>::value // TODO _v
 #endif
       >::type>
