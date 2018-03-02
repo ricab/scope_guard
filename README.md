@@ -165,8 +165,9 @@ lambdas to wrap anything else, e.g.:
     make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
 
 ## Running the tests
-There are two dependencies to execute the tests:
-- Cmake (at least version 3.1)
+There are a few dependencies to execute the tests:
+- Cmake (at least version 3.8)
+- C++17 capable compiler (c++1z is fine)
 - Catch2
     
 ### Instructions
@@ -192,6 +193,14 @@ There are two dependencies to execute the tests:
     $ make test
     ```
 
+This will run the catch tests and compile-time tests 4 times, one per capital
+letter in the following table:
+
+| standard/require_noexcept | c++11 | c++17  |
+| ------------------------- |:-----:|:------:|
+| **allow except**          | A     |   B    |
+| **require noexcept**      | C     |   D    |
+ 
 Note: to obtain more output (e.g. because there was a failure), run
 `VERBOSE=1 make test_verbose` instead, to get the command lines used in
 compilation tests as well as the test output.
