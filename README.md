@@ -46,7 +46,7 @@ auto guard = make_scope_guard(my_callback);
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 - [x] No macros to make guard - just write explicit lambda or bind or what have
 you
-- [ ] Exhaustively tested [TODO link to tests]
+- [ ] [Exhaustively](catch_tests.cpp) [tested](compile_time_noexcept_tests.cpp)
 - [x] Unlicense(d)
 - [x] `snake_case` style
 
@@ -61,7 +61,7 @@ auto guard2 = make_scope_guard([]()noexcept{ /* do something */ });
 ...
 ```
 
-See tests for more examples [TODO link tests].
+See [tests](catch_tests.cpp) for more examples.
 
 ### Preconditions
 
