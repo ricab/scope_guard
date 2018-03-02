@@ -7,7 +7,7 @@ Example:
 auto guard = make_scope_guard(my_callback);
 ```
 
-<a href="https://github.com/ricab/scope_guard/blob/master/README.md">Single header</a> (remaining code is for tests)
+<a href="https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp">Single header</a> (remaining code is for tests)
 
 ## Table of contents
 
