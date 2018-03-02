@@ -86,7 +86,7 @@ writing code to ignore a return, if that really is what they want. For example:
 ```c++
 bool foo() noexcept;
 make_scope_guard(foo); // ERROR: does not return void
-make_scope_guard(()[] noexcept {/*bool ignored =*/ foo();}); // OK
+make_scope_guard([]() noexcept {/*bool ignored =*/ foo();}); // OK
 ```
 
 The idea is not only to catch unintentional cases but also to highlight
