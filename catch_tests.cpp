@@ -10,11 +10,6 @@
 
 using namespace sg;
 
-// TODO provide preprocessor option to reject anything that is not noexcept in C++17
-// TODO add tests for this that are only run when specific define is provided
-// TODO update CMakeLists to try and use this if possible (if C++17 is available)
-// TODO add corresponding implementation along with documentation (using __cplusplus or similar)
-
 // TODO add tests for leaving scope through exception
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
@@ -30,7 +25,7 @@ using namespace sg;
 // TODO add shared_ptr tests
 // TODO add move guard into function tests
 // TODO add move guard into container tests
-// TODO add tests for move assignment (need assignment op)
+// TODO add tests for deleted special functions (copy ctor, copy/move assignment)
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)
