@@ -117,7 +117,7 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
   string(APPEND tst "_" ${countid})
   string(APPEND exe "_" ${countid})
   string(CONCAT def "test_" ${countid})
-  add_test_exe(${exe} ${src} ${ftr} ${cxx17} ${require_noexcept})
+  add_test_exe(${exe} ${src} ${ftr} ${require_noexcept})
 
   # only build this when running tests (building _is_ the test)
   set_target_properties(${exe}
