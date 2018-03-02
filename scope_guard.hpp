@@ -27,7 +27,11 @@ namespace sg
     {
     public:
       template<typename = typename std::enable_if<
-        std::is_constructible<std::function<void()>, Callback>::value>::type>
+        std::is_constructible<std::function<void()>, Callback>::value
+#if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
+        && std::is_nothrow_invocable_r<void, Callback>::value // TODO _v
+#endif
+      >::type>
       explicit scope_guard(Callback&& callback);
 
       scope_guard(scope_guard&& other);
