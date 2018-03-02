@@ -30,7 +30,7 @@ using namespace sg;
 // TODO add shared_ptr tests
 // TODO add move guard into function tests
 // TODO add move guard into container tests
-// TODO add tests for move assignment
+// TODO add tests for move assignment (need assignment op)
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)

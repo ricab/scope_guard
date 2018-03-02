@@ -1,7 +1,7 @@
 # scope_guard [under construction]
 ## TLDR
-A general, tested, and easy to use C++11/14/17 scope guard maker function.
-Example:
+A general, easy to use, and exaustively tested C++11/14/17 scope guard maker 
+function. Example:
 
 ```c++
 auto guard = make_scope_guard(my_callback);
@@ -12,22 +12,23 @@ auto guard = make_scope_guard(my_callback);
 ## Table of contents
 
 - [scope_guard [under construction]](#scope-guard--under-construction-)
-  * [Intro](#intro)
+  * [TLDR](#tldr)
   * [Table of contents](#table-of-contents)
   * [Features](#features)
     + [Main features](#main-features)
     + [Other characteristics](#other-characteristics)
   * [Usage](#usage)
     + [Preconditions](#preconditions)
+      - [no arguments](#no-arguments)
       - [void return](#void-return)
       - [no throw](#no-throw)
     + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option--sg-require-noexcept-in-cpp17-)
       - [Implications](#implications)
-  * [Running tests](#running-tests)
+  * [Running the tests](#running-the-tests)
     + [Instructions](#instructions)
-      - [cmake Options](#cmake-options)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
 
 ## Features
 
@@ -64,16 +65,26 @@ See tests for more examples [TODO link tests].
 
 ### Preconditions
 
-Besides being invocable with no arguments, the callback that is used to create a `scope_guard` must respect the following preconditions.
+The callback that is used to create a `scope_guard` must respect the following preconditions.
+
+#### no arguments
+The callback must be invocable with no arguments. Use bind or a lambda to pass
+something that takes arguments in its original form. For example:
+
+```c++
+void my_resource_release(Resource& r) noexcept;
+make_scope_guard(my_resource_release); // ERROR: which resource?
+make_scope_guard([&some_resource]() noexcept { my_resource_release(some_resource); }); // OK
+```
 
 #### void return
 
-The callback must return void. Returning anything else is intentionally not
-accepted. This forces the client to confirm their intention, by explicitly
+The callback must return void. Returning anything else is intentionally
+forbidden. This forces the client to confirm their intention, by explicitly
 writing code to ignore a return, if that really is what they want. For example:
 
 ```c++
-bool foo() noexcept; // definition elsewhere
+bool foo() noexcept;
 make_scope_guard(foo); // ERROR: does not return void
 make_scope_guard(()[] noexcept {/*bool ignored =*/ foo();}); // OK
 ```
@@ -83,15 +94,26 @@ intentional ones for code readers.
 
 #### no throw
 
-The callback _is required_ not to throw. Notice,
-however, that this is not checked by default and throwing from a
-`scope_guard` callback results in a call to std::terminate. This follows the
+The callback _is required_ not to throw. If you would like to use something that
+might throw, you can wrap it in a `try-catch` block, explicitly choosing what
+to do with any exceptions that arise. For example:
+
+```c++
+bool throwing() { throw std::runtime_error{"some error"}; }
+make_scope_guard([]() noexcept 
+{
+  try { throwing(); } catch(...) { /* choosing to ignore */ }
+});
+```
+
+Notice that, by default, callbacks are not verified not to throw. Throwing from
+a `scope_guard` callback results in a call to std::terminate. This follows the
 same approach as custom deleters in such standard library types as `unique_ptr`
 and `shared_ptr` (see `[unique.ptr.single.ctor]` and
 `[unique.ptr.single.dtor]` in the C++ standard.).
 
 I acknowledge that the destructor for `scope_guard` could
-be conditionally `noexcept` instead, but that is not advisable either and would
+be conditionally `noexcept` instead, but that is not advisable either and could
 create a false sense of safety (better _fail-fast_-ish, I suppose).
 
 Personally, I prefer to enforce that the callback be
@@ -142,7 +164,7 @@ lambdas to wrap anything else, e.g.:
 
     make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
 
-## Running tests
+## Running the tests
 There are two dependencies to execute the tests:
 - Cmake (at least version 3.1)
 - Catch2
@@ -174,12 +196,6 @@ Note: to obtain more output (e.g. because there was a failure), run
 `VERBOSE=1 make test_verbose` instead, to get the command lines used in
 compilation tests as well as the test output.
 
-#### cmake Options
-The custom cmake option `SG_CXX17` is available to compile with C++17 (or
-c++1z in earlier compilers). When `SG_CXX17` is on, the dependent option
-`SG_REQUIRE_NOEXCEPT_IN_CPP17` becomes available. This is translated to the
-preprocessor define of the same name, with the effect documented
-[above](#option-sg_require_noexcept_in_cpp17).
 
 
 
