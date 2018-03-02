@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.8) # for cxx_std_17 in CMAKE_CXX_KNOWN_FEATURES
 project(scope_guard)
 
 # handle inclusions and dependencies
+include(CheckCXXSymbolExists)
 include(CheckCXXCompilerFlag)
 include(GNUInstallDirs)
 find_package(Catch2 REQUIRED)
@@ -9,6 +10,11 @@ find_package(Catch2 REQUIRED)
 # global configurations
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# check for compiler support of noexcept in type
+set(CMAKE_REQUIRED_FLAGS "-std=c++1z") # only for this check
+CHECK_CXX_SYMBOL_EXISTS(__cpp_noexcept_function_type "" HAS_NOEXCEPT_IN_TYPE)
+unset(CMAKE_REQUIRED_FLAGS)
 
 # global compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -149,8 +155,13 @@ function(expect_result ret count cxx17 reqne)
   endif()
 endfunction()
 
+set(cxx17_possibilities FALSE)
+if(HAS_NOEXCEPT_IN_TYPE)
+  list(APPEND cxx17_possibilities TRUE)
+endif()
+
 # actually add the tests
-foreach(cxx17 FALSE TRUE)
+foreach(cxx17 ${cxx17_possibilities})
   foreach(reqne FALSE TRUE)
     # add catch tests for this standard/noexcept-requirement combination
     add_catch_tests_batch(catch_tests.cpp ${cxx17} ${reqne})

@@ -193,13 +193,18 @@ There are a few dependencies to execute the tests:
     $ make test
     ```
 
-This will run the catch tests and compile-time tests 4 times, one per capital
-letter in the following table:
+This will run catch and compile-time tests with different combinations of
+SG_REQUIRE_NOEXCEPT_IN_CPP17 and C++ standard, depending on compiler
+capabilities. If the compiler supports exception specifications as part of the
+type system ([P0012R1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html)),
+both C++11 and C++17 cases are tested (cases X, Y, W, and Z in the table below).
+Otherwise, only C++11 is tested (cases X and Y below). Notice that noexcept is
+only effectively required in case Z.
 
-| standard/require_noexcept | c++11 | c++17  |
-| ------------------------- |:-----:|:------:|
-| **allow except**          | A     |   B    |
-| **require noexcept**      | C     |   D    |
+| standard/pp-define                                   | c++11 | c++17  |
+| ---------------------------------------------------- |:-----:|:------:|
+| **SG_REQUIRE_NOEXCEPT_IN_CPP17 undefined**           | X     |   W    |
+| **SG_REQUIRE_NOEXCEPT_IN_CPP17 defined**             | Y     |  *Z*   |
  
 Note: to obtain more output (e.g. because there was a failure), run
 `VERBOSE=1 make test_verbose` instead, to get the command lines used in
