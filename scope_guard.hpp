@@ -19,23 +19,23 @@ namespace sg
 {
   namespace detail
   {
-    /**
-     * A scope_guard - an RAII object that executes a provided callback upon
-     * destruction.
-     *
-     * @see make_scope_guard for further info
-     * @see tests for usage examples
-     */
+    // Type trait determining whether a type is a proper scope_guard callback.
+    template<typename T>
+    struct is_proper_sg_callback : public
+#ifdef SG_REQUIRE_NOEXCEPT
+      std::is_nothrow_invocable_r<void, T>
+#else
+      std::is_constructible<std::function<void()>, T>
+#endif
+    {};
+
+    // The actual scope guard type
     template<typename Callback>
     class scope_guard
     {
     public:
       template<typename = typename std::enable_if<
-        std::is_constructible<std::function<void()>, Callback>::value
-#ifdef SG_REQUIRE_NOEXCEPT
-        && std::is_nothrow_invocable_r<void, Callback>::value // TODO _v
-#endif
-      >::type>
+        is_proper_sg_callback<Callback>::value>::type>
       explicit scope_guard(Callback&& callback);
 
       scope_guard(scope_guard&& other);
