@@ -19,9 +19,9 @@ namespace
   StdFun non_throwing_stdfun{non_throwing}; // drops noexcept
   StdFun meh_stdfun{meh};
 
-  auto throwing_lambda = [](){ throwing(); };
+  auto throwing_lambda = []{ throwing(); };
   auto non_throwing_lambda = []() noexcept { non_throwing(); };
-  auto meh_lambda = [](){ meh(); };
+  auto meh_lambda = []{ meh(); };
 
   auto throwing_bound = std::bind(throwing);
   auto non_throwing_bound = std::bind(non_throwing); // drops noexcept

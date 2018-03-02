@@ -1,6 +1,7 @@
 # scope_guard [under construction]
 ## TLDR
-A general, tested, and easy to use C++11/14/17 scope guard. Example:
+A general, tested, and easy to use C++11/14/17 scope guard maker function.
+Example:
 
 ```c++
 auto guard = make_scope_guard(my_callback);
@@ -32,7 +33,7 @@ auto guard = make_scope_guard(my_callback);
 
 ### Main features
 - [x] &ge; C++11
-- [ ] Single `make_scope_guard` function interface
+- [ ] Single function interface (`make_scope_guard`)
 - [x] Fast (no added runtime `std::function` penalties)
 - [x] General: accepts any callable that respects the preconditions
 [below](#preconditions)
@@ -124,8 +125,8 @@ This option has no effect unless &ge;C++17 is used.
 
 Unfortunately, even in C++17 things are not ideal, and information on
 exception specification is not propagated to types like `std::function` or
-the result of `std::bind`. For instance, the following code does not compile
-in C++17:
+the result of `std::bind` and `std::ref`. For instance, the following code
+does not compile in C++17:
 
 ```c++
 void f() noexcept { }
