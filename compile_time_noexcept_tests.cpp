@@ -29,7 +29,7 @@ namespace
 
   struct throwing_struct
   {
-    void operator()() { throwing(); }
+    [[noreturn]] void operator()() { throwing(); }
   } throwing_functor;
 
   struct non_throwing_struct
@@ -47,15 +47,15 @@ namespace
    */
   namespace test_good
   {
-    void test()
+    inline void test() // inlining to avoid missing prototype warning
     {
-#if test_1
+#ifdef test_1
       make_scope_guard(non_throwing);
 #endif
-#if test_2
+#ifdef test_2
       make_scope_guard(non_throwing_lambda);
 #endif
-#if test_3
+#ifdef test_3
       make_scope_guard(non_throwing_functor);
 #endif
     }
@@ -67,21 +67,21 @@ namespace
    */
   namespace test_bad
   {
-    void test()
+    inline void test()
     {
-#if test_4
+#ifdef test_4
       make_scope_guard(throwing);
 #endif
-#if test_5
+#ifdef test_5
       make_scope_guard(throwing_stdfun);
 #endif
-#if test_6
+#ifdef test_6
       make_scope_guard(throwing_lambda);
 #endif
-#if test_7
+#ifdef test_7
       make_scope_guard(throwing_bound);
 #endif
-#if test_8
+#ifdef test_8
       make_scope_guard(throwing_functor);
 #endif
     }
@@ -94,21 +94,21 @@ namespace
    */
   namespace test_fixable
   {
-    void test()
+    inline void test()
     {
-#if test_9
+#ifdef test_9
       make_scope_guard(meh);
 #endif
-#if test_10
+#ifdef test_10
       make_scope_guard(meh_stdfun);
 #endif
-#if test_11
+#ifdef test_11
       make_scope_guard(meh_lambda);
 #endif
-#if test_12
+#ifdef test_12
       make_scope_guard(meh_bound);
 #endif
-#if test_13
+#ifdef test_13
       make_scope_guard(meh_functor);
 #endif
     }
@@ -119,12 +119,12 @@ namespace
    */
   namespace test_unfortunate
   {
-    void test()
+    inline void test()
     {
-#if test_14
+#ifdef test_14
       make_scope_guard(non_throwing_stdfun);
 #endif
-#if test_15
+#ifdef test_15
       make_scope_guard(non_throwing_bound);
 #endif
     }

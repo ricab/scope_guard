@@ -16,12 +16,13 @@ set(CMAKE_REQUIRED_FLAGS "-std=c++1z") # only for this check
 CHECK_CXX_SYMBOL_EXISTS(__cpp_noexcept_function_type "" HAS_NOEXCEPT_IN_TYPE)
 unset(CMAKE_REQUIRED_FLAGS)
 
-# global compiler warnings
+# compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Weverything -pedantic \
-                                          -Wno-c++98-compat \
-                                          -Wno-unreachable-code \
-                                          -Wno-padded")
+  set(clang_warnings "-Weverything -pedantic -Wno-c++98-compat \
+    -Wno-unreachable-code -Wno-padded -Wno-exit-time-destructors \
+    -Wno-global-constructors -Wno-exit-time-destructors -Wno-unused-variable \
+    -Wno-unused-member-function -Wno-unused-function")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${clang_warnings}")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic \
                                           -Wno-unused")
