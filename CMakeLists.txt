@@ -173,7 +173,7 @@ foreach(cxx17 ${cxx17_possibilities})
                               # [1,3] - always success;
                               # [4-15] - fail when requiring noexcept
       expect_result(success ${count} ${cxx17} ${reqne})
-      add_compilation_test(compile_time_noexcept_tests.cpp
+      add_compilation_test(compile_time_tests.cpp
                            ${success} ${cxx17} ${reqne} ${count})
     endforeach()
   endforeach()

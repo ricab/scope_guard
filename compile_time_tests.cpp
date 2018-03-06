@@ -45,46 +45,40 @@ namespace
   /**
    * Things that should pass compilation and run successfully in all cases
    */
-  namespace test_good
+  void test_noexcept_good()
   {
-    inline void test() // inlining to avoid missing prototype warning
-    {
 #ifdef test_1
-      make_scope_guard(non_throwing);
+    make_scope_guard(non_throwing);
 #endif
 #ifdef test_2
-      make_scope_guard(non_throwing_lambda);
+    make_scope_guard(non_throwing_lambda);
 #endif
 #ifdef test_3
-      make_scope_guard(non_throwing_functor);
+    make_scope_guard(non_throwing_functor);
 #endif
-    }
   }
 
   /**
    * Things that should fail compilation when noexcept is required and pass
    * compilation otherwise, resulting in a call to std::terminate
    */
-  namespace test_bad
+  void test_noexcept_bad()
   {
-    inline void test()
-    {
 #ifdef test_4
-      make_scope_guard(throwing);
+    make_scope_guard(throwing);
 #endif
 #ifdef test_5
-      make_scope_guard(throwing_stdfun);
+    make_scope_guard(throwing_stdfun);
 #endif
 #ifdef test_6
-      make_scope_guard(throwing_lambda);
+    make_scope_guard(throwing_lambda);
 #endif
 #ifdef test_7
-      make_scope_guard(throwing_bound);
+    make_scope_guard(throwing_bound);
 #endif
 #ifdef test_8
-      make_scope_guard(throwing_functor);
+    make_scope_guard(throwing_functor);
 #endif
-    }
   }
 
   /**
@@ -92,52 +86,45 @@ namespace
    * though they don't throw, because they should have been marked noexcept but
    * weren't
    */
-  namespace test_fixable
+  void test_noexcept_fixable()
   {
-    inline void test()
-    {
 #ifdef test_9
-      make_scope_guard(meh);
+    make_scope_guard(meh);
 #endif
 #ifdef test_10
-      make_scope_guard(meh_stdfun);
+    make_scope_guard(meh_stdfun);
 #endif
 #ifdef test_11
-      make_scope_guard(meh_lambda);
+    make_scope_guard(meh_lambda);
 #endif
 #ifdef test_12
-      make_scope_guard(meh_bound);
+    make_scope_guard(meh_bound);
 #endif
 #ifdef test_13
-      make_scope_guard(meh_functor);
+    make_scope_guard(meh_functor);
 #endif
-    }
   }
 
   /**
    * Things that should be ok but aren't because they cannot be marked noexcept
    */
-  namespace test_unfortunate
+  void test_noexcept_unfortunate()
   {
-    inline void test()
-    {
 #ifdef test_14
-      make_scope_guard(non_throwing_stdfun);
+    make_scope_guard(non_throwing_stdfun);
 #endif
 #ifdef test_15
-      make_scope_guard(non_throwing_bound);
+    make_scope_guard(non_throwing_bound);
 #endif
-    }
   }
 }
 
 int main()
 {
-  test_good::test();
-  test_fixable::test();
-  test_unfortunate::test();
-
-  // test_bad::test(); // this would result in a call to std::terminate
+  test_noexcept_good();
+  test_noexcept_fixable();
+  test_noexcept_unfortunate();
+  // test_noexcept_bad(); // this would result in a call to std::terminate
 
   return 0;
 }
