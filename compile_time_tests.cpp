@@ -43,7 +43,7 @@ namespace
   } meh_functor;
 
   /**
-   * Things that should pass compilation and run successfully in all cases
+   * Test scope_guard can always be created with noexcept marked callables
    */
   void test_noexcept_good()
   {
@@ -59,8 +59,9 @@ namespace
   }
 
   /**
-   * Things that should fail compilation when noexcept is required and pass
-   * compilation otherwise, resulting in a call to std::terminate
+   * Highlight that scope_guard should not be created with throwing callables,
+   * under penalty of an immediate std::terminate call. Test that compilation
+   * fails on such an attempt when noexcept is required.
    */
   void test_noexcept_bad()
   {
@@ -82,9 +83,9 @@ namespace
   }
 
   /**
-   * Things that should fail compilation when noexcept is required, even
-   * though they don't throw, because they should have been marked noexcept but
-   * weren't
+   * Highlight the importance of declaring scope_guard callables noexcept
+   * (when they do not throw). Test that compilation fails on attempts to the
+   * contrary when noexcept is required.
    */
   void test_noexcept_fixable()
   {
@@ -106,7 +107,10 @@ namespace
   }
 
   /**
-   * Things that should be ok but aren't because they cannot be marked noexcept
+   * Highlight that some callables cannot be declared noexcept even if they are
+   * known not to throw. Show that trying to create scope_guards with such
+   * objects unfortunately (but unavoidably AFAIK) breaks compilation when
+   * noexcept is required
    */
   void test_noexcept_unfortunate()
   {
