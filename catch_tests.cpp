@@ -10,7 +10,7 @@
 
 using namespace sg;
 
-// TODO add tests for leaving scope through exception
+// TODO add tests for leaving scope through return
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
@@ -700,4 +700,24 @@ TEST_CASE("Test nested scopes")
   REQUIRE(lvl3c_count == 1);
   REQUIRE_FALSE(lvl0_count);
 
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("scope_guards execute their callback exactly once when leaving "
+          "scope due to an exception")
+{
+  reset();
+  auto countl = 0u;
+
+  try
+  {
+    const auto guard = make_scope_guard(inc);
+    const auto guardl = make_scope_guard([&countl]() noexcept { ++countl; });
+    throw "foo";
+  }
+  catch(...)
+  {
+    REQUIRE(count == 1u);
+    REQUIRE(countl == 1u);
+  }
 }
