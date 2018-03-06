@@ -10,7 +10,6 @@
 
 using namespace sg;
 
-// TODO add tests for leaving scope through return
 // TODO add static_tests for disallowed copy and assignment
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
@@ -25,7 +24,6 @@ using namespace sg;
 // TODO add shared_ptr tests
 // TODO add move guard into function tests
 // TODO add move guard into container tests
-// TODO add tests for deleted special functions (copy ctor, copy/move assignment)
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)
@@ -720,4 +718,24 @@ TEST_CASE("scope_guards execute their callback exactly once when leaving "
     REQUIRE(count == 1u);
     REQUIRE(countl == 1u);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  unsigned returning(unsigned ret)
+  {
+    const auto guard = make_scope_guard(inc);
+    return ret;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("scope_guards execute their callback exactly once when leaving "
+          "scope due to a return")
+{
+  reset();
+
+  REQUIRE(123 == returning(123));
+  REQUIRE(count == 1u);
 }
