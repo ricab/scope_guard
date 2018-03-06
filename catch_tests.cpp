@@ -597,7 +597,6 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   REQUIRE(lambda_count == 2u);
 }
 
-#ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Multiple independent scope_guards do not interfere with each "
           "other - each of their post-conditions hold.")
@@ -607,7 +606,7 @@ TEST_CASE("Multiple independent scope_guards do not interfere with each "
   auto c = 0u;
 
   {
-    auto guard_a = make_scope_guard(std::bind(incc, std::ref(a)));
+    auto guard_a = make_scope_guard([&a]() noexcept { incc(a); });
     REQUIRE_FALSE(a);
     REQUIRE_FALSE(b);
     REQUIRE_FALSE(c);
@@ -617,8 +616,8 @@ TEST_CASE("Multiple independent scope_guards do not interfere with each "
   REQUIRE_FALSE(c);
 
   {
-    auto guard_b = make_scope_guard(std::bind(incc, std::ref(b)));
-    auto guard_c = make_scope_guard(std::bind(incc, std::ref(c)));
+    auto guard_b = make_scope_guard([&b]() noexcept { incc(b); });
+    auto guard_c = make_scope_guard([&c]() noexcept { incc(c); });
     REQUIRE(a == 1u);
     REQUIRE_FALSE(b);
     REQUIRE_FALSE(c);
@@ -631,9 +630,6 @@ TEST_CASE("Multiple independent scope_guards do not interfere with each "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Test nested scopes")
 {
-  using std::bind;
-  using std::ref;
-
   auto lvl0_count  = 0u;
   auto lvl1_count  = 0u;
   auto lvl2a_count = 0u;
@@ -642,19 +638,22 @@ TEST_CASE("Test nested scopes")
   auto lvl3b_count = 0u;
   auto lvl3c_count = 0u;
 
-  const auto lvl0_guard = make_scope_guard(bind(incc, ref(lvl0_count)));
+  const auto lvl0_guard =
+    make_scope_guard([&lvl0_count]() noexcept { incc(lvl0_count); });
   REQUIRE_FALSE(lvl0_count);
 
   {
-    const auto lvl1_guard = make_scope_guard(bind(incc, ref(lvl1_count)));
-    REQUIRE_FALSE(lvl1_count);
+    const auto lvl1_guard =
+      make_scope_guard([&lvl1_count]() noexcept { incc(lvl1_count); });
 
     {
-      const auto lvl2a_guard = make_scope_guard(bind(incc, ref(lvl2a_count)));
+      const auto lvl2a_guard =
+        make_scope_guard([&lvl2a_count]() noexcept { incc(lvl2a_count); });
       REQUIRE_FALSE(lvl2a_count);
 
       {
-        const auto lvl3a_guard = make_scope_guard(bind(incc, ref(lvl3a_count)));
+        const auto lvl3a_guard =
+          make_scope_guard([&lvl3a_count]() noexcept { incc(lvl3a_count); });
         REQUIRE_FALSE(lvl3a_count);
       }
 
@@ -667,14 +666,17 @@ TEST_CASE("Test nested scopes")
     REQUIRE_FALSE(lvl0_count);
 
     {
-      const auto lvl2b_guard = make_scope_guard(bind(incc, ref(lvl2b_count)));
+      const auto lvl2b_guard =
+        make_scope_guard([&lvl2b_count]() noexcept { incc(lvl2b_count); });
       REQUIRE_FALSE(lvl2b_count);
 
       {
-        const auto lvl3b_guard = make_scope_guard(bind(incc, ref(lvl3b_count)));
+        const auto lvl3b_guard =
+          make_scope_guard([&lvl3b_count]() noexcept { incc(lvl3b_count); });
         REQUIRE_FALSE(lvl3b_count);
 
-        const auto lvl3c_guard = make_scope_guard(bind(incc, ref(lvl3c_count)));
+        const auto lvl3c_guard =
+          make_scope_guard([&lvl3c_count]() noexcept { incc(lvl3c_count); });
         REQUIRE_FALSE(lvl3c_count);
       }
 
@@ -699,4 +701,3 @@ TEST_CASE("Test nested scopes")
   REQUIRE_FALSE(lvl0_count);
 
 }
-#endif
