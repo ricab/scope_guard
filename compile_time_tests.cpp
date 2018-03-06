@@ -121,6 +121,29 @@ namespace
     make_scope_guard(non_throwing_bound);
 #endif
   }
+
+  /**
+   * Test that compilation fails when trying to copy-construct a scope_guard
+   */
+  void test_disallowed_copy_constructions()
+  {
+    const auto guard = make_scope_guard(non_throwing);
+#ifdef test_16
+    const auto guard2 = guard1;
+#endif
+  }
+
+  /**
+   * Test that compilation fails when trying to copy-assign a scope_guard
+   */
+  void test_disallowed_copy_assignment()
+  {
+    const auto guard1 = make_scope_guard(non_throwing_lambda);
+    auto guard2 = make_scope_guard(non_throwing_functor);
+#ifdef test_17
+    guard2 = guard1;
+#endif
+  }
 }
 
 int main()

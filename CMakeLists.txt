@@ -167,14 +167,21 @@ foreach(cxx17 ${cxx17_possibilities})
     # add catch tests for this standard/noexcept-requirement combination
     add_catch_tests_batch(catch_tests.cpp ${cxx17} ${reqne})
 
-    # add compilation tests for this standard/noexcept-requirement combination
+    # add noexcept compilation tests for this standard/noexcept-requirement
+    # combination
     foreach(count RANGE 0 15) # range inclusive in cmake
                               # 0 - all test macros off;
-                              # [1,3] - always success;
+                              # [1,3] - always succeed;
                               # [4-15] - fail when requiring noexcept
       expect_result(success ${count} ${cxx17} ${reqne})
       add_compilation_test(compile_time_tests.cpp
                            ${success} ${cxx17} ${reqne} ${count})
+    endforeach()
+    # add other compilation tests for this standard/noexcept-requirement
+    # combination (they should always fail)
+    foreach(count RANGE 16 17) # range inclusive in cmake
+      add_compilation_test(compile_time_tests.cpp
+                           FALSE ${cxx17} ${reqne} ${count})
     endforeach()
   endforeach()
 endforeach()
