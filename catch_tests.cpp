@@ -10,8 +10,7 @@
 
 using namespace sg;
 
-// TODO add static_tests for disallowed copy and assignment
-// TODO add tests to show move assignment is allowed and a good way to achieve deactivation - add to readme
+// TODO add tests to show move assignment is forbidden
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
 // TODO add custom functor tests
@@ -92,7 +91,6 @@ TEST_CASE("Demonstration that direct constructor call is possible, but not "
   scope_guard<decltype(inc)&&>{std::move(inc)}; // ... or even rvalue ref, which
                                                 // with functions is treated
                                                 // just like an lvalue...
-
 
   make_scope_guard(inc); // ... but the BEST is really to use the make function
 }
