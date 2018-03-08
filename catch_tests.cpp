@@ -9,11 +9,11 @@
 #include "catch/catch.hpp"
 
 #include <memory>
+#include <list>
 
 using namespace sg;
 
 // TODO compile tests showing scope_guard ctors and dtor are noexcept
-// TODO add move guard into container tests
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)
@@ -1133,6 +1133,24 @@ TEST_CASE("A scope_guard that is moved from does not call its callback when "
     REQUIRE_FALSE(count);
   }
 
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is moved into a container does not call its "
+          "callback when leaving scope; the callback is called when the "
+          "corresponding container element is destroyed")
+{
+  reset();
+  std::list<decltype(make_scope_guard(inc))> l;
+
+  {
+    l.push_back(make_scope_guard(inc));
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+  l.clear();
   REQUIRE(count == 1u);
 }
 
