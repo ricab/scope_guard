@@ -882,6 +882,26 @@ TEST_CASE("A bound-const-method-based scope_guard executes the method "
 }
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A static method can be used to create a scope_guard")
+{
+  make_scope_guard(static_method_holder::static_inc_method);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A static-method-based scope_guard executes the static method "
+          "exactly once when leaving scope")
+{
+  resetc(static_method_holder::ms_count);
+
+  {
+    auto guard = make_scope_guard(static_method_holder::static_inc_method);
+    REQUIRE_FALSE(static_method_holder::ms_count);
+  }
+
+  REQUIRE(static_method_holder::ms_count == 1u);
+}
+
 /* --- miscellaneous --- */
 
 ////////////////////////////////////////////////////////////////////////////////
