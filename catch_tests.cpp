@@ -10,23 +10,13 @@
 
 using namespace sg;
 
-// TODO add bound method
-// TODO add bound virtual method
-// TODO add (static) member function tests
-// TODO add bound member function tests
-// TODO add boost tests on conditional boost include finding
-// TODO add actual rollback test
-// TODO add temporary test
-// TODO add new/delete tests
-// TODO add unique_ptr tests
-// TODO add shared_ptr tests
-// TODO add move guard into function tests
+// TODO add move guard into holder
 // TODO add move guard into container tests
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
-// TODO refactor tests, extracting common part where possible
 // TODO for bonus, support function overloads (not sure how or if at all possible)
-// TODO add doxygen file and check correct documentation
+// TODO check correct documentation
+// Look for missing TODO's and remove under_construction tag
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
