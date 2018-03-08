@@ -10,6 +10,8 @@
 
 using namespace sg;
 
+// TODO add bound method
+// TODO add bound virtual method
 // TODO add (static) member function tests
 // TODO add bound member function tests
 // TODO add boost tests on conditional boost include finding
@@ -732,6 +734,108 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 }
+
+/* --- methods --- */
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  struct regular_method_holder
+  {
+    regular_method_holder() = default;
+    void regular_inc_method() noexcept { incc(m_count); }
+
+    unsigned m_count = 0u;
+  };
+
+  struct const_method_holder
+  {
+    const_method_holder() = default;
+    void const_inc_method() noexcept { incc(m_count); }
+
+    mutable unsigned m_count = 0u;
+  };
+
+  struct static_method_holder
+  {
+    static_method_holder() = delete;
+    static void static_inc_method() noexcept { incc(ms_count); }
+
+    static unsigned ms_count;
+  };
+  unsigned static_method_holder::ms_count = 0u;
+
+  struct virtual_method_holder_pure_base
+  {
+    virtual ~virtual_method_holder_pure_base() = default;
+    virtual void virtual_inc_method() noexcept = 0;
+
+    unsigned m_count = 0;
+  };
+
+  struct virtual_method_holder_intermediate :
+    public virtual_method_holder_pure_base
+  {
+    void virtual_inc_method() noexcept override
+    {
+      m_count += 2;
+    }
+  };
+
+  struct virtual_method_holder : public virtual_method_holder_intermediate
+  {
+    void virtual_inc_method() noexcept override
+    {
+      virtual_method_holder_intermediate::virtual_inc_method();
+      --m_count;
+    }
+  };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped regular method can be used to create a scope_guard")
+{
+  regular_method_holder h{};
+  make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped-regular-method-based scope_guard executes the "
+          "method exactly once when leaving scope")
+{
+  regular_method_holder h{};
+
+  {
+    auto guard = make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+
+#ifndef SG_REQUIRE_NOEXCEPT
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound regular method can be used to create a scope_guard")
+{
+  regular_method_holder h{};
+  make_scope_guard(std::bind(&regular_method_holder::regular_inc_method, h));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound-regular-method-based scope_guard executes the method "
+          "exactly once when leaving scope")
+{
+  regular_method_holder h{};
+
+  {
+    auto guard = make_scope_guard(
+      std::bind(&regular_method_holder::regular_inc_method, &h));
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+#endif
 
 /* --- miscellaneous --- */
 
