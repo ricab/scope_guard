@@ -10,9 +10,8 @@
 
 using namespace sg;
 
-// TODO add const functor test
-// TODO add const lambda test
-// TODO add member function tests
+// TODO add (static) member function tests
+// TODO add bound member function tests
 // TODO add boost tests on conditional boost include finding
 // TODO add actual rollback test
 // TODO add temporary test
@@ -122,6 +121,29 @@ TEST_CASE("An lvalue-reference-to-plain-function-based scope_guard executes "
 
   {
     auto& inc_ref = inc;
+    const auto guard = make_scope_guard(inc_ref);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue const reference to a plain function can be used to create "
+          "a scope_guard.")
+{
+  const auto& inc_ref = inc;
+  make_scope_guard(inc_ref);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue-const-reference-to-plain-function-based scope_guard "
+          "executes the function exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto& inc_ref = inc;
     const auto guard = make_scope_guard(inc_ref);
     REQUIRE_FALSE(count);
   }
@@ -441,6 +463,31 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const lambda function with capture can be used to create a "
+          "scope_guard.")
+{
+  const auto f = 0.0f;
+  auto i = -1;
+  const auto lambda = [&f, i]() noexcept {};
+  make_scope_guard(lambda);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const-capturing-lambda-based scope_guard executes the lambda when "
+          "leaving scope.")
+{
+  auto lambda_count = 0u;
+
+  {
+    const auto lambda = [&lambda_count]() noexcept { incc(lambda_count); };
+    const auto guard = make_scope_guard(lambda);
+    REQUIRE_FALSE(lambda_count);
+  }
+
+  REQUIRE(lambda_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
           "calls the lambda exactly once when leaving scope, which in turn "
           "calls the regular function.")
@@ -562,13 +609,13 @@ namespace
 {
   struct StatelessFunctor
   {
-    void operator()() noexcept { inc(); }
+    void operator()() const noexcept { inc(); }
   };
 
   struct StatefulFunctor
   {
     StatefulFunctor(unsigned& c) : m_c{c} {}
-    void operator()() noexcept { incc(m_c); }
+    void operator()() const noexcept { incc(m_c); }
 
     unsigned& m_c;
   };
@@ -581,7 +628,7 @@ TEST_CASE("A stateless custom functor can be used to create a scope_guard")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A stateless-custom -functor-based scope_guard calls the functor "
+TEST_CASE("A stateless-custom-functor-based scope_guard calls the functor "
           "exactly once when leaving scope.")
 {
   reset();
@@ -615,6 +662,27 @@ TEST_CASE("A stateful-custom-functor-based scope_guard calls the functor "
   REQUIRE(functor_count == 1u);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const custom functor can be used to create a scope_guard")
+{
+  const auto fun = StatelessFunctor{};
+  make_scope_guard(fun);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const-custom-functor-based scope_guard calls the functor "
+          "exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto fun = StatelessFunctor{};
+    const auto guard = make_scope_guard(fun);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("several levels of indirection involving lambdas, binds, "
           "std::functions, custom functors, and regular functions.")
