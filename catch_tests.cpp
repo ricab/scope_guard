@@ -22,6 +22,7 @@ using namespace sg;
 // TODO add move guard into container tests
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
+// TODO refactor tests, extracting common part where possible
 // TODO for bonus, support function overloads (not sure how or if at all possible)
 // TODO add doxygen file and check correct documentation
 
