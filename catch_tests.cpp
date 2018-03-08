@@ -10,6 +10,7 @@
 
 using namespace sg;
 
+// TODO test move guard into maker
 // TODO add tests to show move assignment is forbidden
 // TODO add test moved guard has no effect
 // TODO add test to show function can still be called multiple times outside scope guard
@@ -737,4 +738,25 @@ TEST_CASE("scope_guards execute their callback exactly once when leaving "
 
   REQUIRE(123 == returning(123));
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
+          "execute its callback when moved, nor when leaving scope, but the "
+          "thus-constructed guard still does execute its callback when leaving "
+          "scope.")
+{
+  reset();
+
+  {
+    auto source = make_scope_guard(inc);
+    {
+      using CB = decltype(source)::callback_type;
+      detail::scope_guard<CB> dest{std::move(source)};
+      REQUIRE_FALSE(count); // inc not executed with source move
+    }
+    REQUIRE(count == 1u); // inc executed with destruction of dest
+  }
+
+  REQUIRE(count == 1u); // inc not executed with destruction of source
 }

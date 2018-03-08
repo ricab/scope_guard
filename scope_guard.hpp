@@ -34,6 +34,8 @@ namespace sg
     class scope_guard
     {
     public:
+      typedef Callback callback_type;
+
       template<typename = typename std::enable_if<
         is_proper_sg_callback<Callback>::value>::type>
       explicit scope_guard(Callback&& callback) noexcept;
