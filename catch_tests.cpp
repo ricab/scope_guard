@@ -420,7 +420,9 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
-  make_scope_guard([]()noexcept{});
+  auto f = 0.0f;
+  auto i = -1;
+  make_scope_guard([&f, i]()noexcept{});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
