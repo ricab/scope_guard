@@ -902,6 +902,30 @@ TEST_CASE("A static-method-based scope_guard executes the static method "
   REQUIRE(static_method_holder::ms_count == 1u);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped virtual method can be used to create a scope_guard")
+{
+  virtual_method_holder h{};
+  make_scope_guard([&h]() noexcept { h.virtual_inc_method(); });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped-virtual-method-based scope_guard executes the "
+          "virtual method exactly once when leaving scope")
+{
+  virtual_method_holder h{};
+  virtual_method_holder_pure_base& h_base = h;
+
+  {
+    auto guard = make_scope_guard([&h_base]() noexcept
+                                  { h_base.virtual_inc_method(); });
+
+    REQUIRE_FALSE(h_base.m_count);
+  }
+
+  REQUIRE(h_base.m_count == 1u);
+}
+
 /* --- miscellaneous --- */
 
 ////////////////////////////////////////////////////////////////////////////////
