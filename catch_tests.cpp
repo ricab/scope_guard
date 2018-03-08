@@ -837,6 +837,51 @@ TEST_CASE("A bound-regular-method-based scope_guard executes the method "
 }
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped const method can be used to create a scope_guard")
+{
+  const_method_holder h{};
+  make_scope_guard([&h]() noexcept { h.const_inc_method(); });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped-const-method-based scope_guard executes the "
+          "method exactly once when leaving scope")
+{
+  const_method_holder h{};
+
+  {
+    auto guard = make_scope_guard([&h]() noexcept { h.const_inc_method(); });
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+
+#ifndef SG_REQUIRE_NOEXCEPT
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound const method can be used to create a scope_guard")
+{
+  const_method_holder h{};
+  make_scope_guard(std::bind(&const_method_holder::const_inc_method, h));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound-const-method-based scope_guard executes the method "
+          "exactly once when leaving scope")
+{
+  const_method_holder h{};
+
+  {
+    auto guard = make_scope_guard(
+      std::bind(&const_method_holder::const_inc_method, &h));
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+#endif
+
 /* --- miscellaneous --- */
 
 ////////////////////////////////////////////////////////////////////////////////
