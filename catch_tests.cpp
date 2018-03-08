@@ -1048,8 +1048,13 @@ namespace
 {
   unsigned returning(unsigned ret)
   {
-    const auto guard = make_scope_guard(inc);
-    return ret;
+    if(ret)
+    {
+      const auto guard = make_scope_guard(inc);
+      return ret;
+    }
+
+    return 0u;
   }
 }
 
@@ -1102,4 +1107,64 @@ TEST_CASE("Callbacks that are used to make scope_guards can be called "
   }
 
   REQUIRE(count == 5u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  bool is_fake_done = false;
+  void fake_do() noexcept { is_fake_done = true; }
+  void fake_undo() noexcept { is_fake_done = false; }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test custom rollback")
+{
+  fake_do();
+
+  {
+    auto guard = make_scope_guard(fake_undo);
+    REQUIRE(is_fake_done);
+  }
+
+  REQUIRE_FALSE(is_fake_done);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test rollback due to exception")
+{
+  fake_do();
+
+  try
+  {
+    auto guard = make_scope_guard(fake_undo);
+    throw "foobar";
+  }
+  catch(...)
+  {
+    REQUIRE_FALSE(is_fake_done);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  bool fake_returning_undo(bool ret)
+  {
+    if(ret)
+    {
+      auto guard = make_scope_guard(fake_undo);
+      return true;
+    }
+
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test rollback due to return")
+{
+  fake_do();
+  REQUIRE(fake_returning_undo(true));
+  REQUIRE_FALSE(is_fake_done);
 }
