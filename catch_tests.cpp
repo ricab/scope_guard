@@ -35,31 +35,6 @@ namespace
   void inc() noexcept { incc(count); }
   void resetc(unsigned& c) noexcept { c = 0u; }
   void reset() noexcept { resetc(count); }
-
-  template<typename Fun>
-  struct remove_noexcept
-  {
-    using type = Fun;
-  };
-
-  template<typename Ret, typename... Args>
-  struct remove_noexcept<Ret(Args...) noexcept(true)>
-  {
-    using type = Ret(Args...);
-  };
-
-  template<typename Fun>
-  using remove_noexcept_t = typename remove_noexcept<Fun>::type;
-
-  template<typename Fun>
-  std::function<remove_noexcept_t<Fun>>
-  make_std_function(Fun& f) // ref prevents decay to pointer (no move needed)
-  {
-    return std::function<
-      remove_noexcept_t<typename std::remove_reference<Fun>::type>>{f}; /*
-    unfortunately in C++17 std::function does not accept a noexcept target type
-    (results in incomplete type - at least in gcc and clang) */
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -307,6 +282,35 @@ TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  template<typename Fun>
+  struct remove_noexcept
+  {
+    using type = Fun;
+  };
+
+  template<typename Ret, typename... Args>
+  struct remove_noexcept<Ret(Args...) noexcept(true)>
+  {
+    using type = Ret(Args...);
+  };
+
+  template<typename Fun>
+  using remove_noexcept_t = typename remove_noexcept<Fun>::type;
+
+  template<typename Fun>
+  std::function<remove_noexcept_t<Fun>>
+  make_std_function(Fun& f) // ref prevents decay to pointer (no move needed)
+  {
+    return std::function<
+      remove_noexcept_t<typename std::remove_reference<Fun>::type>>{f}; /*
+    unfortunately in C++17 std::function does not accept a noexcept target type
+    (results in incomplete type - at least in gcc and clang) */
+  }
 }
 
 #ifndef SG_REQUIRE_NOEXCEPT
