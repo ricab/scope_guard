@@ -125,7 +125,7 @@ namespace
   /**
    * Test that compilation fails when trying to copy-construct a scope_guard
    */
-  void test_disallowed_copy_constructions()
+  void test_disallowed_copy_construction()
   {
     const auto guard = make_scope_guard(non_throwing);
 #ifdef test_16
@@ -144,6 +144,17 @@ namespace
     guard2 = guard1;
 #endif
   }
+
+  /**
+   * Test that compilation fails when trying to move-assign a scope_guard
+   */
+  void test_disallowed_move_assignment()
+  {
+    auto guard = make_scope_guard(non_throwing);
+#ifdef test_18
+    guard = make_scope_guard(non_throwing_lambda);
+#endif
+  }
 }
 
 int main()
@@ -152,6 +163,10 @@ int main()
   test_noexcept_fixable();
   test_noexcept_unfortunate();
   // test_noexcept_bad(); // this would result in a call to std::terminate
+
+  test_disallowed_copy_construction();
+  test_disallowed_copy_assignment();
+  test_disallowed_move_assignment();
 
   return 0;
 }

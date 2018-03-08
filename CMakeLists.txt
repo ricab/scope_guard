@@ -177,9 +177,9 @@ foreach(cxx17 ${cxx17_possibilities})
       add_compilation_test(compile_time_tests.cpp
                            ${success} ${cxx17} ${reqne} ${count})
     endforeach()
-    # add other compilation tests for this standard/noexcept-requirement
-    # combination (they should always fail)
-    foreach(count RANGE 16 17) # range inclusive in cmake
+    # add other compilation tests (no harm in testing under the 4 configs) 
+    foreach(count RANGE 16 18) # range inclusive in cmake
+                               # these should always fail
       add_compilation_test(compile_time_tests.cpp
                            FALSE ${cxx17} ${reqne} ${count})
     endforeach()
