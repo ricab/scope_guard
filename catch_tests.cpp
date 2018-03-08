@@ -10,10 +10,6 @@
 
 using namespace sg;
 
-// TODO test move guard into maker
-// TODO add tests to show move assignment is forbidden
-// TODO add test moved guard has no effect
-// TODO add test to show function can still be called multiple times outside scope guard
 // TODO add custom functor tests
 // TODO add const functor test
 // TODO add member function tests
@@ -759,4 +755,24 @@ TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
   }
 
   REQUIRE(count == 1u); // inc not executed with destruction of source
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Callbacks that are used to make scope_guards can be called "
+          "independently without affecting the behavior of the scope_guard")
+{
+  reset();
+
+
+  {
+    auto lambda = []() noexcept { inc(); };
+    auto gf = make_scope_guard(inc);
+    auto gl = make_scope_guard(lambda);
+    REQUIRE_FALSE(count);
+
+    inc(); inc(); lambda();
+    REQUIRE(count == 3u);
+  }
+
+  REQUIRE(count == 5u);
 }
