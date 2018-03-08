@@ -10,8 +10,8 @@
 
 using namespace sg;
 
-// TODO add custom functor tests
 // TODO add const functor test
+// TODO add const lambda test
 // TODO add member function tests
 // TODO add boost tests on conditional boost include finding
 // TODO add actual rollback test
@@ -556,6 +556,64 @@ TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
   REQUIRE(boundl_count == 1u);
 }
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  struct StatelessFunctor
+  {
+    void operator()() noexcept { inc(); }
+  };
+
+  struct StatefulFunctor
+  {
+    StatefulFunctor(unsigned& c) : m_c{c} {}
+    void operator()() noexcept { incc(m_c); }
+
+    unsigned& m_c;
+  };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateless custom functor can be used to create a scope_guard")
+{
+  make_scope_guard(StatelessFunctor{});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateless-custom -functor-based scope_guard calls the functor "
+          "exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto guard = make_scope_guard(StatelessFunctor{});
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateful custom functor can be used to create a scope_guard")
+{
+  auto u = 123u;
+  make_scope_guard(StatefulFunctor{u});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateful-custom-functor-based scope_guard calls the functor "
+          "exactly once when leaving scope.")
+{
+  auto functor_count = 0u;
+
+  {
+    const auto guard = make_scope_guard(StatefulFunctor{functor_count});
+    REQUIRE_FALSE(functor_count);
+  }
+
+  REQUIRE(functor_count == 1u);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("several levels of indirection involving lambdas, binds, "
