@@ -8,9 +8,11 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch/catch.hpp"
 
+#include <memory>
+
 using namespace sg;
 
-// TODO add move guard into holder
+// TODO compile tests showing scope_guard ctors and dtor are noexcept
 // TODO add move guard into container tests
 // TODO add tests for descending guard
 // TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
@@ -1087,6 +1089,51 @@ TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
   }
 
   REQUIRE(count == 1u); // inc not executed with destruction of source
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  template<typename Callback>
+  struct scope_guard_holder
+  {
+    scope_guard_holder(detail::scope_guard<Callback>&& guard) noexcept
+      : m_guard{std::move(guard)}
+    {}
+
+    detail::scope_guard<Callback> m_guard;
+  };
+
+#if __cplusplus > 201402L
+  using std::make_unique;
+#else
+  template<typename T, typename... Args>
+  inline std::unique_ptr<T> make_unique(Args&&... args)
+  {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is moved from does not call its callback when "
+          "leaving scope, but the scope_guard that was moved into, does.")
+{
+  reset();
+
+  {
+    using Holder = scope_guard_holder<decltype(inc)&>;
+    std::unique_ptr<Holder> holder = nullptr;
+    {
+      auto guard = make_scope_guard(inc);
+      holder = make_unique<Holder>(std::move(guard));
+      REQUIRE_FALSE(count);
+    }
+
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

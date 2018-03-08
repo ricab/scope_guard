@@ -52,6 +52,7 @@ namespace sg
   } // namespace detail
 
   /* -- now the single public maker function -- */
+
   /**
    * Function to create a scope_guard.
    *
