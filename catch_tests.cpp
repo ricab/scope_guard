@@ -26,7 +26,6 @@ using namespace sg;
 // TODO for bonus, support function overloads (not sure how or if at all possible)
 // TODO add doxygen file and check correct documentation
 
-
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
@@ -66,6 +65,8 @@ TEST_CASE("Demonstration that direct constructor call is possible, but not "
 
   make_scope_guard(inc); // ... but the BEST is really to use the make function
 }
+
+/* --- Plain functions, lvalues, rvalues, plain references, consts --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain-function-based scope_guard executes the function exactly "
@@ -148,6 +149,8 @@ TEST_CASE("An rvalue-reference-to-plain-function-based scope_guard executes "
   REQUIRE(count == 1u);
 }
 
+/* --- std::ref and std::cref --- */
+
 #ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A reference wrapper to a plain function can be used to create a "
@@ -191,6 +194,8 @@ TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
   REQUIRE(count == 1u);
 }
 #endif
+
+/* --- function pointers lvalues/rvalues and references thereof --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue plain function pointer can be used to create a "
@@ -283,6 +288,8 @@ TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
 
   REQUIRE(count == 1u);
 }
+
+/* --- std::function lvalues/rvalues and references thereof --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -417,6 +424,8 @@ TEST_CASE("A scope_guard that is created with an "
 }
 #endif
 
+/* --- lambdas --- */
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
@@ -492,6 +501,8 @@ TEST_CASE("A const-capturing-lambda-based scope_guard executes the lambda when "
   REQUIRE(lambda_count == 1u);
 }
 
+/* --- mixes of plain function, std::function, and lambda indirections --- */
+
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
           "calls the lambda exactly once when leaving scope, which in turn "
@@ -564,6 +575,8 @@ TEST_CASE("A scope_guard created with a lambda-wrapping std::function calls "
   REQUIRE(count == 1u);
 }
 
+/* --- bound functions (std::bind) --- */
+
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound function can be used to create a scope_guard.")
 {
@@ -608,6 +621,8 @@ TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
   REQUIRE(boundl_count == 1u);
 }
 #endif
+
+/* --- custom functors --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -688,12 +703,6 @@ TEST_CASE("A const-custom-functor-based scope_guard calls the functor "
 
   REQUIRE(count == 1u);
 }
-////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("several levels of indirection involving lambdas, binds, "
-          "std::functions, custom functors, and regular functions.")
-{
-  // TODO
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Redundant scope_guards do not interfere with each other - their "
@@ -723,6 +732,8 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 }
+
+/* --- miscellaneous --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Multiple independent scope_guards do not interfere with each "
