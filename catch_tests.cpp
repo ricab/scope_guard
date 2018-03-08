@@ -750,7 +750,7 @@ TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
     auto source = make_scope_guard(inc);
     {
       using CB = decltype(source)::callback_type;
-      detail::scope_guard<CB> dest{std::move(source)};
+      const detail::scope_guard<CB> dest{std::move(source)};
       REQUIRE_FALSE(count); // inc not executed with source move
     }
     REQUIRE(count == 1u); // inc executed with destruction of dest
@@ -767,9 +767,9 @@ TEST_CASE("Callbacks that are used to make scope_guards can be called "
 
 
   {
-    auto lambda = []() noexcept { inc(); };
-    auto gf = make_scope_guard(inc);
-    auto gl = make_scope_guard(lambda);
+    const auto lambda = []() noexcept { inc(); };
+    const auto gf = make_scope_guard(inc);
+    const auto gl = make_scope_guard(lambda);
     REQUIRE_FALSE(count);
 
     inc(); inc(); lambda();
