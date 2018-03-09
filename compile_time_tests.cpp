@@ -4,14 +4,33 @@
  */
 
 #include "scope_guard.hpp"
+#include <utility>
 using namespace sg;
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
+  int returning(int ret) noexcept { return ret; }
+
+#ifdef test_1
+  static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())),
+                "make_scope_guard not noexcept");
+#endif
+
+#ifdef test_2
+  static_assert(noexcept(detail::scope_guard<void(*)()noexcept>{
+    std::declval<void(*)()noexcept>()}), "scope_guard ctor not noexcept");
+#endif
+
+#ifdef test_3
+  static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())
+                         .~scope_guard()),
+                "scope_guard dtor not noexcept");
+#endif
+
   constexpr auto EMSG = "message in a bottle";
-  [[noreturn]] void throwing() { throw std::runtime_error{EMSG}; }
   void non_throwing() noexcept { }
+  [[noreturn]] void throwing() { throw std::runtime_error{EMSG}; }
   void meh() { }
 
   using StdFun = std::function<void()>;
@@ -47,31 +66,16 @@ namespace
    */
   void test_noexcept_good()
   {
-#ifdef test_1
+#ifdef test_4
     make_scope_guard(non_throwing);
 #endif
-#ifdef test_2
+#ifdef test_5
     make_scope_guard(non_throwing_lambda);
 #endif
-#ifdef test_3
+#ifdef test_6
     make_scope_guard(non_throwing_functor);
 #endif
   }
-
-#ifdef test_4
-  static_assert(noexcept(make_scope_guard(non_throwing)),
-                "make_scope_guard not noexcept");
-#endif
-
-#ifdef test_5
-  static_assert(noexcept(detail::scope_guard<void(*)()noexcept>{non_throwing}),
-                "scope_guard ctor not noexcept");
-#endif
-
-#ifdef test_6
-  static_assert(noexcept(make_scope_guard(non_throwing).~scope_guard()),
-                "scope_guard dtor not noexcept");
-#endif
 
   /**
    * Highlight that scope_guard should not be created with throwing callables,
