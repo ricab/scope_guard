@@ -10,7 +10,7 @@ using namespace sg;
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  int returning(int ret) noexcept { return ret; }
+  int returning() noexcept { return 42; }
 
 #ifdef test_1
   static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())),
@@ -174,8 +174,21 @@ namespace
     guard = make_scope_guard(non_throwing_lambda);
 #endif
   }
-}
 
+  /**
+   * Test that compilation fails when trying to use a returning function to
+   * create a scope_guard
+   */
+  void test_disallowed_return()
+  {
+#ifdef test_22
+    make_scope_guard(returning);
+#endif
+#ifdef test_23
+    make_scope_guard([]() noexcept { return 42; });
+#endif
+  }
+}
 
 int main()
 {
@@ -187,6 +200,7 @@ int main()
   test_disallowed_copy_construction();
   test_disallowed_copy_assignment();
   test_disallowed_move_assignment();
+  test_disallowed_return();
 
   return 0;
 }

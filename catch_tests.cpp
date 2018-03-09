@@ -13,9 +13,7 @@
 
 using namespace sg;
 
-// TODO compile tests showing scope_guard ctors and dtor are noexcept
 // TODO add tests for descending guard
-// TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
 // TODO for bonus, support function overloads (not sure how or if at all possible)
 // TODO check correct documentation
 // Look for missing TODO's and remove under_construction tag
