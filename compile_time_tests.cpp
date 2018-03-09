@@ -68,6 +68,11 @@ namespace
                 "scope_guard ctor not noexcept");
 #endif
 
+#ifdef test_6
+  static_assert(noexcept(make_scope_guard(non_throwing).~scope_guard()),
+                "scope_guard dtor not noexcept");
+#endif
+
   /**
    * Highlight that scope_guard should not be created with throwing callables,
    * under penalty of an immediate std::terminate call. Test that compilation
@@ -75,19 +80,19 @@ namespace
    */
   void test_noexcept_bad()
   {
-#ifdef test_6
+#ifdef test_7
     make_scope_guard(throwing);
 #endif
-#ifdef test_7
+#ifdef test_8
     make_scope_guard(throwing_stdfun);
 #endif
-#ifdef test_8
+#ifdef test_9
     make_scope_guard(throwing_lambda);
 #endif
-#ifdef test_9
+#ifdef test_10
     make_scope_guard(throwing_bound);
 #endif
-#ifdef test_10
+#ifdef test_11
     make_scope_guard(throwing_functor);
 #endif
   }
@@ -99,19 +104,19 @@ namespace
    */
   void test_noexcept_fixable()
   {
-#ifdef test_11
+#ifdef test_12
     make_scope_guard(meh);
 #endif
-#ifdef test_12
+#ifdef test_13
     make_scope_guard(meh_stdfun);
 #endif
-#ifdef test_13
+#ifdef test_14
     make_scope_guard(meh_lambda);
 #endif
-#ifdef test_14
+#ifdef test_15
     make_scope_guard(meh_bound);
 #endif
-#ifdef test_15
+#ifdef test_16
     make_scope_guard(meh_functor);
 #endif
   }
@@ -124,10 +129,10 @@ namespace
    */
   void test_noexcept_unfortunate()
   {
-#ifdef test_16
+#ifdef test_17
     make_scope_guard(non_throwing_stdfun);
 #endif
-#ifdef test_17
+#ifdef test_18
     make_scope_guard(non_throwing_bound);
 #endif
   }
@@ -138,7 +143,7 @@ namespace
   void test_disallowed_copy_construction()
   {
     const auto guard = make_scope_guard(non_throwing);
-#ifdef test_18
+#ifdef test_19
     const auto guard2 = guard1;
 #endif
   }
@@ -150,7 +155,7 @@ namespace
   {
     const auto guard1 = make_scope_guard(non_throwing_lambda);
     auto guard2 = make_scope_guard(non_throwing_functor);
-#ifdef test_19
+#ifdef test_20
     guard2 = guard1;
 #endif
   }
@@ -161,7 +166,7 @@ namespace
   void test_disallowed_move_assignment()
   {
     auto guard = make_scope_guard(non_throwing);
-#ifdef test_20
+#ifdef test_21
     guard = make_scope_guard(non_throwing_lambda);
 #endif
   }
