@@ -19,17 +19,43 @@ namespace sg
 {
   namespace detail
   {
-    // Type trait determining whether a type is a proper scope_guard callback.
+    /* -- first some custom type traits -- */
+
+    // type trait determining conjunction of two traits (or identity of a single
+    // trait).
+    template<typename ...>
+    struct and_t; // generally undefined.
+
+    template<typename A>
+    struct and_t<A> : public A
+    {}; // specialization for 1 trait - identity.
+
+    template<typename A, typename B>
+    struct and_t<A, B> : public std::conditional<A::value, B, A>::type
+    {}; // specialization for 2 traits - logical and.
+
+    // Type trait determining whether a type is callable and, if necessary,
+    // nothrow. SG_REQUIRE_NOEXCEPT logic encapsulated here.
     template<typename T>
-    struct is_proper_sg_callback : public
+    struct is_callable_t : public
 #ifdef SG_REQUIRE_NOEXCEPT
-      std::is_nothrow_invocable_r<void, T>
+      std::is_nothrow_invocable<T> /* Have C++17, so can use this directly;
+                              Note: _r variants do not add anything for us. */
 #else
       std::is_constructible<std::function<void()>, T>
 #endif
     {};
 
-    // The actual scope guard type
+    // Type trait determining whether a type is a proper scope_guard callback.
+    template<typename T>
+    struct is_proper_sg_callback_t
+      : public and_t<is_callable_t<T>,
+                     std::is_same<void, decltype(std::declval<T&&>()())>>
+    {};
+
+
+    /* -- now the actual scope_guard type -- */
+
     template<typename Callback>
     class scope_guard
     {
@@ -37,7 +63,7 @@ namespace sg
       typedef Callback callback_type;
 
       template<typename = typename std::enable_if<
-        is_proper_sg_callback<Callback>::value>::type>
+        is_proper_sg_callback_t<Callback>::value>::type>
       explicit scope_guard(Callback&& callback) noexcept;
 
       scope_guard(scope_guard&& other) noexcept;
