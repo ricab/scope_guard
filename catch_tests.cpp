@@ -13,7 +13,6 @@
 
 using namespace sg;
 
-// TODO add tests for descending guard
 // TODO for bonus, support function overloads (not sure how or if at all possible)
 // TODO check correct documentation
 // Look for missing TODO's and remove under_construction tag
