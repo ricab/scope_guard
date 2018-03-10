@@ -8,28 +8,13 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch/catch.hpp"
 
+#include <memory>
+#include <list>
+
 using namespace sg;
 
-// TODO add static_tests for disallowed copy and assignment
-// TODO add tests to show move assignment is allowed and a good way to achieve deactivation - add to readme
-// TODO add test moved guard has no effect
-// TODO add test to show function can still be called multiple times outside scope guard
-// TODO add custom functor tests
-// TODO add const functor test
-// TODO add member function tests
-// TODO add boost tests on conditional boost include finding
-// TODO add actual rollback test
-// TODO add temporary test
-// TODO add new/delete tests
-// TODO add unique_ptr tests
-// TODO add shared_ptr tests
-// TODO add move guard into function tests
-// TODO add move guard into container tests
-// TODO add tests for descending guard
-// TODO add tests for no implicitly ignored return (and btw, make sure it would be implicitly ignored)
-// TODO for bonus, support function overloads (not sure how or if at all possible)
-// TODO add doxygen file and check correct documentation
-
+// TODO check correct documentation
+// Look for missing TODO's and remove under_construction tag
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -39,31 +24,6 @@ namespace
   void inc() noexcept { incc(count); }
   void resetc(unsigned& c) noexcept { c = 0u; }
   void reset() noexcept { resetc(count); }
-
-  template<typename Fun>
-  struct remove_noexcept
-  {
-    using type = Fun;
-  };
-
-  template<typename Ret, typename... Args>
-  struct remove_noexcept<Ret(Args...) noexcept(true)>
-  {
-    using type = Ret(Args...);
-  };
-
-  template<typename Fun>
-  using remove_noexcept_t = typename remove_noexcept<Fun>::type;
-
-  template<typename Fun>
-  std::function<remove_noexcept_t<Fun>>
-  make_std_function(Fun& f) // ref prevents decay to pointer (no move needed)
-  {
-    return std::function<
-      remove_noexcept_t<typename std::remove_reference<Fun>::type>>{f}; /*
-    unfortunately in C++17 std::function does not accept a noexcept target type
-    (results in incomplete type - at least in gcc and clang) */
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,9 +53,10 @@ TEST_CASE("Demonstration that direct constructor call is possible, but not "
                                                 // with functions is treated
                                                 // just like an lvalue...
 
-
   make_scope_guard(inc); // ... but the BEST is really to use the make function
 }
+
+/* --- Plain functions, lvalues, rvalues, plain references, consts --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain-function-based scope_guard executes the function exactly "
@@ -135,6 +96,29 @@ TEST_CASE("An lvalue-reference-to-plain-function-based scope_guard executes "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue const reference to a plain function can be used to create "
+          "a scope_guard.")
+{
+  const auto& inc_ref = inc;
+  make_scope_guard(inc_ref);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue-const-reference-to-plain-function-based scope_guard "
+          "executes the function exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto& inc_ref = inc;
+    const auto guard = make_scope_guard(inc_ref);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue reference to a plain function can be used to create a "
           "scope_guard.")
 {
@@ -154,6 +138,8 @@ TEST_CASE("An rvalue-reference-to-plain-function-based scope_guard executes "
 
   REQUIRE(count == 1u);
 }
+
+/* --- std::ref and std::cref --- */
 
 #ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
@@ -198,6 +184,8 @@ TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
   REQUIRE(count == 1u);
 }
 #endif
+
+/* --- function pointers lvalues/rvalues and references thereof --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue plain function pointer can be used to create a "
@@ -289,6 +277,37 @@ TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
   }
 
   REQUIRE(count == 1u);
+}
+
+/* --- std::function lvalues/rvalues and references thereof --- */
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  template<typename Fun>
+  struct remove_noexcept
+  {
+    using type = Fun;
+  };
+
+  template<typename Ret, typename... Args>
+  struct remove_noexcept<Ret(Args...) noexcept(true)>
+  {
+    using type = Ret(Args...);
+  };
+
+  template<typename Fun>
+  using remove_noexcept_t = typename remove_noexcept<Fun>::type;
+
+  template<typename Fun>
+  std::function<remove_noexcept_t<Fun>>
+  make_std_function(Fun& f) // ref prevents decay to pointer (no move needed)
+  {
+    return std::function<
+      remove_noexcept_t<typename std::remove_reference<Fun>::type>>{f}; /*
+    unfortunately in C++17 std::function does not accept a noexcept target type
+    (results in incomplete type - at least in gcc and clang) */
+  }
 }
 
 #ifndef SG_REQUIRE_NOEXCEPT
@@ -395,6 +414,8 @@ TEST_CASE("A scope_guard that is created with an "
 }
 #endif
 
+/* --- lambdas --- */
+
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
@@ -425,7 +446,9 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
-  make_scope_guard([]()noexcept{});
+  auto f = 0.0f;
+  const auto i = -1;
+  make_scope_guard([&f, i]()noexcept{ f = *&i; });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,6 +465,33 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
 
   REQUIRE(lambda_count == 1u);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const lambda function with capture can be used to create a "
+          "scope_guard.")
+{
+  auto f = 0.0f;
+  const auto i = -1;
+  const auto lambda = [&f, i]() noexcept { f = *&i; };
+  make_scope_guard(lambda);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const-capturing-lambda-based scope_guard executes the lambda when "
+          "leaving scope.")
+{
+  auto lambda_count = 0u;
+
+  {
+    const auto lambda = [&lambda_count]() noexcept { incc(lambda_count); };
+    const auto guard = make_scope_guard(lambda);
+    REQUIRE_FALSE(lambda_count);
+  }
+
+  REQUIRE(lambda_count == 1u);
+}
+
+/* --- mixes of plain function, std::function, and lambda indirections --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
@@ -515,6 +565,8 @@ TEST_CASE("A scope_guard created with a lambda-wrapping std::function calls "
   REQUIRE(count == 1u);
 }
 
+/* --- bound functions (std::bind) --- */
+
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound function can be used to create a scope_guard.")
 {
@@ -560,11 +612,86 @@ TEST_CASE("A bound-lambda-based scope_guard calls the bound lambda exactly "
 }
 #endif
 
+/* --- custom functors --- */
+
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("several levels of indirection involving lambdas, binds, "
-          "std::functions, custom functors, and regular functions.")
+namespace
 {
-  // TODO
+  struct StatelessFunctor
+  {
+    void operator()() const noexcept { inc(); }
+  };
+
+  struct StatefulFunctor
+  {
+    StatefulFunctor(unsigned& c) : m_c{c} {}
+    void operator()() const noexcept { incc(m_c); }
+
+    unsigned& m_c;
+  };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateless custom functor can be used to create a scope_guard")
+{
+  make_scope_guard(StatelessFunctor{});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateless-custom-functor-based scope_guard calls the functor "
+          "exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto guard = make_scope_guard(StatelessFunctor{});
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateful custom functor can be used to create a scope_guard")
+{
+  auto u = 123u;
+  make_scope_guard(StatefulFunctor{u});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A stateful-custom-functor-based scope_guard calls the functor "
+          "exactly once when leaving scope.")
+{
+  auto functor_count = 0u;
+
+  {
+    const auto guard = make_scope_guard(StatefulFunctor{functor_count});
+    REQUIRE_FALSE(functor_count);
+  }
+
+  REQUIRE(functor_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const custom functor can be used to create a scope_guard")
+{
+  const auto fun = StatelessFunctor{};
+  make_scope_guard(fun);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const-custom-functor-based scope_guard calls the functor "
+          "exactly once when leaving scope.")
+{
+  reset();
+
+  {
+    const auto fun = StatelessFunctor{};
+    const auto guard = make_scope_guard(fun);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -595,6 +722,199 @@ TEST_CASE("Redundant scope_guards do not interfere with each other - their "
   REQUIRE(count == 3u);
   REQUIRE(lambda_count == 2u);
 }
+
+/* --- methods --- */
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  struct regular_method_holder
+  {
+    regular_method_holder() = default;
+    void regular_inc_method() noexcept { incc(m_count); }
+
+    unsigned m_count = 0u;
+  };
+
+  struct const_method_holder
+  {
+    const_method_holder() = default;
+    void const_inc_method() noexcept { incc(m_count); }
+
+    mutable unsigned m_count = 0u;
+  };
+
+  struct static_method_holder
+  {
+    static_method_holder() = delete;
+    static void static_inc_method() noexcept { incc(ms_count); }
+
+    static unsigned ms_count;
+  };
+  unsigned static_method_holder::ms_count = 0u;
+
+  struct virtual_method_holder_pure_base
+  {
+    virtual ~virtual_method_holder_pure_base() = default;
+    virtual void virtual_inc_method() noexcept = 0;
+
+    unsigned m_count = 0;
+  };
+
+  struct virtual_method_holder_intermediate :
+    public virtual_method_holder_pure_base
+  {
+    void virtual_inc_method() noexcept override
+    {
+      m_count += 2;
+    }
+  };
+
+  struct virtual_method_holder : public virtual_method_holder_intermediate
+  {
+    void virtual_inc_method() noexcept override
+    {
+      virtual_method_holder_intermediate::virtual_inc_method();
+      --m_count;
+    }
+  };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped regular method can be used to create a scope_guard")
+{
+  regular_method_holder h{};
+  make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped-regular-method-based scope_guard executes the "
+          "method exactly once when leaving scope")
+{
+  regular_method_holder h{};
+
+  {
+    auto guard = make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+
+#ifndef SG_REQUIRE_NOEXCEPT
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound regular method can be used to create a scope_guard")
+{
+  regular_method_holder h{};
+  make_scope_guard(std::bind(&regular_method_holder::regular_inc_method, h));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound-regular-method-based scope_guard executes the method "
+          "exactly once when leaving scope")
+{
+  regular_method_holder h{};
+
+  {
+    auto guard = make_scope_guard(
+      std::bind(&regular_method_holder::regular_inc_method, &h));
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped const method can be used to create a scope_guard")
+{
+  const_method_holder h{};
+  make_scope_guard([&h]() noexcept { h.const_inc_method(); });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped-const-method-based scope_guard executes the "
+          "method exactly once when leaving scope")
+{
+  const_method_holder h{};
+
+  {
+    auto guard = make_scope_guard([&h]() noexcept { h.const_inc_method(); });
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+
+#ifndef SG_REQUIRE_NOEXCEPT
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound const method can be used to create a scope_guard")
+{
+  const_method_holder h{};
+  make_scope_guard(std::bind(&const_method_holder::const_inc_method, h));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A bound-const-method-based scope_guard executes the method "
+          "exactly once when leaving scope")
+{
+  const_method_holder h{};
+
+  {
+    auto guard = make_scope_guard(
+      std::bind(&const_method_holder::const_inc_method, &h));
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE(h.m_count == 1u);
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A static method can be used to create a scope_guard")
+{
+  make_scope_guard(static_method_holder::static_inc_method);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A static-method-based scope_guard executes the static method "
+          "exactly once when leaving scope")
+{
+  resetc(static_method_holder::ms_count);
+
+  {
+    auto guard = make_scope_guard(static_method_holder::static_inc_method);
+    REQUIRE_FALSE(static_method_holder::ms_count);
+  }
+
+  REQUIRE(static_method_holder::ms_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped virtual method can be used to create a scope_guard")
+{
+  virtual_method_holder h{};
+  make_scope_guard([&h]() noexcept { h.virtual_inc_method(); });
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A lambda-wrapped-virtual-method-based scope_guard executes the "
+          "virtual method exactly once when leaving scope")
+{
+  virtual_method_holder h{};
+  virtual_method_holder_pure_base& h_base = h;
+
+  {
+    auto guard = make_scope_guard([&h_base]() noexcept
+                                  { h_base.virtual_inc_method(); });
+
+    REQUIRE_FALSE(h_base.m_count);
+  }
+
+  REQUIRE(h_base.m_count == 1u);
+}
+
+/* --- miscellaneous --- */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Multiple independent scope_guards do not interfere with each "
@@ -726,8 +1046,13 @@ namespace
 {
   unsigned returning(unsigned ret)
   {
-    const auto guard = make_scope_guard(inc);
-    return ret;
+    if(ret)
+    {
+      const auto guard = make_scope_guard(inc);
+      return ret;
+    }
+
+    return 0u;
   }
 }
 
@@ -739,4 +1064,168 @@ TEST_CASE("scope_guards execute their callback exactly once when leaving "
 
   REQUIRE(123 == returning(123));
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
+          "execute its callback when moved, nor when leaving scope, but the "
+          "thus-constructed guard still does execute its callback when leaving "
+          "scope.")
+{
+  reset();
+
+  {
+    auto source = make_scope_guard(inc);
+    {
+      using CB = decltype(source)::callback_type;
+      const detail::scope_guard<CB> dest{std::move(source)};
+      REQUIRE_FALSE(count); // inc not executed with source move
+    }
+    REQUIRE(count == 1u); // inc executed with destruction of dest
+  }
+
+  REQUIRE(count == 1u); // inc not executed with destruction of source
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  template<typename Callback>
+  struct scope_guard_holder
+  {
+    scope_guard_holder(detail::scope_guard<Callback>&& guard) noexcept
+      : m_guard{std::move(guard)}
+    {}
+
+    detail::scope_guard<Callback> m_guard;
+  };
+
+#if __cplusplus > 201402L
+  using std::make_unique;
+#else
+  template<typename T, typename... Args>
+  inline std::unique_ptr<T> make_unique(Args&&... args)
+  {
+    return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+  }
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is moved from does not call its callback when "
+          "leaving scope, but the scope_guard that was moved into, does.")
+{
+  reset();
+
+  {
+    using Holder = scope_guard_holder<decltype(inc)&>;
+    std::unique_ptr<Holder> holder = nullptr;
+    {
+      auto guard = make_scope_guard(inc);
+      holder = make_unique<Holder>(std::move(guard));
+      REQUIRE_FALSE(count);
+    }
+
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard that is moved into a container does not call its "
+          "callback when leaving scope; the callback is called when the "
+          "corresponding container element is destroyed")
+{
+  reset();
+  std::list<decltype(make_scope_guard(inc))> l;
+
+  {
+    l.push_back(make_scope_guard(inc));
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+  l.clear();
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Callbacks that are used to make scope_guards can be called "
+          "independently without affecting the behavior of the scope_guard")
+{
+  reset();
+
+
+  {
+    const auto lambda = []() noexcept { inc(); };
+    const auto gf = make_scope_guard(inc);
+    const auto gl = make_scope_guard(lambda);
+    REQUIRE_FALSE(count);
+
+    inc(); inc(); lambda();
+    REQUIRE(count == 3u);
+  }
+
+  REQUIRE(count == 5u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  bool is_fake_done = false;
+  void fake_do() noexcept { is_fake_done = true; }
+  void fake_undo() noexcept { is_fake_done = false; }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test custom rollback")
+{
+  fake_do();
+
+  {
+    auto guard = make_scope_guard(fake_undo);
+    REQUIRE(is_fake_done);
+  }
+
+  REQUIRE_FALSE(is_fake_done);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test rollback due to exception")
+{
+  fake_do();
+
+  try
+  {
+    auto guard = make_scope_guard(fake_undo);
+    throw "foobar";
+  }
+  catch(...)
+  {
+    REQUIRE_FALSE(is_fake_done);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  bool fake_returning_undo(bool ret)
+  {
+    if(ret)
+    {
+      auto guard = make_scope_guard(fake_undo);
+      return true;
+    }
+
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Test rollback due to return")
+{
+  fake_do();
+  REQUIRE(fake_returning_undo(true));
+  REQUIRE_FALSE(is_fake_done);
 }
