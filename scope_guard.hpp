@@ -19,7 +19,7 @@ namespace sg
 {
   namespace detail
   {
-    /* -- first some custom type traits -- */
+    /* --- Some custom type traits --- */
 
     // type trait determining conjunction of two traits (or identity of a single
     // trait).
@@ -39,8 +39,8 @@ namespace sg
     template<typename T>
     struct is_callable_t : public
 #ifdef SG_REQUIRE_NOEXCEPT
-      std::is_nothrow_invocable<T> /* Have C++17, so can use this directly;
-                              Note: _r variants do not add anything for us. */
+      std::is_nothrow_invocable<T> /* Have C++17, so can use this directly.
+    Note: _r variants not enough for our purposes: T () is compatible void () */
 #else
       std::is_constructible<std::function<void()>, T>
 #endif
@@ -54,7 +54,7 @@ namespace sg
     {};
 
 
-    /* -- now the actual scope_guard type -- */
+    /* --- The actual scope_guard type --- */
 
     template<typename Callback>
     class scope_guard
@@ -77,7 +77,7 @@ namespace sg
 
   } // namespace detail
 
-  /* -- now the single public maker function -- */
+  /* --- Now the single public maker function --- */
 
   /**
    * Function to create a scope_guard.
@@ -89,8 +89,8 @@ namespace sg
    * @li not throw.
    * The latter is not enforced upon compilation unless >=C++17 is used and the
    * preprocessor macro SG_REQUIRE_NOEXCEPT_IN_CPP17 is defined. If the callback
-   * throws, std::terminate is called. @note check the documentation in the
-   * readme for more details).
+   * throws, std::terminate is called. @note check the documentation in
+   * the @c README.md for more details).
    *
    * @return A scope_guard - an RAII object that executes a provided callback
    * when leaving scope.
