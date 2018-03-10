@@ -1,6 +1,6 @@
 # scope_guard [under construction]
 ## TLDR
-A general, easy to use, and exhaustively tested C++11/14/17 scope guard maker 
+A general, easy to use, and exhaustively tested C++11/14/17 scope guard maker
 function. Example:
 
 ```c++
@@ -51,7 +51,7 @@ you
 - [x] `snake_case` style
 
 ## Usage
-To use,  simply clone this repository, copy the header file within, and include 
+To use,  simply clone this repository, copy the header file within, and include
 it - there are no dependencies (besides a &ge;C++11 compiler). Then do something
 like:
 
@@ -100,7 +100,7 @@ to do with any exceptions that arise. For example:
 
 ```c++
 bool throwing() { throw std::runtime_error{"some error"}; }
-make_scope_guard([]() noexcept 
+make_scope_guard([]() noexcept
 {
   try { throwing(); } catch(...) { /* choosing to ignore */ }
 });
@@ -169,7 +169,7 @@ There are a few dependencies to execute the tests:
 - Cmake (at least version 3.8)
 - C++17 capable compiler (c++1z is fine)
 - Catch2
-    
+
 ### Instructions
 (For GNU/Linux, should be analogous in other systems.)
 
@@ -205,11 +205,7 @@ only effectively required in case Z.
 | ---------------------------------------------------- |:-----:|:------:|
 | **SG_REQUIRE_NOEXCEPT_IN_CPP17 undefined**           | X     |   W    |
 | **SG_REQUIRE_NOEXCEPT_IN_CPP17 defined**             | Y     |  *Z*   |
- 
+
 Note: to obtain more output (e.g. because there was a failure), run
 `VERBOSE=1 make test_verbose` instead, to get the command lines used in
 compilation tests as well as the test output.
-
-
-
-
