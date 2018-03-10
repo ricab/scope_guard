@@ -211,7 +211,6 @@ namespace
 #ifdef test_26
     make_scope_guard(returning_functor);
 #endif
-//    make_scope_guard([]() noexcept { return 42; }); // FIXME
   }
 }
 
