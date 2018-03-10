@@ -449,8 +449,8 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
 TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
   auto f = 0.0f;
-  auto i = -1;
-  make_scope_guard([&f, i]()noexcept{});
+  const auto i = -1;
+  make_scope_guard([&f, i]()noexcept{ f = *&i; });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -472,9 +472,9 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
 TEST_CASE("A const lambda function with capture can be used to create a "
           "scope_guard.")
 {
-  const auto f = 0.0f;
-  auto i = -1;
-  const auto lambda = [&f, i]() noexcept {};
+  auto f = 0.0f;
+  const auto i = -1;
+  const auto lambda = [&f, i]() noexcept { f = *&i; };
   make_scope_guard(lambda);
 }
 
