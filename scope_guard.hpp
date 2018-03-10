@@ -14,7 +14,9 @@
 #define SG_REQUIRE_NOEXCEPT
 #endif
 
-////////////////////////////////////////////////////////////////////////////////
+/**
+ * Namespace for the scope_guard
+ */
 namespace sg
 {
   namespace detail
@@ -77,20 +79,21 @@ namespace sg
 
   } // namespace detail
 
+
   /* --- Now the single public maker function --- */
 
   /**
-   * Function to create a scope_guard.
+   * Template function to create a scope_guard.
    *
    * @param callback A callable function, function pointer, functor, or
    * reference thereof, that must:
    * @li require no parameters;
    * @li return void;
    * @li not throw.
-   * The latter is not enforced upon compilation unless >=C++17 is used and the
-   * preprocessor macro SG_REQUIRE_NOEXCEPT_IN_CPP17 is defined. If the callback
-   * throws, std::terminate is called. @note check the documentation in
-   * the @c README.md for more details).
+   * @attention The latter is not enforced upon compilation unless >=C++17 is
+   * used and the preprocessor macro SG_REQUIRE_NOEXCEPT_IN_CPP17 is defined.
+   * If the callback throws, std::terminate is called.
+   * @note Check the documentation in @c README.md for more details).
    *
    * @return A scope_guard - an RAII object that executes a provided callback
    * when leaving scope.
