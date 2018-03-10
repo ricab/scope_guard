@@ -8,8 +8,6 @@
 using namespace sg;
 
 ////////////////////////////////////////////////////////////////////////////////
-namespace
-{
 #ifdef test_1
   static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())),
                 "make_scope_guard not noexcept");
@@ -25,6 +23,10 @@ namespace
                          .~scope_guard()),
                 "scope_guard dtor not noexcept");
 #endif
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
 
   constexpr auto EMSG = "message in a bottle";
   void non_throwing() noexcept { }

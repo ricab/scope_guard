@@ -71,6 +71,10 @@ namespace sg
       scope_guard(scope_guard&& other) noexcept;
       ~scope_guard() noexcept; // highlight noexcept dtor
 
+      scope_guard(const scope_guard&) = delete;
+      scope_guard& operator=(const scope_guard&) = delete;
+      scope_guard& operator=(scope_guard&&) = delete;
+
     private:
       Callback m_callback;
       bool m_active;
