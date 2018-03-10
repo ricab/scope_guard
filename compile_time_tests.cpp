@@ -10,8 +10,6 @@ using namespace sg;
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  int returning() noexcept { return 42; }
-
 #ifdef test_1
   static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())),
                 "make_scope_guard not noexcept");
@@ -33,33 +31,48 @@ namespace
   [[noreturn]] void throwing() { throw std::runtime_error{EMSG}; }
   void meh() { }
 
+  int returning() noexcept { return 42; }
+
+
   using StdFun = std::function<void()>;
   StdFun throwing_stdfun{throwing};
   StdFun non_throwing_stdfun{non_throwing}; // drops noexcept
   StdFun meh_stdfun{meh};
 
+  std::function<int()> returning_stdfun{returning}; // drops noexcept
+
+
   auto throwing_lambda = []{ throwing(); };
   auto non_throwing_lambda = []() noexcept { non_throwing(); };
   auto meh_lambda = []{ meh(); };
+
+  auto returning_lambda = []() noexcept { return returning(); };
+
 
   auto throwing_bound = std::bind(throwing);
   auto non_throwing_bound = std::bind(non_throwing); // drops noexcept
   auto meh_bound = std::bind(meh);
 
+  auto returning_bound = std::bind(returning); // drops noexcept
+
+
   struct throwing_struct
   {
     [[noreturn]] void operator()() { throwing(); }
   } throwing_functor;
-
   struct non_throwing_struct
   {
-    void operator()() noexcept{ non_throwing(); }
+    void operator()() noexcept { non_throwing(); }
   } non_throwing_functor;
-
   struct meh_struct
   {
     void operator()() { meh(); }
   } meh_functor;
+
+  struct returning_struct
+  {
+    int operator()() noexcept { return returning(); }
+  } returning_functor;
 
   /**
    * Test scope_guard can always be created with noexcept marked callables
@@ -185,8 +198,18 @@ namespace
     make_scope_guard(returning);
 #endif
 #ifdef test_23
-    make_scope_guard([]() noexcept { return 42; });
+    make_scope_guard(returning_stdfun);
 #endif
+#ifdef test_24
+    make_scope_guard(returning_lambda);
+#endif
+#ifdef test_25
+    make_scope_guard(returning_bound);
+#endif
+#ifdef test_26
+    make_scope_guard(returning_functor);
+#endif
+//    make_scope_guard([]() noexcept { return 42; }); // FIXME
   }
 }
 
