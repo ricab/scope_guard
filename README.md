@@ -6,8 +6,7 @@ A general, easy to use, and extensively tested C++11/14/17 scope guard. Example:
 auto guard = make_scope_guard(my_callback);
 ```
 
-Provided in a <a href="https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp">single header</a>
-(remaining code is for tests.)
+Provided in a [single header](scope_guard.hpp) (remaining code is for tests.)
 
 ## Table of contents
 
@@ -50,9 +49,9 @@ you
 - [x] `snake_case` style
 
 ## Usage
-To use, simply copy the header file to your project (or somewhere accessible to
-your compiler), and include it - there are no dependencies (besides a
-&ge;C++11 compiler). Then do something like:
+To use, simply copy the [header file](scope_guard.hpp) to your project (or
+somewhere accessible to your compiler), and include it - there are no
+dependencies (besides a &ge;C++11 compiler). Then do something like:
 
 ```c++
 auto guard1 = make_scope_guard(my_callback);
