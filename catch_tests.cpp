@@ -13,30 +13,12 @@
 
 using namespace sg;
 
-// TODO check correct documentation
-// Look for missing TODO's and remove under_construction tag
-
-////////////////////////////////////////////////////////////////////////////////
-namespace
-{
-  auto count = 0u;
-  void incc(unsigned& c) noexcept { ++c; }
-  void inc() noexcept { incc(count); }
-  void resetc(unsigned& c) noexcept { c = 0u; }
-  void reset() noexcept { resetc(count); }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A plain function can be used to create a scope_guard.")
-{
-  make_scope_guard(inc);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Demonstration that direct constructor call is possible, but not "
           "advisable.")
 {
   using detail::scope_guard;
+
 //  scope_guard{inc}; // Error: does not deduce template args (at least
                       // until C++17); it also does not accept everything...
 
@@ -57,6 +39,22 @@ TEST_CASE("Demonstration that direct constructor call is possible, but not "
 }
 
 /* --- Plain functions, lvalues, rvalues, plain references, consts --- */
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  auto count = 0u;
+  void incc(unsigned& c) noexcept { ++c; }
+  void inc() noexcept { incc(count); }
+  void resetc(unsigned& c) noexcept { c = 0u; }
+  void reset() noexcept { resetc(count); }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A plain function can be used to create a scope_guard.")
+{
+  make_scope_guard(inc);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain-function-based scope_guard executes the function exactly "

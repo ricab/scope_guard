@@ -87,7 +87,7 @@ namespace sg
   /* --- Now the single public maker function --- */
 
   /**
-   * Template function to create a scope_guard.
+   * Function template to create a scope_guard.
    *
    * @param callback A callable function, function pointer, functor, or
    * reference thereof, that must:
@@ -99,8 +99,8 @@ namespace sg
    * If the callback throws, std::terminate is called.
    * @note Check the documentation in @c README.md for more details).
    *
-   * @return A scope_guard - an RAII object that executes a provided callback
-   * when leaving scope.
+   * @return A scope guard, that is, an RAII object that executes the provided
+   * callback when leaving scope.
    */
   template<typename Callback>
   detail::scope_guard<Callback> make_scope_guard(Callback&& callback) noexcept;

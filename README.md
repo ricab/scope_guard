@@ -1,18 +1,18 @@
-# scope_guard [under construction]
-## TLDR
-A general, easy to use, and exhaustively tested C++11/14/17 scope guard maker
-function. Example:
+# scope_guard
+## Intro
+A general, easy to use, and extensively tested C++11/14/17 scope guard. Example:
 
 ```c++
 auto guard = make_scope_guard(my_callback);
 ```
 
-<a href="https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp">Single header</a> (remaining code is for tests)
+<a href="https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp">Provided in a single header</a>
+(remaining code is for tests)
 
 ## Table of contents
 
-- [scope_guard [under construction]](#scope-guard--under-construction-)
-  * [TLDR](#tldr)
+- [scope_guard](#scope-guard)
+  * [Intro](#intro)
   * [Table of contents](#table-of-contents)
   * [Features](#features)
     + [Main features](#main-features)
@@ -23,18 +23,17 @@ auto guard = make_scope_guard(my_callback);
       - [void return](#void-return)
       - [no throw](#no-throw)
     + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option--sg-require-noexcept-in-cpp17-)
-      - [Implications](#implications)
-  * [Running the tests](#running-the-tests)
-    + [Instructions](#instructions)
+      - [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
+  * [Tests](#tests)
+    + [Instructions for running the tests](#instructions-for-running-the-tests)
 
 <small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
-
 
 ## Features
 
 ### Main features
 - [x] &ge; C++11
-- [x] Single function interface (`make_scope_guard`)
+- [x] Interface consists basically of a single function (`make_scope_guard`)
 - [x] Fast (no added runtime `std::function` penalties)
 - [x] General: accepts any callable that respects the preconditions
 [below](#preconditions)
@@ -46,14 +45,14 @@ auto guard = make_scope_guard(my_callback);
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 - [x] No macros to make guard - just write explicit lambda or bind or what have
 you
-- [ ] [Exhaustively](catch_tests.cpp) [tested](compile_time_noexcept_tests.cpp)
+- [x] Extensively tested, with both [compile-time tests](compile_time_noexcept_tests.cpp) and [runtime-tests](catch_tests.cpp)
 - [x] Unlicense(d)
 - [x] `snake_case` style
 
 ## Usage
-To use,  simply clone this repository, copy the header file within, and include
-it - there are no dependencies (besides a &ge;C++11 compiler). Then do something
-like:
+To use, simply copy the header file to your project (or somewhere accessible to
+your compiler), and include it - there are no dependencies (besides a
+&ge;C++11 compiler). Then do something like:
 
 ```c++
 auto guard1 = make_scope_guard(my_callback);
@@ -61,14 +60,25 @@ auto guard2 = make_scope_guard([]()noexcept{ /* do something */ });
 ...
 ```
 
-See [tests](catch_tests.cpp) for more examples.
+The template function `make_scope_guard` has the following signature.
+
+```c++
+template<typename Callback>
+scope_guard make_scope_guard(Callback&& callback) noexcept;
+```
+
+The `scope_guard` type provides the deduced `Callback` type as a nested type.
+It can be accessed with `decltype(sgobj)::callback_type;`, assuming `sgobj`
+is the result of a successful `make_scope_guard` call.
+
+See [tests](catch_tests.cpp) for use-case examples.
 
 ### Preconditions
 
 The callback that is used to create a `scope_guard` must respect the following preconditions.
 
 #### no arguments
-The callback must be invocable with no arguments. Use bind or a lambda to pass
+The callback must be invocable with no arguments. Use a lambda to pass
 something that takes arguments in its original form. For example:
 
 ```c++
@@ -76,6 +86,8 @@ void my_resource_release(Resource& r) noexcept;
 make_scope_guard(my_resource_release); // ERROR: which resource?
 make_scope_guard([&some_resource]() noexcept { my_resource_release(some_resource); }); // OK
 ```
+
+This precondition is enforced at compile time.
 
 #### void return
 
@@ -92,11 +104,13 @@ make_scope_guard([]() noexcept {/*bool ignored =*/ foo();}); // OK
 The idea is not only to catch unintentional cases but also to highlight
 intentional ones for code readers.
 
+This precondition is enforced at compile time.
+
 #### no throw
 
-The callback _is required_ not to throw. If you would like to use something that
+The callback _is required_ not to throw. If you want to use something that
 might throw, you can wrap it in a `try-catch` block, explicitly choosing what
-to do with any exceptions that arise. For example:
+to do with any exceptions that might arise. For example:
 
 ```c++
 bool throwing() { throw std::runtime_error{"some error"}; }
@@ -106,17 +120,21 @@ make_scope_guard([]() noexcept
 });
 ```
 
-Notice that, by default, callbacks are not verified not to throw. Throwing from
-a `scope_guard` callback results in a call to std::terminate. This follows the
-same approach as custom deleters in such standard library types as `unique_ptr`
-and `shared_ptr` (see `[unique.ptr.single.ctor]` and
-`[unique.ptr.single.dtor]` in the C++ standard.).
+Notice that, **_by default_, this precondition is not enforced at compile
+time**. To enforce it at compile time
+[read on](#option--sg-require-noexcept-in-cpp17-).
 
-I acknowledge that the destructor for `scope_guard` could
-be conditionally `noexcept` instead, but that is not advisable either and could
+Throwing from a `scope_guard` callback results in a call to
+`std::terminate`. This follows the same approach as custom deleters in such
+standard library types as `unique_ptr` and `shared_ptr` (see
+`[unique.ptr.single.ctor]` and `[unique.ptr.single.dtor]` in the C++
+standard.)
+
+I acknowledge that the destructor for `scope_guard` could be conditionally
+`noexcept` instead, but that is not advisable either and could
 create a false sense of safety (better _fail-fast_-ish, I suppose).
 
-Personally, I prefer to enforce that the callback be
+Personally, I favor enforcing that the callback be
 `noexcept` at compile-time, but this not only restricts acceptable callback
 types, to my knowledge it is not even possible until C++17. That is because the
 exception specification is not part of the type system
@@ -124,14 +142,12 @@ exception specification is not part of the type system
 
 ### Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
 
-If &ge;C++17 is used, the preprocessor macro
-`SG_REQUIRE_NOEXCEPT_IN_CPP17` can be defined to
-make `scope_guard`'s constructor require a
-[nothrow invocable](http://en.cppreference.com/w/cpp/types/is_invocable)
+If &ge;C++17 is used, the preprocessor macro `SG_REQUIRE_NOEXCEPT_IN_CPP17`
+can be defined to make `scope_guard`'s constructor require a nothrow invocable
 at compile-time, e.g.
 
 ```c++
-#define SG_REQUIRE_NOEXCEPT_IN_CPP17 // only meaningful in >=C++17
+#define SG_REQUIRE_NOEXCEPT_IN_CPP17 // (no effect in <C++17)
 #include "scope_guard.hpp"
 make_scope_guard([](){}); // ERROR: need noexcept
 make_scope_guard([]() noexcept {}); // OK
@@ -143,7 +159,7 @@ other is to maintain the same behavior as in &lt;C++17.
 
 This option has no effect unless &ge;C++17 is used.
 
-#### Implications
+#### Implications of requiring `noexcept` callbacks at compile time
 
 Unfortunately, even in C++17 things are not ideal, and information on
 exception specification is not propagated to types like `std::function` or
@@ -164,13 +180,17 @@ lambdas to wrap anything else, e.g.:
 
     make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
 
-## Running the tests
-There are a few dependencies to execute the tests:
-- Cmake (at least version 3.8)
-- C++17 capable compiler (c++1z is fine)
-- Catch2
+## Tests
+A number of compile-time and run-time tests can be automatically run in multiple
+configurations.
 
-### Instructions
+There are a few dependencies to execute the tests:
+- C++11 capable compiler, preferably C++17 capable (c++1z is fine if it provides
+the symbol [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
+- [Cmake](https://cmake.org/) (at least version 3.8)
+- [Catch2](https://github.com/catchorg/Catch2)
+
+### Instructions for running the tests
 (For GNU/Linux, should be analogous in other systems.)
 
 1. Install [cmake](https://cmake.org/) (&ge; v3.8)
@@ -208,4 +228,4 @@ only effectively required in case Z.
 
 Note: to obtain more output (e.g. because there was a failure), run
 `VERBOSE=1 make test_verbose` instead, to get the command lines used in
-compilation tests as well as the test output.
+compilation tests, as well as the test output.
