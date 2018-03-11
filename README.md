@@ -27,7 +27,7 @@ Provided in a <a href="https://github.com/ricab/scope_guard/blob/master/scope_gu
   * [Tests](#tests)
     + [Instructions for running the tests](#instructions-for-running-the-tests)
 
-<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+<sub><sup><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></sub></sup>
 
 ## Features
 
