@@ -6,8 +6,8 @@ A general, easy to use, and extensively tested C++11/14/17 scope guard. Example:
 auto guard = make_scope_guard(my_callback);
 ```
 
-<a href="https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp">Provided in a single header</a>
-(remaining code is for tests)
+Provided in a <a href="https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp">single header</a>
+(remaining code is for tests.)
 
 ## Table of contents
 
