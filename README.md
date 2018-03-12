@@ -22,8 +22,9 @@
 
 ## Intro
 
-A general, easy to use, and extensively tested C++11/14/17 _scope guard_.
-Example:
+A public, general, simple, fast, and tested C++11 scope_guard which forbids
+implicitly ignored returns and optionally enforces noexcept at compile time in
+C++17. Usage is easy:
 
 ```c++
 auto guard = make_scope_guard(my_callback);
