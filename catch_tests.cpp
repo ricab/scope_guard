@@ -14,6 +14,16 @@
 using namespace sg;
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  auto count = 0u;
+  void incc(unsigned& c) noexcept { ++c; }
+  void inc() noexcept { incc(count); }
+  void resetc(unsigned& c) noexcept { c = 0u; }
+  void reset() noexcept { resetc(count); }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Demonstration that direct constructor call is possible, but not "
           "advisable.")
 {
@@ -39,16 +49,6 @@ TEST_CASE("Demonstration that direct constructor call is possible, but not "
 }
 
 /* --- Plain functions, lvalues, rvalues, plain references, consts --- */
-
-////////////////////////////////////////////////////////////////////////////////
-namespace
-{
-  auto count = 0u;
-  void incc(unsigned& c) noexcept { ++c; }
-  void inc() noexcept { incc(count); }
-  void resetc(unsigned& c) noexcept { c = 0u; }
-  void reset() noexcept { resetc(count); }
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain function can be used to create a scope_guard.")
