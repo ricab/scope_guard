@@ -52,20 +52,24 @@ namespace sg
     template<typename T>
     struct is_proper_sg_callback_t
       : public and_t<is_callable_t<T>,
-                     std::is_same<void, decltype(std::declval<T&&>()())>>
+                     std::true_type> // TODO check return type
+//                     std::is_same<void, decltype(std::declval<T&&>()())>>
     {};
 
 
     /* --- The actual scope_guard type --- */
 
+    template<typename Callback,
+             typename = typename std::enable_if<
+               is_proper_sg_callback_t<Callback>::value>::type>
+    class scope_guard;
+
     template<typename Callback>
-    class scope_guard
+    class scope_guard<Callback>
     {
     public:
       typedef Callback callback_type;
 
-      template<typename = typename std::enable_if<
-        is_proper_sg_callback_t<Callback>::value>::type>
       explicit scope_guard(Callback&& callback) noexcept;
 
       scope_guard(scope_guard&& other) noexcept;
@@ -109,7 +113,6 @@ namespace sg
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-template<typename>
 sg::detail::scope_guard<Callback>::scope_guard(Callback&& callback) noexcept
   : m_callback{std::forward<Callback>(callback)}
   , m_active{true}
