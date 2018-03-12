@@ -1,18 +1,9 @@
 # scope_guard
-## Intro
-A general, easy to use, and extensively tested C++11/14/17 scope guard. Example:
-
-```c++
-auto guard = make_scope_guard(my_callback);
-```
-
-Provided in a [single header](scope_guard.hpp) (remaining code is for tests.)
-
 ## Table of contents
 
 - [scope_guard](#scope-guard)
-  * [Intro](#intro)
   * [Table of contents](#table-of-contents)
+  * [Intro](#intro)
   * [Features](#features)
     + [Main features](#main-features)
     + [Other characteristics](#other-characteristics)
@@ -26,13 +17,30 @@ Provided in a [single header](scope_guard.hpp) (remaining code is for tests.)
   * [Tests](#tests)
     + [Instructions for running the tests](#instructions-for-running-the-tests)
 
-<sub><sup><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></sub></sup>
+<sup><sub>><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></sub></sup>
+
+
+## Intro
+
+A general, easy to use, and extensively tested C++11/14/17 _scope guard_.
+Example:
+
+```c++
+auto guard = make_scope_guard(my_callback);
+```
+
+A scope guard is an object that employs RAII to guarantee execution of a
+provided callback when leaving scope, be it through a fallthrough, a return,
+or an exception.
+
+All necessary code is provided in a [single header](scope_guard.hpp)
+(the remaining code is for tests.)
 
 ## Features
 
 ### Main features
 - [x] &ge; C++11
-- [x] Interface consists basically of a single function (`make_scope_guard`)
+- [x] Interface consists _mostly_ of a single function (`make_scope_guard`)
 - [x] Fast (no added runtime `std::function` penalties)
 - [x] General: accepts any callable that respects the preconditions
 [below](#preconditions)
