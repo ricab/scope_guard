@@ -1276,4 +1276,7 @@ TEST_CASE("make_scope_guard is SFINAE friendly")
   sfinae_tester(123); /* compilation would fail here if scope_guard was not
                          SFINAE-friendly */
   REQUIRE(count == 1u);
+
+  sfinae_tester([]() noexcept { return "returning"; });
+  REQUIRE(count == 2u);
 }
