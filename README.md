@@ -30,7 +30,7 @@ C++17. Usage is easy:
 auto guard = make_scope_guard(my_callback);
 ```
 
-A scope guard is an object that employs RAII to guarantee execution of a
+A scope guard is an object that employs RAII to guarantee execution of the
 provided callback when leaving scope, be it through a fallthrough, a return,
 or an exception.
 
