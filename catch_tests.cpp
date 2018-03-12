@@ -8,6 +8,8 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch/catch.hpp"
 
+#include <type_traits>
+#include <utility>
 #include <memory>
 #include <list>
 
@@ -1226,4 +1228,52 @@ TEST_CASE("Test rollback due to return")
   fake_do();
   REQUIRE(fake_returning_undo(true));
   REQUIRE_FALSE(is_fake_done);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  struct tag_prefered_overload {};
+
+  template<typename T>
+  void sfinae_tester(T&& t)
+  {
+    sfinae_tester_impl(std::forward<T>(t), tag_prefered_overload{}); /* the
+    overload with the exact type match for the second argument is a closer
+    match overall, so it will tried first; if make_scope_guard is
+    SFINAE-friendly, the other one is used as a fall-back when substitution
+    fails on the former; otherwise, compilation will fail */
+  }
+
+  template<typename T>
+  auto sfinae_tester_impl(T&& t, tag_prefered_overload&& /*ignored*/)
+  -> decltype(make_scope_guard(std::forward<T>(t)), std::declval<void>())
+  {
+    make_scope_guard(std::forward<T>(t));
+  }
+
+  template<typename T>
+  void sfinae_tester_impl(T&& /*ignored*/,
+                          ... /* less specific, so 2nd choice */)
+  {
+    make_scope_guard(inc);
+  }
+
+  void noop() noexcept {}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("make_scope_guard is SFINAE friendly")
+{
+  reset();
+
+  sfinae_tester(noop);
+  REQUIRE_FALSE(count);
+
+  sfinae_tester([]() noexcept { });
+  REQUIRE_FALSE(count);
+
+  sfinae_tester(123); /* compilation would fail here if scope_guard was not
+                         SFINAE-friendly */
+  REQUIRE(count == 1u);
 }
