@@ -23,10 +23,10 @@ namespace sg
   {
     /* --- Some custom type traits --- */
 
-    // Type trait determining whether a type is callable and, if necessary,
-    // nothrow. SG_REQUIRE_NOEXCEPT logic encapsulated here.
+    // Type trait determining whether a type is callable with no arguments and,
+    // if necessary, nothrow. SG_REQUIRE_NOEXCEPT logic encapsulated here.
     template<typename T>
-    struct is_callable_t : public
+    struct is_noarg_and_throw_ok_callable_t : public
 #ifdef SG_REQUIRE_NOEXCEPT
       std::is_nothrow_invocable<T> /* Have C++17, so can use this directly.
     Note: _r variants not enough for our purposes: T () is compatible void () */
@@ -44,7 +44,7 @@ namespace sg
     // Type trait determining whether a type is a proper scope_guard callback.
     template<typename T>
     struct is_proper_sg_callback_t
-      : public std::conditional<is_callable_t<T>::value,
+      : public std::conditional<is_noarg_and_throw_ok_callable_t<T>::value,
                                 returns_void_t<T>,
                                 std::false_type>::type
     {};
