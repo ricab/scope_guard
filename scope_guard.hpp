@@ -41,12 +41,14 @@ namespace sg
       : public std::is_same<void, decltype(std::declval<T&&>()())>
     {};
 
+    template<typename A, typename B>
+    struct and_t : public std::conditional<A::value, B, A>::type
+    {};
+
     // Type trait determining whether a type is a proper scope_guard callback.
     template<typename T>
     struct is_proper_sg_callback_t
-      : public std::conditional<is_noarg_and_throw_ok_callable_t<T>::value,
-                                returns_void_t<T>,
-                                std::false_type>::type
+      : public and_t<is_noarg_and_throw_ok_callable_t<T>, returns_void_t<T>>
     {};
 
 
