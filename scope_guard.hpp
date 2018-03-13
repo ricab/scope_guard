@@ -23,19 +23,6 @@ namespace sg
   {
     /* --- Some custom type traits --- */
 
-    // type trait determining conjunction of two traits (or identity of a single
-    // trait).
-    template<typename ...>
-    struct and_t; // generally undefined.
-
-    template<typename A>
-    struct and_t<A> : public A
-    {}; // specialization for 1 trait - identity.
-
-    template<typename A, typename B>
-    struct and_t<A, B> : public std::conditional<A::value, B, A>::type
-    {}; // specialization for 2 traits - logical and.
-
     // Type trait determining whether a type is callable and, if necessary,
     // nothrow. SG_REQUIRE_NOEXCEPT logic encapsulated here.
     template<typename T>
