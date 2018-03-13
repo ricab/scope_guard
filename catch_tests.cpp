@@ -1240,7 +1240,7 @@ namespace
   {
     sfinae_tester_impl(std::forward<T>(t), tag_prefered_overload{}); /* the
     overload with the exact type match for the second argument is a closer
-    match overall, so it will tried first; if make_scope_guard is
+    match overall, so it will be tried first; if make_scope_guard is
     SFINAE-friendly, the other one is used as a fall-back when substitution
     fails on the former; otherwise, compilation will fail */
   }
@@ -1279,4 +1279,11 @@ TEST_CASE("make_scope_guard is SFINAE friendly")
 
   sfinae_tester([]() noexcept { return "returning"; });
   REQUIRE(count == 2u);
+
+  sfinae_tester([](){}); // not marked noexcept
+#ifdef SG_REQUIRE_NOEXCEPT
+  REQUIRE(count == 3u);
+#else
+  REQUIRE(count == 2u);
+#endif
 }
