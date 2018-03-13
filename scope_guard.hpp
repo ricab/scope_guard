@@ -48,12 +48,18 @@ namespace sg
 #endif
     {};
 
+    // Type trait determining whether a no-argument callable returns void
+    template<typename T>
+    struct returns_void_t
+      : public std::is_same<void, decltype(std::declval<T&&>()())>
+    {};
+
     // Type trait determining whether a type is a proper scope_guard callback.
     template<typename T>
     struct is_proper_sg_callback_t
-      : public and_t<is_callable_t<T>,
-                     std::true_type> // TODO check return type
-//                     std::is_same<void, decltype(std::declval<T&&>()())>>
+      : public std::conditional<is_callable_t<T>::value,
+                                returns_void_t<T>,
+                                std::false_type>::type
     {};
 
 
