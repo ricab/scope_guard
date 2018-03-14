@@ -50,13 +50,14 @@ namespace sg
       : public std::is_same<void, decltype(std::declval<T&&>()())>
     {};
 
+    // logic AND of two or more type traits
     template<typename A, typename B, typename... C>
     struct and_t : public and_t<A, and_t<B, C...>>
-    {};
+    {}; // for more than two arguments
 
     template<typename A, typename B>
     struct and_t<A, B> : public std::conditional<A::value, B, A>::type
-    {};
+    {}; // for two arguments
 
     // Type trait determining whether a type is a proper scope_guard callback.
     template<typename T>
