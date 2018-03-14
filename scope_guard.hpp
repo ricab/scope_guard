@@ -36,7 +36,9 @@ namespace sg
       : public
 #ifdef SG_REQUIRE_NOEXCEPT
       std::is_nothrow_invocable<T> /* Have C++17, so can use this directly.
-    Note: _r variants not enough for our purposes: T () is compatible void () */
+                                      Note: _r variants not enough for our
+                                      purposes: any return can be discarded
+                                      so all returns are compatible with void */
 #else
       std::true_type
 #endif
