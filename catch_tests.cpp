@@ -995,6 +995,21 @@ TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
 
 //////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
+          "failure caused by a callable that takes arguments can be recovered "
+          "from without a compilation error")
+{
+  reset();
+
+  sfinae_tester(incc);
+  REQUIRE(count == 1u);
+
+  sfinae_tester(
+    [](float, bool, tag_prefered_overload, virtual_method_holder) noexcept {});
+  REQUIRE(count == 2u);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
           "failure caused by a callable that returns non-void can be recovered "
           "from without a compilation error")
 {
