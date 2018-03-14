@@ -85,7 +85,8 @@ See [tests](catch_tests.cpp) for use-case examples.
 
 ### Preconditions
 
-The callback that is used to create a `scope_guard` must respect the following preconditions.
+Besides being invocable, the callback that is used to create a `scope_guard`
+must respect the following preconditions.
 
 #### no arguments
 The callback must be invocable with no arguments. Use a lambda to pass
