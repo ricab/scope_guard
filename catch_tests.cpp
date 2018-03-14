@@ -919,18 +919,7 @@ TEST_CASE("A lambda-wrapped-virtual-method-based scope_guard executes the "
 ////////////////////////////////////////////////////////////////////////////////
 namespace
 {
-  struct tag_prefered_overload {};
-
-  template<typename T>
-  void sfinae_tester(T&& t)
-  {
-    sfinae_tester_impl(std::forward<T>(t), tag_prefered_overload{}); /* the
-    overload with the exact type match for the second argument is a closer
-    match overall, so it will be tried first; if make_scope_guard is
-    SFINAE-friendly, the other one is used as a fall-back when substitution
-    fails on the former; otherwise, a compilation error is issued upon the
-    substitution failure */
-  }
+  using tag_prefered_overload = char;
 
   template<typename T>
   auto sfinae_tester_impl(T&& t, tag_prefered_overload&& /*ignored*/)
@@ -944,6 +933,17 @@ namespace
                           ... /* less specific, so 2nd choice */)
   {
     make_scope_guard(inc);
+  }
+
+  template<typename T>
+  void sfinae_tester(T&& t)
+  {
+    sfinae_tester_impl(std::forward<T>(t), tag_prefered_overload{}); /* the
+    overload with the exact type match for the second argument is a closer
+    match overall, so it will be tried first; if make_scope_guard is
+    SFINAE-friendly, the other one is used as a fall-back when substitution
+    fails on the former; otherwise, a compilation error is issued upon the
+    substitution failure */
   }
 
   void noop() noexcept {}
