@@ -5,6 +5,7 @@
 
 #include "scope_guard.hpp"
 #include <utility>
+#include <functional>
 using namespace sg;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -161,7 +162,7 @@ namespace
    */
   void test_disallowed_copy_construction()
   {
-    const auto guard = make_scope_guard(non_throwing);
+    const auto guard1 = make_scope_guard(non_throwing);
 #ifdef test_19
     const auto guard2 = guard1;
 #endif

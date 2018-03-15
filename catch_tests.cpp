@@ -9,6 +9,7 @@
 #include "catch/catch.hpp"
 
 #include <type_traits>
+#include <functional>
 #include <utility>
 #include <memory>
 #include <list>
