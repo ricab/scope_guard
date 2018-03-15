@@ -630,6 +630,19 @@ namespace
 
     unsigned& m_c;
   };
+
+  struct nocopy_nomove // non-copyable and non-movable
+  {
+    void operator()() const noexcept { inc(); }
+
+    nocopy_nomove() = default;
+    ~nocopy_nomove() = default;
+
+    nocopy_nomove(const nocopy_nomove&) = delete;
+    nocopy_nomove& operator=(const nocopy_nomove&) = delete;
+    nocopy_nomove(nocopy_nomove&&) = delete;
+    nocopy_nomove& operator=(nocopy_nomove&&) = delete;
+  };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -689,6 +702,83 @@ TEST_CASE("A const-custom-functor-based scope_guard calls the functor "
   {
     const auto fun = StatelessFunctor{};
     const auto guard = make_scope_guard(fun);
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue reference to a noncopyable and nonmovable functor can be "
+          "used to create a scope_guard")
+{
+  nocopy_nomove ncnm{};
+  auto& ncnm_ref = ncnm;
+  make_scope_guard(ncnm_ref);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard created with an lvalue reference to a noncopyable and "
+          "nonmovable functor calls the functor exactly once when leaving "
+          "scope")
+{
+  reset();
+
+  {
+    nocopy_nomove ncnm{};
+    auto& ncnm_ref = ncnm;
+    auto guard = make_scope_guard(ncnm_ref);
+
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("An lvalue noncopyable and nonmovable functor can be used to create "
+          "a scope_guard, because it binds to an lvalue reference")
+{
+  nocopy_nomove ncnm{};
+  make_scope_guard(ncnm);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard created with an lvalue noncopyable and nonmovable "
+          "functor calls the functor exactly once when leaving scope")
+{
+  reset();
+
+  {
+    nocopy_nomove ncnm{};
+    auto guard = make_scope_guard(ncnm);
+
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A const lvalue noncopyable and nonmovable functor can be used to "
+          "create a scope_guard, provided its operator() is const, because it "
+          "binds to a const lvalue reference")
+{
+  const nocopy_nomove ncnm{};
+  make_scope_guard(ncnm);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A scope_guard created with a const lvalue noncopyable and "
+          "nonmovable functor calls the functor exactly once when leaving "
+          "scope")
+{
+  reset();
+
+  {
+    const nocopy_nomove ncnm{};
+    auto guard = make_scope_guard(ncnm);
+
     REQUIRE_FALSE(count);
   }
 

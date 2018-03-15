@@ -77,6 +77,19 @@ namespace
     int operator()() noexcept { return returning(); }
   } returning_functor;
 
+  struct nocopy_nomove // non-copyable and non-movable
+  {
+    void operator()() noexcept { non_throwing(); }
+
+    nocopy_nomove() = default;
+    ~nocopy_nomove() = default;
+
+    nocopy_nomove(const nocopy_nomove&) = delete;
+    nocopy_nomove& operator=(const nocopy_nomove&) = delete;
+    nocopy_nomove(nocopy_nomove&&) = delete;
+    nocopy_nomove& operator=(nocopy_nomove&&) = delete;
+  };
+
   /**
    * Test scope_guard can always be created with noexcept marked callables
    */
@@ -213,6 +226,26 @@ namespace
     make_scope_guard(returning_functor);
 #endif
   }
+
+  /**
+   * Test that compilation fails when trying to use rvalues, rvalue references
+   * or const lvalue references of non-copyable and non-movable objects with
+   * non-const operator() to create a scope_guard
+   */
+  void test_noncopyable_nonmovable()
+  {
+#ifdef test_27
+    make_scope_guard(nocopy_nomove{});
+#endif
+#ifdef test_28
+    nocopy_nomove ncnm{};
+    make_scope_guard(std::move(ncnm));
+#endif
+#ifdef test_29
+    const nocopy_nomove ncnm{};
+    make_scope_guard(ncnm);
+#endif
+  }
 }
 
 int main()
@@ -226,6 +259,7 @@ int main()
   test_disallowed_copy_assignment();
   test_disallowed_move_assignment();
   test_disallowed_return();
+  test_noncopyable_nonmovable();
 
   return 0;
 }
