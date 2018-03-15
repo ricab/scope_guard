@@ -29,8 +29,8 @@ namespace sg
       : public std::is_constructible<std::function<void()>, T>
     {};
 
-    // Type trait determining if a no-arg callable is nothrow. This is where
-    // SG_REQUIRE_NOEXCEPT logic is encapsulated.
+    /* Type trait determining whether a no-arg callable is nothrow. This is
+       where SG_REQUIRE_NOEXCEPT logic is encapsulated. */
     template<typename T>
     struct is_nothrow_if_required_t
       : public
