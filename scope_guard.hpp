@@ -23,49 +23,64 @@ namespace sg
   {
     /* --- Some custom type traits --- */
 
-    // type trait determining conjunction of two traits (or identity of a single
-    // trait).
-    template<typename ...>
-    struct and_t; // generally undefined.
+    // Type trait determining whether a type is callable with no arguments
+    template<typename T>
+    struct is_noarg_callable_t
+      : public std::is_constructible<std::function<void()>, T>
+    {};
 
-    template<typename A>
-    struct and_t<A> : public A
-    {}; // specialization for 1 trait - identity.
+    /* Type trait determining whether a no-arg callable is nothrow. This is
+       where SG_REQUIRE_NOEXCEPT logic is encapsulated. */
+    template<typename T>
+    struct is_nothrow_if_required_t
+      : public
+#ifdef SG_REQUIRE_NOEXCEPT
+      std::is_nothrow_invocable<T> /* Have C++17, so can use this directly.
+                                      Note: _r variants not enough for our
+                                      purposes: any return can be discarded
+                                      so all returns are compatible with void */
+#else
+      std::true_type
+#endif
+    {};
+
+    // Type trait determining whether a no-argument callable returns void
+    template<typename T>
+    struct returns_void_t
+      : public std::is_same<void, decltype(std::declval<T&&>()())>
+    {};
+
+    // logic AND of two or more type traits
+    template<typename A, typename B, typename... C>
+    struct and_t : public and_t<A, and_t<B, C...>>
+    {}; // for more than two arguments
 
     template<typename A, typename B>
     struct and_t<A, B> : public std::conditional<A::value, B, A>::type
-    {}; // specialization for 2 traits - logical and.
-
-    // Type trait determining whether a type is callable and, if necessary,
-    // nothrow. SG_REQUIRE_NOEXCEPT logic encapsulated here.
-    template<typename T>
-    struct is_callable_t : public
-#ifdef SG_REQUIRE_NOEXCEPT
-      std::is_nothrow_invocable<T> /* Have C++17, so can use this directly.
-    Note: _r variants not enough for our purposes: T () is compatible void () */
-#else
-      std::is_constructible<std::function<void()>, T>
-#endif
-    {};
+    {}; // for two arguments
 
     // Type trait determining whether a type is a proper scope_guard callback.
     template<typename T>
     struct is_proper_sg_callback_t
-      : public and_t<is_callable_t<T>,
-                     std::is_same<void, decltype(std::declval<T&&>()())>>
+      : public and_t<is_noarg_callable_t<T>,
+                     is_nothrow_if_required_t<T>,
+                     returns_void_t<T>>
     {};
 
 
     /* --- The actual scope_guard type --- */
 
+    template<typename Callback,
+             typename = typename std::enable_if<
+               is_proper_sg_callback_t<Callback>::value>::type>
+    class scope_guard;
+
     template<typename Callback>
-    class scope_guard
+    class scope_guard<Callback>
     {
     public:
       typedef Callback callback_type;
 
-      template<typename = typename std::enable_if<
-        is_proper_sg_callback_t<Callback>::value>::type>
       explicit scope_guard(Callback&& callback) noexcept;
 
       scope_guard(scope_guard&& other) noexcept;
@@ -109,7 +124,6 @@ namespace sg
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-template<typename>
 sg::detail::scope_guard<Callback>::scope_guard(Callback&& callback) noexcept
   : m_callback{std::forward<Callback>(callback)}
   , m_active{true}

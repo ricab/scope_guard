@@ -50,18 +50,19 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 - [x] no implicitly ignored return (see [below](#void-return))
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
+- [x] _SFINAE-friendliness_
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
-- [x] No macros to make guard - just write explicit lambda or bind or what have
-you
+- [x] No macros to make guard &ndash; just write explicit lambda or bind or
+what have you
 - [x] Extensively tested, with both [compile-time tests](compile_time_noexcept_tests.cpp) and [runtime-tests](catch_tests.cpp)
 - [x] Unlicense(d)
 - [x] `snake_case` style
 
 ## Usage
 To use, simply copy the [header file](scope_guard.hpp) to your project (or
-somewhere accessible to your compiler), and include it - there are no
+somewhere accessible to your compiler), and include it &ndash; there are no
 dependencies (besides a &ge;C++11 compiler). Then do something like:
 
 ```c++
@@ -81,11 +82,19 @@ The `scope_guard` type provides the deduced `Callback` type as a nested type.
 It can be accessed with `decltype(sgobj)::callback_type;`, assuming `sgobj`
 is the result of a successful `make_scope_guard` call.
 
+The function `make_scope_guard` is _SFINAE-friendly_ in template deduction
+contexts. In other words, when trying to deduce a template argument, an invalid
+application of `make_scope_guard` &ndash; because one of the enforced
+preconditions is not met &ndash; implies a failed attempt in that particular
+substitution path, but does not cause a compilation error if any other
+substitution is still possible.
+
 See [tests](catch_tests.cpp) for use-case examples.
 
 ### Preconditions
 
-The callback that is used to create a `scope_guard` must respect the following preconditions.
+Besides being invocable, the callback that is used to create a `scope_guard`
+must respect the following preconditions.
 
 #### no arguments
 The callback must be invocable with no arguments. Use a lambda to pass

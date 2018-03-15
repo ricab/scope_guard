@@ -8,6 +8,8 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch/catch.hpp"
 
+#include <type_traits>
+#include <utility>
 #include <memory>
 #include <list>
 
@@ -911,6 +913,125 @@ TEST_CASE("A lambda-wrapped-virtual-method-based scope_guard executes the "
 
   REQUIRE(h_base.m_count == 1u);
 }
+
+/* --- SFINAE friendliness --- */
+
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  using tag_prefered_overload = char;
+
+  template<typename T>
+  auto sfinae_tester_impl(T&& t, tag_prefered_overload&& /*ignored*/)
+  -> decltype(make_scope_guard(std::forward<T>(t)), std::declval<void>())
+  {
+    make_scope_guard(std::forward<T>(t));
+  }
+
+  template<typename T>
+  void sfinae_tester_impl(T&& /*ignored*/,
+                          ... /* less specific, so 2nd choice */)
+  {
+    make_scope_guard(inc);
+  }
+
+  template<typename T>
+  void sfinae_tester(T&& t)
+  {
+    sfinae_tester_impl(std::forward<T>(t), tag_prefered_overload{}); /* the
+    overload with the exact type match for the second argument is a closer
+    match overall, so it will be tried first; if make_scope_guard is
+    SFINAE-friendly, the other one is used as a fall-back when substitution
+    fails on the former; otherwise, a compilation error is issued upon the
+    substitution failure */
+  }
+
+  void noop() noexcept {}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("The SFINAE testing tool creates a make_scope_guard, preferentially "
+          "using the provided parameter, if possible, but discarding it "
+          "otherwise - tests tool used in other tests")
+{
+  reset();
+
+  sfinae_tester(noop); // does not affect count
+  REQUIRE_FALSE(count);
+  sfinae_tester([]() noexcept { }); // does not affect count
+  REQUIRE_FALSE(count);
+  sfinae_tester([]() noexcept { count = 999u; }); // affects count
+  REQUIRE(count == 999u);
+
+#ifndef SG_REQUIRE_NOEXCEPT
+  sfinae_tester([]() { count = 10101u; }); // not noexcept; affects count
+  REQUIRE(count == 10101u);
+#endif
+
+  reset();
+}
+
+//////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
+          "failure caused by a non-callable can be recovered-from without a "
+          "compilation error")
+{
+  reset();
+
+  sfinae_tester(123); /* template deduction falls back to substitution that
+                         discards the parameter (compilation would fail here if
+                         scope_guard was not SFINAE-friendly) */
+  REQUIRE(count == 1u);
+
+  sfinae_tester(false); // idem
+  REQUIRE(count == 2u);
+
+  sfinae_tester("rubbish"); // idem
+  REQUIRE(count == 3u);
+
+  sfinae_tester(&count); // idem
+  REQUIRE(count == 4u);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
+          "failure caused by a callable that takes arguments can be recovered "
+          "from without a compilation error")
+{
+  reset();
+
+  sfinae_tester(incc);
+  REQUIRE(count == 1u);
+
+  sfinae_tester(
+    [](float, bool, tag_prefered_overload, virtual_method_holder) noexcept {});
+  REQUIRE(count == 2u);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
+          "failure caused by a callable that returns non-void can be recovered "
+          "from without a compilation error")
+{
+  reset();
+  sfinae_tester([]() noexcept { return "returning"; });
+  REQUIRE(count == 1u);
+
+  sfinae_tester([]() noexcept { return true; });
+  REQUIRE(count == 2u);
+}
+
+#ifdef SG_REQUIRE_NOEXCEPT
+//////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When deducing make_scope_guard's callback type, and when noexcept "
+          "is required, a substitution failure caused by a callable that is "
+          "not noexcept can be recovered from without a compilation error")
+{
+  reset();
+  sfinae_tester([](){}); // not marked noexcept
+  REQUIRE(count == 1u);
+}
+#endif
 
 /* --- miscellaneous --- */
 
