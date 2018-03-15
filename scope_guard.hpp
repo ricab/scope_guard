@@ -7,7 +7,6 @@
 #define SCOPE_GUARD_HPP_
 
 #include <type_traits>
-#include <functional>
 #include <utility>
 
 #if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
@@ -24,9 +23,14 @@ namespace sg
     /* --- Some custom type traits --- */
 
     // Type trait determining whether a type is callable with no arguments
-    template<typename T>
+    template<typename T, typename = void>
     struct is_noarg_callable_t
-      : public std::is_constructible<std::function<void()>, T>
+      : public std::false_type
+    {};
+
+    template<typename T>
+    struct is_noarg_callable_t<T, decltype(std::declval<T&&>()())>
+      : public std::true_type
     {};
 
     /* Type trait determining whether a no-arg callable is nothrow. This is
