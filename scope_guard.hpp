@@ -85,7 +85,8 @@ namespace sg
     public:
       typedef Callback callback_type;
 
-      explicit scope_guard(Callback&& callback) noexcept;
+      explicit scope_guard(Callback&& callback)
+      noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 
       scope_guard(scope_guard&& other) noexcept;
       ~scope_guard() noexcept; // highlight noexcept dtor
@@ -122,13 +123,15 @@ namespace sg
    * callback when leaving scope.
    */
   template<typename Callback>
-  detail::scope_guard<Callback> make_scope_guard(Callback&& callback) noexcept;
+  detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
+  noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 
 } // namespace sg
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-sg::detail::scope_guard<Callback>::scope_guard(Callback&& callback) noexcept
+sg::detail::scope_guard<Callback>::scope_guard(Callback&& callback)
+noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
   : m_callback{std::forward<Callback>(callback)}
   , m_active{true}
 {}
@@ -152,7 +155,8 @@ sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other) noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-inline auto sg::make_scope_guard(Callback&& callback) noexcept
+inline auto sg::make_scope_guard(Callback&& callback)
+noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 -> detail::scope_guard<Callback>
 {
   return detail::scope_guard<Callback>{std::forward<Callback>(callback)};
