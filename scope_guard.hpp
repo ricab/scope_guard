@@ -26,12 +26,12 @@ namespace sg
     template<typename T, typename = void>
     struct is_noarg_callable_t
       : public std::false_type
-    {};
+    {}; // in general, false
 
     template<typename T>
     struct is_noarg_callable_t<T, decltype(std::declval<T&&>()())>
       : public std::true_type
-    {};
+    {}; // only true when call expression valid
 
     /* Type trait determining whether a no-arg callable is nothrow. This is
        where SG_REQUIRE_NOEXCEPT logic is encapsulated. */
