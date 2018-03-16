@@ -88,7 +88,9 @@ namespace sg
       explicit scope_guard(Callback&& callback)
       noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 
-      scope_guard(scope_guard&& other) noexcept;
+      scope_guard(scope_guard&& other)
+      noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
+
       ~scope_guard() noexcept; // highlight noexcept dtor
 
       scope_guard(const scope_guard&) = delete;
@@ -146,7 +148,8 @@ sg::detail::scope_guard<Callback>::~scope_guard() noexcept
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other) noexcept
+sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
+noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
   : m_callback{std::forward<Callback>(other.m_callback)}
   , m_active{std::move(other.m_active)}
 {
