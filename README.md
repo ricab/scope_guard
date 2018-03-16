@@ -51,12 +51,15 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
 - [x] _SFINAE-friendliness_
+- [x] expose correct exception spec (conditionally-`noexcept` maker)
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 - [x] No macros to make guard &ndash; just write explicit lambda or bind or
 what have you
-- [x] Extensively tested, with both [compile-time tests](compile_time_noexcept_tests.cpp) and [runtime-tests](catch_tests.cpp)
+- [x] Extensively tested, with both
+[compile-time tests](compile_time_noexcept_tests.cpp) and
+[runtime-tests](catch_tests.cpp)
 - [x] Unlicense(d)
 - [x] `snake_case` style
 
@@ -71,16 +74,25 @@ auto guard2 = make_scope_guard([]()noexcept{ /* do something */ });
 ...
 ```
 
+See [tests](catch_tests.cpp) for use-case examples.
+
+### Signature
+
 The template function `make_scope_guard` has the following signature.
 
 ```c++
-template<typename Callback>
-scope_guard make_scope_guard(Callback&& callback) noexcept;
+  template<typename Callback>
+  detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
+  noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 ```
 
-The `scope_guard` type provides the deduced `Callback` type as a nested type.
-It can be accessed with `decltype(sgobj)::callback_type;`, assuming `sgobj`
-is the result of a successful `make_scope_guard` call.
+### Type deduction and SFINAE
+
+The type `Callback` is automatically deduced from the provided argument (as
+long as preconditions are respected). The `scope_guard` type provides the
+deduced `Callback` type as a nested type. It can be accessed with
+`decltype(sgobj)::callback_type;`, assuming `sgobj` is the result of a
+successful `make_scope_guard` call.
 
 The function `make_scope_guard` is _SFINAE-friendly_ in template deduction
 contexts. In other words, when trying to deduce a template argument, an invalid
@@ -90,6 +102,24 @@ substitution path, but does not cause a compilation error if any other
 substitution is still possible.
 
 See [tests](catch_tests.cpp) for use-case examples.
+
+### Conditional `noexcept`
+
+Notice that the exception specification is such that making a scope guard is
+often a _nothrow_ operation. Notice in particular the following cases:
+
+1. make_scope_guard is noexcept when `callback` is an lvalue or lvalue
+reference
+2. make_scope_guard is noexcept when `callback` is an rvalue or rvalue
+reference of a type with:
+    * a `noexcept` move constructor, and
+    * a `noexcept` destructor
+3. make_scope_guard is noexcept when `callback` is an rvalue or rvalue
+reference but `Callback` is manually determined as a const ref (e.g.
+`make_scope_guard<const Foo&>(Foo{})`. This requires a const `operator()`
+though.
+
+See [tests](compile_time_tests.cpp) for use-case examples.
 
 ### Preconditions
 
@@ -103,7 +133,8 @@ something that takes arguments in its original form. For example:
 ```c++
 void my_resource_release(Resource& r) noexcept;
 make_scope_guard(my_resource_release); // ERROR: which resource?
-make_scope_guard([&some_resource]() noexcept { my_resource_release(some_resource); }); // OK
+make_scope_guard([&some_resource]() noexcept
+                 { my_resource_release(some_resource); }); // OK
 ```
 
 This precondition is enforced at compile time.
@@ -205,7 +236,8 @@ configurations.
 
 There are a few dependencies to execute the tests:
 - C++11 capable compiler, preferably C++17 capable (c++1z is fine if it provides
-the symbol [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
+the symbol
+[__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
 - [Cmake](https://cmake.org/) (at least version 3.8)
 - [Catch2](https://github.com/catchorg/Catch2)
 
@@ -235,7 +267,9 @@ the symbol [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/exper
 This will run catch and compile-time tests with different combinations of
 SG_REQUIRE_NOEXCEPT_IN_CPP17 and C++ standard, depending on compiler
 capabilities. If the compiler supports exception specifications as part of the
-type system ([P0012R1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html)),
+type system (
+[P0012R1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html)
+),
 both C++11 and C++17 cases are tested (cases X, Y, W, and Z in the table below).
 Otherwise, only C++11 is tested (cases X and Y below). Notice that noexcept is
 only effectively required in case Z.
