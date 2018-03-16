@@ -150,16 +150,16 @@ endfunction()
 
 # utility to determine whether a compilation test should expect building to fail
 function(expect_result ret count cxx17 reqne)
-  if(${count} LESS 7)
+  if(${count} LESS 27)
     set(${ret} TRUE PARENT_SCOPE)
 
-  elseif(${count} LESS 19)
+  elseif(${count} LESS 39)
     if(${cxx17} AND ${reqne})
       set(${ret} FALSE PARENT_SCOPE)
     else()
       set(${ret} TRUE PARENT_SCOPE)
     endif()
-  else() # count >= 19
+  else() # count >= 39
     set(${ret} FALSE PARENT_SCOPE)
   endif()
 endfunction()
@@ -177,10 +177,10 @@ foreach(cxx17 ${cxx17_possibilities})
 
     # add noexcept compilation tests for this standard/noexcept-requirement
     # combination
-    foreach(count RANGE 0 29) # range inclusive in cmake (so 30 tests)
-                              # 0-6: always succeed (0 = all test macros off)
-                              # 7-18: fail when requiring noexcept
-                              # 19-29: always fail
+    foreach(count RANGE 0 49) # range inclusive in cmake (so 50 tests)
+                              # 0-26: always succeed (0 = all test macros off)
+                              # 27-38: fail when requiring noexcept
+                              # 39-49: always fail
       expect_result(success ${count} ${cxx17} ${reqne})
       add_compilation_test(compile_time_tests.cpp
                            ${success} ${cxx17} ${reqne} ${count})

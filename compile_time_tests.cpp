@@ -9,23 +9,6 @@
 using namespace sg;
 
 ////////////////////////////////////////////////////////////////////////////////
-#ifdef test_1
-  static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())),
-                "make_scope_guard not noexcept");
-#endif
-
-#ifdef test_2
-  static_assert(noexcept(detail::scope_guard<void(*)()noexcept>{
-    std::declval<void(*)()noexcept>()}), "scope_guard ctor not noexcept");
-#endif
-
-#ifdef test_3
-  static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())
-                         .~scope_guard()),
-                "scope_guard dtor not noexcept");
-#endif
-
-////////////////////////////////////////////////////////////////////////////////
 namespace
 {
 
@@ -81,8 +64,8 @@ namespace
   {
     void operator()() noexcept { non_throwing(); }
 
-    nocopy_nomove() = default;
-    ~nocopy_nomove() = default;
+    nocopy_nomove() noexcept = default;
+    ~nocopy_nomove() noexcept = default;
 
     nocopy_nomove(const nocopy_nomove&) = delete;
     nocopy_nomove& operator=(const nocopy_nomove&) = delete;
@@ -90,18 +73,248 @@ namespace
     nocopy_nomove& operator=(nocopy_nomove&&) = delete;
   };
 
+  struct throwing_dtor
+  {
+    void operator()() const noexcept { non_throwing(); }
+
+    ~throwing_dtor() noexcept(false) {};
+
+    throwing_dtor() noexcept = default;
+    throwing_dtor(const throwing_dtor&) noexcept = default;
+    throwing_dtor(throwing_dtor&&) noexcept = default;
+  };
+
+  struct throwing_copy
+  {
+    void operator()() const noexcept { non_throwing(); }
+
+    throwing_copy(const throwing_copy&) noexcept(false) {};
+
+    ~throwing_copy() noexcept = default;
+    throwing_copy() noexcept = default;
+    throwing_copy(throwing_copy&&) noexcept = default;
+  };
+
+  struct throwing_move
+  {
+    void operator()() const noexcept { non_throwing(); }
+
+    throwing_move(throwing_move&&) noexcept(false) {};
+
+    ~throwing_move() noexcept = default;
+    throwing_move() noexcept = default;
+    throwing_move(const throwing_move&) noexcept = default;
+  };
+
+  struct nothrow
+  {
+    void operator()() const noexcept { non_throwing(); }
+
+    ~nothrow() noexcept = default;
+    nothrow() noexcept = default;
+    nothrow(const nothrow&) noexcept = default;
+    nothrow(nothrow&&) noexcept = default;
+  };
+
+#ifdef test_1
+    static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())),
+                  "make_scope_guard not noexcept");
+#endif
+
+#ifdef test_2
+    static_assert(noexcept(detail::scope_guard<void(*)()noexcept>{
+      std::declval<void(*)()noexcept>()}), "scope_guard ctor not noexcept");
+#endif
+
+#ifdef test_3
+    static_assert(noexcept(make_scope_guard(std::declval<void(*)()noexcept>())
+                           .~scope_guard()),
+                  "scope_guard dtor not noexcept");
+#endif
+
+    /**
+     * Test nothrow character of make_scope_guard for different value categories
+     * of a type with a throwing destructor
+     */
+    void test_throwing_dtor_throw_spec()
+    {
+#ifdef test_4
+      static_assert(!noexcept(make_scope_guard(throwing_dtor{})),
+                    "make_scope_guard wrongly declared noexcept when instanced "
+                    "with an rvalue object whose dtor throws");
+#endif
+#ifdef test_5
+      throwing_dtor x;
+      static_assert(noexcept(make_scope_guard(x)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue object whose dtor throws (should deduce "
+                    "reference and avoid destruction entirely)");
+#endif
+#ifdef test_6
+      throwing_dtor x;
+      static_assert(!noexcept(make_scope_guard(std::move(x))),
+                    "make_scope_guard wrongly declared noexcept when instanced "
+                    "with an rvalue reference to an object whose dtor throws");
+#endif
+#ifdef test_7
+      throwing_dtor x;
+      auto& r = x;
+      static_assert(noexcept(make_scope_guard(r)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to an object whose dtor throws "
+                    "(should deduce reference and avoid destruction entirely)");
+#endif
+#ifdef test_8
+      throwing_dtor x;
+      const auto& cr = x;
+      static_assert(noexcept(make_scope_guard(cr)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to a const object whose dtor "
+                    "throws (should deduce reference and avoid destruction "
+                    "entirely)");
+#endif
+    }
+
+    /**
+     * Test nothrow character of make_scope_guard for different value categories
+     * of a type with a throwing copy constructor
+     */
+    void test_throwing_copy_throw_spec()
+    {
+#ifdef test_9
+      static_assert(noexcept(make_scope_guard(throwing_copy{})),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an rvalue object whose copy ctor throws");
+#endif
+#ifdef test_10
+      throwing_copy x;
+      static_assert(noexcept(make_scope_guard(x)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue object whose copy ctor throws (should "
+                    "deduce reference and avoid copy entirely)");
+#endif
+#ifdef test_11
+      throwing_copy x;
+      static_assert(noexcept(make_scope_guard(std::move(x))),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an rvalue reference to an object whose copy ctor "
+                    "throws");
+#endif
+#ifdef test_12
+      throwing_copy x;
+      auto& r = x;
+      static_assert(noexcept(make_scope_guard(r)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to an object whose copy ctor "
+                    "throws (should deduce reference and avoid copy entirely)");
+#endif
+#ifdef test_13
+      throwing_copy x;
+      const auto& cr = x;
+      static_assert(noexcept(make_scope_guard(cr)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to a const object whose copy "
+                    "ctor throws (should deduce reference and avoid copy "
+                    "entirely)");
+#endif
+    }
+
+    /**
+     * Test nothrow character of make_scope_guard for different value categories
+     * of a type with a throwing move constructor
+     */
+    void test_throwing_move_throw_spec()
+    {
+#ifdef test_14
+      static_assert(!noexcept(make_scope_guard(throwing_move{})),
+                    "make_scope_guard wrongly declared noexcept when instanced "
+                    "with an rvalue object whose move ctor throws");
+#endif
+#ifdef test_15
+      throwing_move x;
+      static_assert(noexcept(make_scope_guard(x)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue object whose move ctor throws");
+#endif
+#ifdef test_16
+      throwing_move x;
+      static_assert(!noexcept(make_scope_guard(std::move(x))),
+                    "make_scope_guard wrongly declared noexcept when instanced "
+                    "with an rvalue reference to an object whose move ctor "
+                    "throws");
+#endif
+#ifdef test_17
+      throwing_move x;
+      auto& r = x;
+      static_assert(noexcept(make_scope_guard(r)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to an object whose move ctor "
+                    "throws");
+#endif
+#ifdef test_18
+      throwing_move x;
+      const auto& cr = x;
+      static_assert(noexcept(make_scope_guard(cr)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to a const object whose move "
+                    "ctor throws");
+#endif
+    }
+
+    /**
+     * Test nothrow character of make_scope_guard for different value categories
+     * of a type with a non-throwing constructors and destructor
+     */
+    void test_nothrow_throw_spec()
+    {
+#ifdef test_19
+      static_assert(noexcept(make_scope_guard(nothrow{})),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an rvalue object whose ctors and dtor do not throw");
+#endif
+#ifdef test_20
+      nothrow x;
+      static_assert(noexcept(make_scope_guard(x)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue object whose ctors and dtor do not throw");
+#endif
+#ifdef test_21
+      nothrow x;
+      static_assert(noexcept(make_scope_guard(std::move(x))),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an rvalue reference to an object whose ctors and "
+                    "dtor do not throw");
+#endif
+#ifdef test_22
+      nothrow x;
+      auto& r = x;
+      static_assert(noexcept(make_scope_guard(r)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to an object whose ctors and "
+                    "dtor do not throw");
+#endif
+#ifdef test_23
+      nothrow x;
+      const auto& cr = x;
+      static_assert(noexcept(make_scope_guard(cr)),
+                    "make_scope_guard not declared noexcept when instanced "
+                    "with an lvalue reference to a const object whose ctors "
+                    "dtor do not throw");
+#endif
+    }
+
   /**
    * Test scope_guard can always be created with noexcept marked callables
    */
   void test_noexcept_good()
   {
-#ifdef test_4
+#ifdef test_24
     make_scope_guard(non_throwing);
 #endif
-#ifdef test_5
+#ifdef test_25
     make_scope_guard(non_throwing_lambda);
 #endif
-#ifdef test_6
+#ifdef test_26
     make_scope_guard(non_throwing_functor);
 #endif
   }
@@ -113,19 +326,19 @@ namespace
    */
   void test_noexcept_bad()
   {
-#ifdef test_7
+#ifdef test_27
     make_scope_guard(throwing);
 #endif
-#ifdef test_8
+#ifdef test_28
     make_scope_guard(throwing_stdfun);
 #endif
-#ifdef test_9
+#ifdef test_29
     make_scope_guard(throwing_lambda);
 #endif
-#ifdef test_10
+#ifdef test_30
     make_scope_guard(throwing_bound);
 #endif
-#ifdef test_11
+#ifdef test_31
     make_scope_guard(throwing_functor);
 #endif
   }
@@ -137,19 +350,19 @@ namespace
    */
   void test_noexcept_fixable()
   {
-#ifdef test_12
+#ifdef test_32
     make_scope_guard(meh);
 #endif
-#ifdef test_13
+#ifdef test_33
     make_scope_guard(meh_stdfun);
 #endif
-#ifdef test_14
+#ifdef test_34
     make_scope_guard(meh_lambda);
 #endif
-#ifdef test_15
+#ifdef test_35
     make_scope_guard(meh_bound);
 #endif
-#ifdef test_16
+#ifdef test_36
     make_scope_guard(meh_functor);
 #endif
   }
@@ -162,10 +375,10 @@ namespace
    */
   void test_noexcept_unfortunate()
   {
-#ifdef test_17
+#ifdef test_37
     make_scope_guard(non_throwing_stdfun);
 #endif
-#ifdef test_18
+#ifdef test_38
     make_scope_guard(non_throwing_bound);
 #endif
   }
@@ -176,7 +389,7 @@ namespace
   void test_disallowed_copy_construction()
   {
     const auto guard1 = make_scope_guard(non_throwing);
-#ifdef test_19
+#ifdef test_39
     const auto guard2 = guard1;
 #endif
   }
@@ -188,7 +401,7 @@ namespace
   {
     const auto guard1 = make_scope_guard(non_throwing_lambda);
     auto guard2 = make_scope_guard(non_throwing_functor);
-#ifdef test_20
+#ifdef test_40
     guard2 = guard1;
 #endif
   }
@@ -199,7 +412,7 @@ namespace
   void test_disallowed_move_assignment()
   {
     auto guard = make_scope_guard(non_throwing);
-#ifdef test_21
+#ifdef test_41
     guard = make_scope_guard(non_throwing_lambda);
 #endif
   }
@@ -210,19 +423,19 @@ namespace
    */
   void test_disallowed_return()
   {
-#ifdef test_22
+#ifdef test_42
     make_scope_guard(returning);
 #endif
-#ifdef test_23
+#ifdef test_43
     make_scope_guard(returning_stdfun);
 #endif
-#ifdef test_24
+#ifdef test_44
     make_scope_guard(returning_lambda);
 #endif
-#ifdef test_25
+#ifdef test_45
     make_scope_guard(returning_bound);
 #endif
-#ifdef test_26
+#ifdef test_46
     make_scope_guard(returning_functor);
 #endif
   }
@@ -234,14 +447,14 @@ namespace
    */
   void test_noncopyable_nonmovable()
   {
-#ifdef test_27
+#ifdef test_47
     make_scope_guard(nocopy_nomove{});
 #endif
-#ifdef test_28
+#ifdef test_48
     nocopy_nomove ncnm{};
     make_scope_guard(std::move(ncnm));
 #endif
-#ifdef test_29
+#ifdef test_49
     const nocopy_nomove ncnm{};
     make_scope_guard(ncnm);
 #endif
@@ -250,10 +463,15 @@ namespace
 
 int main()
 {
+  test_throwing_dtor_throw_spec();
+  test_throwing_copy_throw_spec();
+  test_throwing_move_throw_spec();
+  test_nothrow_throw_spec();
+
   test_noexcept_good();
   test_noexcept_fixable();
   test_noexcept_unfortunate();
-  // test_noexcept_bad(); // this would result in a call to std::terminate
+  test_noexcept_bad(); // this results in a call to std::terminate
 
   test_disallowed_copy_construction();
   test_disallowed_copy_assignment();
