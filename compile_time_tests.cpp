@@ -73,6 +73,20 @@ namespace
     nocopy_nomove& operator=(nocopy_nomove&&) = delete;
   };
 
+  struct nocopy_nomove_const_call
+  {
+    void operator()() const noexcept { non_throwing(); }
+
+    nocopy_nomove_const_call() noexcept = default;
+    ~nocopy_nomove_const_call() noexcept = default;
+
+    nocopy_nomove_const_call(const nocopy_nomove_const_call&) = delete;
+    nocopy_nomove_const_call&
+    operator=(const nocopy_nomove_const_call&) = delete;
+    nocopy_nomove_const_call(nocopy_nomove_const_call&&) = delete;
+    nocopy_nomove_const_call& operator=(nocopy_nomove_const_call&&) = delete;
+  };
+
   struct throwing_dtor
   {
     void operator()() const noexcept { non_throwing(); }
@@ -371,17 +385,37 @@ namespace
     }
 
   /**
+   * Test compilation successes with wrong usage of non-copyable and non-movable
+   * objects to create scope_guards
+   */
+  void test_noncopyable_nonmovable_good()
+  {
+#ifdef test_30
+    make_scope_guard<const nocopy_nomove_const_call&>(
+      nocopy_nomove_const_call{});
+#endif
+#ifdef test_31
+    nocopy_nomove_const_call ncnm{};
+    make_scope_guard<const nocopy_nomove_const_call&>(std::move(ncnm));
+#endif
+#ifdef test_32
+    nocopy_nomove ncnm{};
+    make_scope_guard(ncnm);
+#endif
+  }
+
+  /**
    * Test scope_guard can always be created with noexcept marked callables
    */
   void test_noexcept_good()
   {
-#ifdef test_30
+#ifdef test_33
     make_scope_guard(non_throwing);
 #endif
-#ifdef test_31
+#ifdef test_34
     make_scope_guard(non_throwing_lambda);
 #endif
-#ifdef test_32
+#ifdef test_35
     make_scope_guard(non_throwing_functor);
 #endif
   }
@@ -393,19 +427,19 @@ namespace
    */
   void test_noexcept_bad()
   {
-#ifdef test_33
+#ifdef test_36
     make_scope_guard(throwing);
 #endif
-#ifdef test_34
+#ifdef test_37
     make_scope_guard(throwing_stdfun);
 #endif
-#ifdef test_35
+#ifdef test_38
     make_scope_guard(throwing_lambda);
 #endif
-#ifdef test_36
+#ifdef test_39
     make_scope_guard(throwing_bound);
 #endif
-#ifdef test_37
+#ifdef test_40
     make_scope_guard(throwing_functor);
 #endif
   }
@@ -417,19 +451,19 @@ namespace
    */
   void test_noexcept_fixable()
   {
-#ifdef test_38
+#ifdef test_41
     make_scope_guard(meh);
 #endif
-#ifdef test_39
+#ifdef test_42
     make_scope_guard(meh_stdfun);
 #endif
-#ifdef test_40
+#ifdef test_43
     make_scope_guard(meh_lambda);
 #endif
-#ifdef test_41
+#ifdef test_44
     make_scope_guard(meh_bound);
 #endif
-#ifdef test_42
+#ifdef test_45
     make_scope_guard(meh_functor);
 #endif
   }
@@ -442,10 +476,10 @@ namespace
    */
   void test_noexcept_unfortunate()
   {
-#ifdef test_43
+#ifdef test_46
     make_scope_guard(non_throwing_stdfun);
 #endif
-#ifdef test_44
+#ifdef test_47
     make_scope_guard(non_throwing_bound);
 #endif
   }
@@ -456,7 +490,7 @@ namespace
   void test_disallowed_copy_construction()
   {
     const auto guard1 = make_scope_guard(non_throwing);
-#ifdef test_45
+#ifdef test_48
     const auto guard2 = guard1;
 #endif
   }
@@ -468,7 +502,7 @@ namespace
   {
     const auto guard1 = make_scope_guard(non_throwing_lambda);
     auto guard2 = make_scope_guard(non_throwing_functor);
-#ifdef test_46
+#ifdef test_49
     guard2 = guard1;
 #endif
   }
@@ -479,7 +513,7 @@ namespace
   void test_disallowed_move_assignment()
   {
     auto guard = make_scope_guard(non_throwing);
-#ifdef test_47
+#ifdef test_50
     guard = make_scope_guard(non_throwing_lambda);
 #endif
   }
@@ -490,40 +524,46 @@ namespace
    */
   void test_disallowed_return()
   {
-#ifdef test_48
+#ifdef test_51
     make_scope_guard(returning);
 #endif
-#ifdef test_49
+#ifdef test_52
     make_scope_guard(returning_stdfun);
 #endif
-#ifdef test_50
+#ifdef test_53
     make_scope_guard(returning_lambda);
 #endif
-#ifdef test_51
+#ifdef test_54
     make_scope_guard(returning_bound);
 #endif
-#ifdef test_52
+#ifdef test_55
     make_scope_guard(returning_functor);
 #endif
   }
 
   /**
-   * Test that compilation fails when trying to use rvalues, rvalue references
-   * or const lvalue references of non-copyable and non-movable objects with
-   * non-const operator() to create a scope_guard
+   * Test compilation failures with wrong usage of non-copyable and non-movable
+   * objects to create scope_guards
    */
-  void test_noncopyable_nonmovable()
+  void test_noncopyable_nonmovable_bad()
   {
-#ifdef test_53
+#ifdef test_56
     make_scope_guard(nocopy_nomove{});
 #endif
-#ifdef test_54
+#ifdef test_57
     nocopy_nomove ncnm{};
     make_scope_guard(std::move(ncnm));
 #endif
-#ifdef test_55
+#ifdef test_58
     const nocopy_nomove ncnm{};
-    make_scope_guard(ncnm);
+    make_scope_guard(ncnm); // does not have const op()
+#endif
+#ifdef test_59
+    make_scope_guard<const nocopy_nomove&>(nocopy_nomove{}); // no const op()
+#endif
+#ifdef test_60
+    nocopy_nomove ncnm{};
+    make_scope_guard<const nocopy_nomove&>(std::move(ncnm)); // no const op()
 #endif
   }
 }
@@ -533,18 +573,20 @@ int main()
   test_throwing_dtor_throw_spec();
   test_throwing_copy_throw_spec();
   test_throwing_move_throw_spec();
+  test_nomove_throwing_copy_throw_spec();
   test_nothrow_throw_spec();
-
+  test_noncopyable_nonmovable_good();
   test_noexcept_good();
+
+  test_noexcept_bad(); // this results in a call to std::terminate
   test_noexcept_fixable();
   test_noexcept_unfortunate();
-  test_noexcept_bad(); // this results in a call to std::terminate
 
   test_disallowed_copy_construction();
   test_disallowed_copy_assignment();
   test_disallowed_move_assignment();
   test_disallowed_return();
-  test_noncopyable_nonmovable();
+  test_noncopyable_nonmovable_bad();
 
   return 0;
 }
