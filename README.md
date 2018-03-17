@@ -58,15 +58,16 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 - [x] no implicitly ignored return (see [below](#void-return))
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
-- [x] _SFINAE-friendliness_
-- [x] expose correct exception specification (conditionally-`noexcept` maker)
+- [x] _SFINAE-friendliness_ (see [below](#type-deduction-and-sfinae))
+- [x] expose correct exception specification (conditionally-`noexcept` maker,
+see [below](#conditional--noexcept-))
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 - [x] No macros to make guard &ndash; just write explicit lambda or bind or
 what have you
 - [x] Extensively tested, with both
-[compile-time tests](compile_time_noexcept_tests.cpp) and
+[compile-time tests](compile_time_tests.cpp) and
 [runtime-tests](catch_tests.cpp)
 - [x] Unlicense(d)
 - [x] `snake_case` style
@@ -90,7 +91,7 @@ The template function `make_scope_guard` has the following signature.
 
 ```c++
   template<typename Callback>
-  detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
+  /* unspecified */ make_scope_guard(Callback&& callback)
   noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 ```
 
@@ -98,8 +99,8 @@ The template function `make_scope_guard` has the following signature.
 
 While usage is meant to be mostly intuitive, documentation going into more
 detail can be found below, along with the rationale for some of the design
-decisions. I hope they make sense, but my opinions are not set in stone. In
-any case, I welcome bug reports and improvement suggestions.
+decisions. I hope they make sense, but my opinions are not set in stone. I
+welcome bug reports and improvement suggestions.
 
 ### Type deduction and SFINAE
 
@@ -137,7 +138,7 @@ See [tests](compile_time_tests.cpp) for examples.
 ### Remaining interface
 
 The resulting scope guard type provides `callback_type` as described
-[above](type-deduction-and-SFINAE). Besides that, it provides only three public
+[above](#type-deduction-and-sfinae). Besides that, it provides only three public
 member functions:
 
 1. a destructor
@@ -186,7 +187,7 @@ But having one means that, given an existing scope guard `g1`, the following
 code is valid and useful for ownership transfer:
 
 ```c++
-decltype(g1) g2{std::move(g1)};
+auto g2 = std::move(g1);
 ```
 
 However, moved-from scope guards should be regarded with caution. They
@@ -343,8 +344,7 @@ configurations.
 
 There are a few dependencies to execute the tests:
 - C++11 capable compiler, preferably C++17 capable (c++1z is fine if it provides
-the symbol
-[__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
+the symbol [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
 - [Cmake](https://cmake.org/) (at least version 3.8)
 - [Catch2](https://github.com/catchorg/Catch2)
 
