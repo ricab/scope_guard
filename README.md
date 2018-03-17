@@ -1,6 +1,7 @@
 # scope_guard
 ## Table of contents
 
+
 - [scope_guard](#scope-guard)
   * [Table of contents](#table-of-contents)
   * [Intro](#intro)
@@ -8,8 +9,16 @@
     + [Main features](#main-features)
     + [Other characteristics](#other-characteristics)
   * [Usage](#usage)
+    + [Signature](#signature)
+  * [Detailed documentation](#detailed-documentation)
+    + [Type deduction and SFINAE](#type-deduction-and-sfinae)
+    + [Conditional `noexcept`](#conditional--noexcept-)
+    + [Remaining interface](#remaining-interface)
+      - [Why so little?](#why-so-little-)
+    + [Moving scope guards](#moving-scope-guards)
+    + [Invariants](#invariants)
     + [Preconditions](#preconditions)
-      - [no arguments](#no-arguments)
+      - [invocable with no arguments](#invocable-with-no-arguments)
       - [void return](#void-return)
       - [no throw](#no-throw)
     + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option--sg-require-noexcept-in-cpp17-)
@@ -22,9 +31,9 @@
 
 ## Intro
 
-A public, general, simple, fast, and tested C++11 scope_guard which forbids
-implicitly ignored returns and optionally enforces noexcept at compile time in
-C++17.
+A public, general, simple, fast, and SFINAE-friendly C++11 scope guard which
+forbids implicitly ignored returns and optionally enforces noexcept at compile
+time (in C++17).
 
 Usage is easy:
 
@@ -33,7 +42,7 @@ auto guard = make_scope_guard(my_callback);
 ```
 
 A scope guard is an object that employs RAII to guarantee execution of the
-provided callback when leaving scope, be it through a fallthrough, a return,
+provided callback when leaving scope, be it through a fall-through, a return,
 or an exception.
 
 All necessary code is provided in a [single header](scope_guard.hpp)
@@ -45,13 +54,12 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 - [x] &ge; C++11
 - [x] Interface consists _mostly_ of a single function (`make_scope_guard`)
 - [x] Fast (no added runtime `std::function` penalties)
-- [x] General: accepts any callable that respects the preconditions
-[below](#preconditions)
+- [x] General: accepts any callable that respects a few [preconditions](#preconditions)
 - [x] no implicitly ignored return (see [below](#void-return))
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
 - [x] _SFINAE-friendliness_
-- [x] expose correct exception spec (conditionally-`noexcept` maker)
+- [x] expose correct exception specification (conditionally-`noexcept` maker)
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
@@ -65,8 +73,8 @@ what have you
 
 ## Usage
 To use, simply copy the [header file](scope_guard.hpp) to your project (or
-somewhere accessible to your compiler), and include it &ndash; there are no
-dependencies (besides a &ge;C++11 compiler). Then do something like:
+somewhere accessible to your compiler), and include it. Then do something
+like:
 
 ```c++
 auto guard1 = make_scope_guard(my_callback);
@@ -86,47 +94,146 @@ The template function `make_scope_guard` has the following signature.
   noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 ```
 
+## Detailed documentation
+
+While usage is meant to be mostly intuitive, documentation going into more
+detail can be found below, along with the rationale for some of the design
+decisions. I hope they make sense, but my opinions are not set in stone. In
+any case, I welcome bug reports and improvement suggestions.
+
 ### Type deduction and SFINAE
 
-The type `Callback` is automatically deduced from the provided argument (as
-long as preconditions are respected). The `scope_guard` type provides the
-deduced `Callback` type as a nested type. It can be accessed with
-`decltype(sgobj)::callback_type;`, assuming `sgobj` is the result of a
-successful `make_scope_guard` call.
+Template argument deduction allows the underlying callback type to be
+automatically derived from the argument. That type, which is identified as
+`Callback` in the template signature above, is then provided as a nested
+type with the name `callback_type` (e.g. `decltype(guard)::callback_type;`.)
 
-The function `make_scope_guard` is _SFINAE-friendly_ in template deduction
-contexts. In other words, when trying to deduce a template argument, an invalid
-application of `make_scope_guard` &ndash; because one of the enforced
-preconditions is not met &ndash; implies a failed attempt in that particular
-substitution path, but does not cause a compilation error if any other
-substitution is still possible.
+The function `make_scope_guard` is _SFINAE-friendly_. In other words, an
+invalid application of `make_scope_guard` by the compiler when trying to
+deduce a template argument (e.g. because the argument is not callable) does
+not cause a compilation error if any other substitution is still possible.
 
 See [tests](catch_tests.cpp) for use-case examples.
 
 ### Conditional `noexcept`
 
-Notice that the exception specification is such that making a scope guard is
-often a _nothrow_ operation. Notice in particular the following cases:
+The exception specification of `make_scope_guard` is such that making a scope
+guard is often a _nothrow_ operation. Notice in particular that
+`make_scope_guard` is `noexcept` in the following cases:
 
-1. make_scope_guard is noexcept when `callback` is an lvalue or lvalue
-reference
-2. make_scope_guard is noexcept when `callback` is an rvalue or rvalue
-reference of a type with:
+- when `callback` is an lvalue or lvalue reference
+- when `callback` is an rvalue or rvalue reference of a type with:
     * a `noexcept` move constructor, and
     * a `noexcept` destructor
-3. make_scope_guard is noexcept when `callback` is an rvalue or rvalue
-reference but `Callback` is manually determined as a const ref (e.g.
-`make_scope_guard<const Foo&>(Foo{})`. This requires a const `operator()`
-though.
+- when `callback` is an rvalue or rvalue reference but `Callback` is explicitly
+determined to be a const ref (e.g. `make_scope_guard<const Foo&>(Foo{})`. This
+requires a const `operator()` though.
 
-See [tests](compile_time_tests.cpp) for use-case examples.
+However, `make_scope_guard` is _not_ `noexcept` when it needs to rely upon an
+operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` destructor)
+
+See [tests](compile_time_tests.cpp) for examples.
+
+### Remaining interface
+
+The resulting scope guard type provides `callback_type` as described
+[above](type-deduction-and-SFINAE). Besides that, it provides only three public
+member functions:
+
+1. a destructor
+2. a constructor taking a callback
+3. a move constructor
+
+The first and second items are not meant for direct usage &ndash; for obvious
+reasons in the case of the destructor and because `make_scope_guard` is
+preferable than a direct constructor call (at least until class template
+argument deduction). 3. has relatively limited use but
+is required for initialization with assignment syntax (see
+[below](#moving-scope-guards) for details).
+
+All remaining special member functions are `deleted`. In particular, scope
+guards cannot be default-constructed, copy-constructed, or assigned to.
+
+#### Why so little?
+
+The goal of this approach is two-fold:
+
+- to keep complexity to a minimum, avoiding superfluous object states leaking
+into the domain of whatever problem the client is trying to solve.
+- encouraging a single explicit way of doing something makes for clearer code
+
+For instance, what problem could a default-constructed scope guard possibly
+help solve? I cannot think of any real world example. Scope guards that do
+nothing can always be created with an explicit no-op callback.
+
+This is also why no "dismiss" operation is provided here, even though it is
+often present in other implementations. In most cases, the scope of the guard
+should be reduced; in the rest, the logic can be moved to the callback itself.
+
+All of this makes for a relatively simple and general invariant. A scope guard
+object in the code is almost always something that the reader can assume will
+do something at the end of the scope and at no other occasion. There is only one
+exception, caused by moves, whose benefits were judged to surpass these
+downsides.
+
+### Moving scope guards
+
+Objects created with `make_scope_guard` can be moved. This
+possibility exists mainly to allow initialization with assignment syntax and
+auto type deduction, as in `auto foo = make_scope_guard(bar);`. Even though
+there is no assignment taking place, this still requires the move constructor.
+But having one means that, given an existing scope guard `g1`, the following
+code is valid and useful for ownership transfer:
+
+```c++
+decltype(g1) g2{std::move(g1)};
+```
+
+However, moved-from scope guards should be regarded with caution. They
+constitute the single case violating the intended ideal that scope guards always
+execute their callback (that responsibility is transfered to the scope guard
+that is thus created). Alas, moved-from objects stay behind in C++ and we still
+need them. In the case of scope guards they do not do anything special, even
+though they are _technically valid_. The [invariants](#invariants) have to be
+more complex because of them.
+
+Here is an example of the effect of moving:
+
+```c++
+{
+  auto g1 = make_scope_guard([]() noexcept { std::cout << "bla"; });
+  {
+    auto g2 = std::move(g1);
+  } // g2 leaves scope here
+  std::cout << "ble";
+} // g1 leaves scope here
+std::cout << "bli";
+```
+
+This would print `blablebli`, showing that `bla` is printed only once, when `g2`
+leaves scope.
+
+The state of moved-from scope guard exists for purely technical reasons only and
+there is nothing useful that can be done with such objects. They are best
+left alone and thought-of as garbage awaiting removal.
+
+### Invariants
+
+1. Objects created with `make_scope_guard` execute the provided `callback`
+exactly once when leaving scope, except if they are successfully moved-from, in
+which case they execute nothing.
+2. Objects created by move-constructing an existing scope guard that was not
+moved-from are considered to have been provided with the `callback` that the
+source of the move had been provided with.
+3. Objects created by move-constructing an existing scope guard that was already
+moved-from are considered moved-from themselves.
 
 ### Preconditions
 
-Besides being invocable, the callback that is used to create a `scope_guard`
-must respect the following preconditions.
+The callback that is used to create a scope guard must respect the following
+preconditions.
 
-#### no arguments
+#### invocable with no arguments
 The callback must be invocable with no arguments. Use a lambda to pass
 something that takes arguments in its original form. For example:
 
@@ -142,7 +249,7 @@ This precondition is enforced at compile time.
 #### void return
 
 The callback must return void. Returning anything else is intentionally
-forbidden. This forces the client to confirm their intention, by explicitly
+rejected. This forces the client to confirm their intention, by explicitly
 writing code to ignore a return, if that really is what they want. For example:
 
 ```c++
@@ -171,7 +278,7 @@ make_scope_guard([]() noexcept
 ```
 
 Notice that, **_by default_, this precondition is not enforced at compile
-time**. To enforce it at compile time
+time**. To find out how to enforce it at compile time
 [read on](#option--sg-require-noexcept-in-cpp17-).
 
 Throwing from a `scope_guard` callback results in a call to
@@ -280,5 +387,5 @@ only effectively required in case Z.
 | **SG_REQUIRE_NOEXCEPT_IN_CPP17 defined**             | Y     |  *Z*   |
 
 Note: to obtain more output (e.g. because there was a failure), run
-`VERBOSE=1 make test_verbose` instead, to get the command lines used in
+`VERBOSE=1 make test_verbose` instead. This shows the command lines used in
 compilation tests, as well as the test output.
