@@ -1275,20 +1275,17 @@ TEST_CASE("scope_guards execute their callback exactly once when leaving "
   REQUIRE(123 == returning(123));
   REQUIRE(count == 1u);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
-          "execute its callback when moved, nor when leaving scope, but the "
-          "thus-constructed guard still does execute its callback when leaving "
-          "scope.")
+TEST_CASE("When a scope_guard is move-constructed, the original callback is "
+          "executed only once, by the destination scope_guard (the source"
+          "scope_guard does not call it)")
 {
   reset();
 
   {
     auto source = make_scope_guard(inc);
     {
-      using CB = decltype(source)::callback_type;
-      const detail::scope_guard<CB> dest{std::move(source)};
+      auto dest = std::move(source);
       REQUIRE_FALSE(count); // inc not executed with source move
     }
     REQUIRE(count == 1u); // inc executed with destruction of dest
@@ -1296,6 +1293,27 @@ TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
 
   REQUIRE(count == 1u); // inc not executed with destruction of source
 }
+
+#if __cplusplus >= 201402L
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When a scope_guard is move-captured, the original callback is "
+          "executed only once, by the destination scope_guard (the source"
+          "scope_guard does not call it)")
+{
+  reset();
+
+  {
+    auto source = make_scope_guard(inc);
+    {
+      auto lambda = [dest = std::move(source)]() noexcept { };
+      REQUIRE_FALSE(count); // inc not executed with move capture
+    }
+    REQUIRE(count == 1u); // inc executed with destruction of capturing lambda
+  }
+
+  REQUIRE(count == 1u); // inc not executed with destruction of source
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
