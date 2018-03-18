@@ -1112,11 +1112,29 @@ TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
   REQUIRE(count == 2u);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When deducing make_scope_guard's callback type,  substitution "
+          "failure caused by a callable that is not noexcept-destructible can "
+          "be recovered-from without a compilation error")
+{
+  reset();
+
+  struct local
+  {
+    ~local() noexcept(false) {}
+    void operator()() noexcept {}
+  } obj;
+
+  sfinae_tester(std::move(obj));
+
+  REQUIRE(count == 1u);
+}
+
 #ifdef SG_REQUIRE_NOEXCEPT
 //////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, and when noexcept "
           "is required, a substitution failure caused by a callable that is "
-          "not noexcept can be recovered from without a compilation error")
+          "not noexcept can be recovered-from without a compilation error")
 {
   reset();
   sfinae_tester([](){}); // not marked noexcept
