@@ -73,15 +73,16 @@ namespace
     nocopy_nomove& operator=(nocopy_nomove&&) = delete;
   };
 
-  struct throwing_dtor
+  struct potentially_throwing_dtor
   {
     void operator()() const noexcept { non_throwing(); }
 
-    ~throwing_dtor() noexcept(false) {}
+    ~potentially_throwing_dtor() noexcept(false) {}
 
-    throwing_dtor() noexcept = default;
-    throwing_dtor(const throwing_dtor&) noexcept = default;
-    throwing_dtor(throwing_dtor&&) noexcept = default;
+    potentially_throwing_dtor() noexcept = default;
+    potentially_throwing_dtor(const potentially_throwing_dtor&) noexcept
+      = default;
+    potentially_throwing_dtor(potentially_throwing_dtor&&) noexcept = default;
   };
 
   struct throwing_copy
@@ -156,25 +157,25 @@ namespace
     void test_throwing_dtor_throw_spec()
     {
 #ifdef test_4
-      static_assert(!noexcept(make_scope_guard(throwing_dtor{})),
+      static_assert(!noexcept(make_scope_guard(potentially_throwing_dtor{})),
                     "make_scope_guard wrongly declared noexcept when instanced "
                     "with an rvalue object whose dtor throws");
 #endif
 #ifdef test_5
-      throwing_dtor x;
+      potentially_throwing_dtor x;
       static_assert(noexcept(make_scope_guard(x)),
                     "make_scope_guard not declared noexcept when instanced "
                     "with an lvalue object whose dtor throws (should deduce "
                     "reference and avoid destruction entirely)");
 #endif
 #ifdef test_6
-      throwing_dtor x;
+      potentially_throwing_dtor x;
       static_assert(!noexcept(make_scope_guard(std::move(x))),
                     "make_scope_guard wrongly declared noexcept when instanced "
                     "with an rvalue reference to an object whose dtor throws");
 #endif
 #ifdef test_7
-      throwing_dtor x;
+      potentially_throwing_dtor x;
       auto& r = x;
       static_assert(noexcept(make_scope_guard(r)),
                     "make_scope_guard not declared noexcept when instanced "
@@ -182,7 +183,7 @@ namespace
                     "(should deduce reference and avoid destruction entirely)");
 #endif
 #ifdef test_8
-      throwing_dtor x;
+      potentially_throwing_dtor x;
       const auto& cr = x;
       static_assert(noexcept(make_scope_guard(cr)),
                     "make_scope_guard not declared noexcept when instanced "
