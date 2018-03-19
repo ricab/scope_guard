@@ -91,7 +91,7 @@ namespace
   {
     void operator()() const noexcept { non_throwing(); }
 
-    ~throwing_dtor() noexcept(false) {};
+    ~throwing_dtor() noexcept(false) {}
 
     throwing_dtor() noexcept = default;
     throwing_dtor(const throwing_dtor&) noexcept = default;
@@ -102,7 +102,7 @@ namespace
   {
     void operator()() const noexcept { non_throwing(); }
 
-    throwing_copy(const throwing_copy&) noexcept(false) {};
+    throwing_copy(const throwing_copy&) noexcept(false) {}
 
     ~throwing_copy() noexcept = default;
     throwing_copy() noexcept = default;
@@ -113,7 +113,7 @@ namespace
   {
     void operator()() const noexcept { non_throwing(); }
 
-    throwing_move(throwing_move&&) noexcept(false) {};
+    throwing_move(throwing_move&&) noexcept(false) {}
 
     ~throwing_move() noexcept = default;
     throwing_move() noexcept = default;
@@ -124,7 +124,7 @@ namespace
   {
     void operator()() const noexcept { non_throwing(); }
 
-    nomove_throwing_copy(const nomove_throwing_copy&) noexcept(false) {};
+    nomove_throwing_copy(const nomove_throwing_copy&) noexcept(false) {}
 
     nomove_throwing_copy(nomove_throwing_copy&&) noexcept = delete;
 
