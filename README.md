@@ -57,7 +57,8 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 - [x] &ge; C++11
 - [x] Interface consists _mostly_ of a single function (`make_scope_guard`)
 - [x] Fast (no added runtime `std::function` penalties)
-- [x] General: accepts any callable that respects a few [preconditions](#preconditions)
+- [x] General: accepts any callable that respects a few
+[preconditions](#preconditions)
 - [x] no implicitly ignored return (see [below](#void-return))
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
@@ -107,6 +108,13 @@ While usage is meant to be mostly intuitive, more detailed documentation
 can be found below, along with the rationale for some of the design
 decisions. I hope they make sense, but I welcome bug reports and improvement
 suggestions.
+
+### No extra arguments
+
+As visible in the signature, `make_scope_guard` accepts no arguments beyond
+the callback (see related precondition [below](#invocable-with-no-arguments).
+I could simply not see a need for them, but more on that
+[below](#why-so-little-).
 
 ### Type deduction and SFINAE
 
@@ -162,11 +170,12 @@ guards cannot be default-constructed, copy-constructed, or assigned to.
 
 #### Why so little?
 
-The goal of this approach is two-fold:
+The goal of this approach are:
 
-- to keep complexity to a minimum, avoiding superfluous object states leaking
+1. to keep complexity to a minimum, avoiding superfluous object states leaking
 into the domain of whatever problem the client is trying to solve.
-- encouraging a single explicit way of doing something makes for clearer code
+2. encouraging a single explicit way of doing something makes for clearer code
+3. to strive for _single responsibility_
 
 For instance, what problem could a default-constructed scope guard possibly
 help solve? I cannot think of any real world example. Scope guards that do
@@ -175,6 +184,10 @@ nothing can always be created with an explicit no-op callback.
 This is also why no "dismiss" operation is provided here, even though it is
 often present in other implementations. The same is achievable by reducing the
 scope of the guard or moving logic into the callback.
+
+A decision following the principle in 3 is the exclusion of extra arguments.
+Why add the responsibility of being a "closure" to the scope guard, when we have
+lambdas and binds?
 
 All of this makes for a relatively simple and general invariant. A scope guard
 object in the code is _almost always_ something that the reader can assume will
@@ -384,7 +397,8 @@ configurations.
 
 There are a few dependencies to execute the tests:
 - C++11 capable compiler, preferably C++17 capable (c++1z is fine if it provides
-the symbol [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
+the symbol
+[__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
 - [Cmake](https://cmake.org/) (at least version 3.8)
 - [Catch2](https://github.com/catchorg/Catch2)
 
