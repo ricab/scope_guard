@@ -73,20 +73,6 @@ namespace
     nocopy_nomove& operator=(nocopy_nomove&&) = delete;
   };
 
-  struct nocopy_nomove_const_call
-  {
-    void operator()() const noexcept { non_throwing(); }
-
-    nocopy_nomove_const_call() noexcept = default;
-    ~nocopy_nomove_const_call() noexcept = default;
-
-    nocopy_nomove_const_call(const nocopy_nomove_const_call&) = delete;
-    nocopy_nomove_const_call&
-    operator=(const nocopy_nomove_const_call&) = delete;
-    nocopy_nomove_const_call(nocopy_nomove_const_call&&) = delete;
-    nocopy_nomove_const_call& operator=(nocopy_nomove_const_call&&) = delete;
-  };
-
   struct throwing_dtor
   {
     void operator()() const noexcept { non_throwing(); }
