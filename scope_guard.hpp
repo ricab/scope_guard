@@ -33,25 +33,25 @@ namespace sg
       : public std::true_type
     {}; // only true when call expression valid
 
-    /* Type trait determining whether a no-arg callable is nothrow. This is
-       where SG_REQUIRE_NOEXCEPT logic is encapsulated. */
-    template<typename T>
-    struct is_nothrow_if_required_t
-      : public
-#ifdef SG_REQUIRE_NOEXCEPT
-      std::is_nothrow_invocable<T> /* Have C++17, so can use this directly.
-                                      Note: _r variants not enough for our
-                                      purposes: any return can be discarded
-                                      so all returns are compatible with void */
-#else
-      std::true_type
-#endif
-    {};
-
     // Type trait determining whether a no-argument callable returns void
     template<typename T>
     struct returns_void_t
       : public std::is_same<void, decltype(std::declval<T&&>()())>
+    {};
+
+    /* Type trait determining whether a no-arg callable is nothrow invocable if
+    required. This is where SG_REQUIRE_NOEXCEPT logic is encapsulated. */
+    template<typename T>
+    struct is_nothrow_invocable_if_required_t
+      : public
+#ifdef SG_REQUIRE_NOEXCEPT
+          std::is_nothrow_invocable<T> /* Note: _r variants not enough to
+                                          confirm void return: any return can be
+                                          discarded so all returns are
+                                          compatible with void */
+#else
+          std::true_type
+#endif
     {};
 
     // logic AND of two or more type traits
@@ -67,8 +67,9 @@ namespace sg
     template<typename T>
     struct is_proper_sg_callback_t
       : public and_t<is_noarg_callable_t<T>,
-                     is_nothrow_if_required_t<T>,
-                     returns_void_t<T>>
+                     returns_void_t<T>,
+                     is_nothrow_invocable_if_required_t<T>,
+                     std::is_nothrow_destructible<T>>
     {};
 
 
