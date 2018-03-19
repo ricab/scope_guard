@@ -62,7 +62,7 @@ namespace
 
   struct nocopy_nomove // non-copyable and non-movable
   {
-    void operator()() noexcept { non_throwing(); }
+    void operator()() const noexcept { non_throwing(); }
 
     nocopy_nomove() noexcept = default;
     ~nocopy_nomove() noexcept = default;
@@ -336,15 +336,6 @@ namespace
                     "ctor throws (should deduce reference and avoid copy "
                     "entirely)");
 #endif
-#ifdef test_24 // one additional test in this case
-      static_assert(
-        noexcept(make_scope_guard<const nomove_throwing_copy&>(
-          nomove_throwing_copy{})),
-        "make_scope_guard not declared noexcept when instanced with an rvalue"
-        "object whose copy ctor throws and without a move ctor, but bypassing"
-        "type deduction by explicitly providing a const reference type");
-
-#endif
     }
 
     /**
@@ -353,25 +344,25 @@ namespace
      */
     void test_nothrow_throw_spec()
     {
-#ifdef test_25
+#ifdef test_24
       static_assert(noexcept(make_scope_guard(nothrow{})),
                     "make_scope_guard not declared noexcept when instanced "
                     "with an rvalue object whose ctors and dtor do not throw");
 #endif
-#ifdef test_26
+#ifdef test_25
       nothrow x;
       static_assert(noexcept(make_scope_guard(x)),
                     "make_scope_guard not declared noexcept when instanced "
                     "with an lvalue object whose ctors and dtor do not throw");
 #endif
-#ifdef test_27
+#ifdef test_26
       nothrow x;
       static_assert(noexcept(make_scope_guard(std::move(x))),
                     "make_scope_guard not declared noexcept when instanced "
                     "with an rvalue reference to an object whose ctors and "
                     "dtor do not throw");
 #endif
-#ifdef test_28
+#ifdef test_27
       nothrow x;
       auto& r = x;
       static_assert(noexcept(make_scope_guard(r)),
@@ -379,7 +370,7 @@ namespace
                     "with an lvalue reference to an object whose ctors and "
                     "dtor do not throw");
 #endif
-#ifdef test_29
+#ifdef test_28
       nothrow x;
       const auto& cr = x;
       static_assert(noexcept(make_scope_guard(cr)),
@@ -395,17 +386,19 @@ namespace
    */
   void test_noncopyable_nonmovable_good()
   {
-#ifdef test_30
-    make_scope_guard<const nocopy_nomove_const_call&>(
-      nocopy_nomove_const_call{});
-#endif
-#ifdef test_31
-    nocopy_nomove_const_call ncnm{};
-    make_scope_guard<const nocopy_nomove_const_call&>(std::move(ncnm));
-#endif
-#ifdef test_32
+#ifdef test_29
     nocopy_nomove ncnm{};
     make_scope_guard(ncnm);
+#endif
+#ifdef test_30
+    nocopy_nomove ncnm{};
+    auto& ncnmr = ncnm;
+    make_scope_guard(ncnmr);
+#endif
+#ifdef test_31
+    nocopy_nomove ncnm{};
+    const auto& ncnmcr = ncnm;
+    make_scope_guard(ncnmcr);
 #endif
   }
 
@@ -414,13 +407,13 @@ namespace
    */
   void test_noexcept_good()
   {
-#ifdef test_33
+#ifdef test_32
     make_scope_guard(non_throwing);
 #endif
-#ifdef test_34
+#ifdef test_33
     make_scope_guard(non_throwing_lambda);
 #endif
-#ifdef test_35
+#ifdef test_34
     make_scope_guard(non_throwing_functor);
 #endif
   }
@@ -432,19 +425,19 @@ namespace
    */
   void test_noexcept_bad()
   {
-#ifdef test_36
+#ifdef test_35
     make_scope_guard(throwing);
 #endif
-#ifdef test_37
+#ifdef test_36
     make_scope_guard(throwing_stdfun);
 #endif
-#ifdef test_38
+#ifdef test_37
     make_scope_guard(throwing_lambda);
 #endif
-#ifdef test_39
+#ifdef test_38
     make_scope_guard(throwing_bound);
 #endif
-#ifdef test_40
+#ifdef test_39
     make_scope_guard(throwing_functor);
 #endif
   }
@@ -456,19 +449,19 @@ namespace
    */
   void test_noexcept_fixable()
   {
-#ifdef test_41
+#ifdef test_40
     make_scope_guard(meh);
 #endif
-#ifdef test_42
+#ifdef test_41
     make_scope_guard(meh_stdfun);
 #endif
-#ifdef test_43
+#ifdef test_42
     make_scope_guard(meh_lambda);
 #endif
-#ifdef test_44
+#ifdef test_43
     make_scope_guard(meh_bound);
 #endif
-#ifdef test_45
+#ifdef test_44
     make_scope_guard(meh_functor);
 #endif
   }
@@ -481,10 +474,10 @@ namespace
    */
   void test_noexcept_unfortunate()
   {
-#ifdef test_46
+#ifdef test_45
     make_scope_guard(non_throwing_stdfun);
 #endif
-#ifdef test_47
+#ifdef test_46
     make_scope_guard(non_throwing_bound);
 #endif
   }
@@ -495,7 +488,7 @@ namespace
   void test_disallowed_copy_construction()
   {
     const auto guard1 = make_scope_guard(non_throwing);
-#ifdef test_48
+#ifdef test_47
     const auto guard2 = guard1;
 #endif
   }
@@ -507,7 +500,7 @@ namespace
   {
     const auto guard1 = make_scope_guard(non_throwing_lambda);
     auto guard2 = make_scope_guard(non_throwing_functor);
-#ifdef test_49
+#ifdef test_48
     guard2 = guard1;
 #endif
   }
@@ -518,7 +511,7 @@ namespace
   void test_disallowed_move_assignment()
   {
     auto guard = make_scope_guard(non_throwing);
-#ifdef test_50
+#ifdef test_49
     guard = make_scope_guard(non_throwing_lambda);
 #endif
   }
@@ -529,19 +522,19 @@ namespace
    */
   void test_disallowed_return()
   {
-#ifdef test_51
+#ifdef test_50
     make_scope_guard(returning);
 #endif
-#ifdef test_52
+#ifdef test_51
     make_scope_guard(returning_stdfun);
 #endif
-#ifdef test_53
+#ifdef test_52
     make_scope_guard(returning_lambda);
 #endif
-#ifdef test_54
+#ifdef test_53
     make_scope_guard(returning_bound);
 #endif
-#ifdef test_55
+#ifdef test_54
     make_scope_guard(returning_functor);
 #endif
   }
@@ -552,23 +545,12 @@ namespace
    */
   void test_noncopyable_nonmovable_bad()
   {
-#ifdef test_56
+#ifdef test_55
     make_scope_guard(nocopy_nomove{});
 #endif
-#ifdef test_57
+#ifdef test_56
     nocopy_nomove ncnm{};
     make_scope_guard(std::move(ncnm));
-#endif
-#ifdef test_58
-    const nocopy_nomove ncnm{};
-    make_scope_guard(ncnm); // does not have const op()
-#endif
-#ifdef test_59
-    make_scope_guard<const nocopy_nomove&>(nocopy_nomove{}); // no const op()
-#endif
-#ifdef test_60
-    nocopy_nomove ncnm{};
-    make_scope_guard<const nocopy_nomove&>(std::move(ncnm)); // no const op()
 #endif
   }
 }

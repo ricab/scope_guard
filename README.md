@@ -126,9 +126,6 @@ guard is often a _nothrow_ operation. Notice in particular that
 - when `callback` is an rvalue or rvalue reference of a type with:
     * a `noexcept` move constructor, and
     * a `noexcept` destructor
-- when `callback` is an rvalue or rvalue reference but `Callback` is explicitly
-determined to be a const ref (e.g. `make_scope_guard<const Foo&>(Foo{})`. This
-requires a const `operator()` though.
 
 However, `make_scope_guard` is _not_ `noexcept` when it needs to rely upon an
 operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` destructor)
