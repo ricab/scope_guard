@@ -126,7 +126,12 @@ namespace
 
     nomove_throwing_copy(const nomove_throwing_copy&) noexcept(false) {}
 
-    nomove_throwing_copy(nomove_throwing_copy&&) noexcept = delete;
+    /*
+     * nomove_throwing_copy(nomove_throwing_copy&&) noexcept;
+     *
+     * not declared! move ctor absent but not deleted - does not participate in
+     * overload resolution, so copy ctor can still be selected
+     */
 
     ~nomove_throwing_copy() noexcept = default;
     nomove_throwing_copy() noexcept = default;
