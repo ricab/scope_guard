@@ -1062,7 +1062,7 @@ TEST_CASE("The SFINAE testing tool creates a make_scope_guard, preferentially "
   reset();
 }
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
           "failure caused by a non-callable can be recovered-from without a "
           "compilation error")
@@ -1084,7 +1084,7 @@ TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
   REQUIRE(count == 4u);
 }
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
           "failure caused by a callable that takes arguments can be recovered "
           "from without a compilation error")
@@ -1112,7 +1112,7 @@ TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
   REQUIRE(count == 2u);
 }
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type,  substitution "
           "failure caused by a callable that is not noexcept-destructible can "
           "be recovered-from without a compilation error")
@@ -1131,7 +1131,7 @@ TEST_CASE("When deducing make_scope_guard's callback type,  substitution "
 }
 
 #ifdef SG_REQUIRE_NOEXCEPT
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, and when noexcept "
           "is required, a substitution failure caused by a callable that is "
           "not noexcept can be recovered-from without a compilation error")
