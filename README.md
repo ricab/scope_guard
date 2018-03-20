@@ -144,7 +144,8 @@ a reference)
     reference &ndash; see [preconditions](#preconditions))
 
 However, `make_scope_guard` is _not_ `noexcept` when it needs to rely upon an
-operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` destructor)
+operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` move
+constructor)
 
 See [tests](compile_time_tests.cpp) for examples.
 
