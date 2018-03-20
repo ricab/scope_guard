@@ -1,35 +1,5 @@
 # scope_guard
-## Table of contents
 
-
-- [scope_guard](#scope-guard)
-  * [Table of contents](#table-of-contents)
-  * [Intro](#intro)
-  * [Features](#features)
-    + [Main features](#main-features)
-    + [Other characteristics](#other-characteristics)
-  * [Usage](#usage)
-    + [Signature](#signature)
-  * [Detailed documentation](#detailed-documentation)
-    + [Type deduction and SFINAE](#type-deduction-and-sfinae)
-    + [Conditional `noexcept`](#conditional--noexcept-)
-    + [Remaining interface](#remaining-interface)
-      - [Why so little?](#why-so-little-)
-    + [Moving scope guards](#moving-scope-guards)
-    + [Invariants](#invariants)
-    + [Preconditions](#preconditions)
-      - [invocable with no arguments](#invocable-with-no-arguments)
-      - [void return](#void-return)
-      - [no throw](#no-throw)
-    + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option--sg-require-noexcept-in-cpp17-)
-      - [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
-  * [Tests](#tests)
-    + [Instructions for running the tests](#instructions-for-running-the-tests)
-
-<sup><sub>><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></sub></sup>
-
-
-## Intro
 
 A public, general, simple, fast, and SFINAE-friendly C++11 scope guard which
 forbids implicitly ignored returns and optionally enforces noexcept at compile
@@ -48,13 +18,48 @@ or an exception.
 All necessary code is provided in a [single header](scope_guard.hpp)
 (the remaining code is for tests.)
 
+## Table of contents
+
+- [scope_guard](#scope-guard)
+  * [Table of contents](#table-of-contents)
+  * [Features](#features)
+    + [Main features](#main-features)
+    + [Other characteristics](#other-characteristics)
+  * [Usage](#usage)
+    + [Signature](#signature)
+  * [Detailed documentation](#detailed-documentation)
+    + [No extra arguments](#no-extra-arguments)
+    + [Type deduction and SFINAE](#type-deduction-and-sfinae)
+    + [Conditional `noexcept`](#conditional--noexcept-)
+    + [Remaining interface](#remaining-interface)
+      - [Why so little?](#why-so-little-)
+    + [Moving scope guards](#moving-scope-guards)
+    + [Invariants](#invariants)
+    + [Preconditions](#preconditions)
+      - [Design choices](#design-choices)
+        * [invocable with no arguments](#invocable-with-no-arguments)
+        * [void return](#void-return)
+        * [no-throw-invocable](#no-throw-invocable)
+      - [More or less obvious](#more-or-less-obvious)
+        * [no-throw-destructible if non-reference template argument](#no-throw-destructible-if-non-reference-template-argument)
+        * [const-invocable if const reference](#const-invocable-if-const-reference)
+        * [appropriate lifetime if lvalue reference template argument](#appropriate-lifetime-if-lvalue-reference-template-argument)
+        * [movable or copyable if non-reference template argument](#movable-or-copyable-if-non-reference-template-argument)
+    + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option--sg-require-noexcept-in-cpp17-)
+      - [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
+  * [Tests](#tests)
+    + [Instructions for running the tests](#instructions-for-running-the-tests)
+
+<sup><sub>><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></sub></sup>
+
 ## Features
 
 ### Main features
 - [x] &ge; C++11
 - [x] Interface consists _mostly_ of a single function (`make_scope_guard`)
 - [x] Fast (no added runtime `std::function` penalties)
-- [x] General: accepts any callable that respects a few [preconditions](#preconditions)
+- [x] General: accepts any callable that respects a few
+[preconditions](#preconditions)
 - [x] no implicitly ignored return (see [below](#void-return))
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
@@ -67,7 +72,7 @@ see [below](#conditional--noexcept-))
 - [x] No macros to make guard &ndash; just write explicit lambda or bind or
 what have you
 - [x] Extensively tested, with both
-[compile-time tests](compile_time_tests.cpp) and
+[compile time tests](compile_time_tests.cpp) and
 [runtime-tests](catch_tests.cpp)
 - [x] Unlicense(d)
 - [x] `snake_case` style
@@ -87,7 +92,7 @@ See [tests](catch_tests.cpp) for use-case examples.
 
 ### Signature
 
-The template function `make_scope_guard` has the following signature.
+The template function `make_scope_guard` has the following signature
 
 ```c++
   template<typename Callback>
@@ -95,12 +100,22 @@ The template function `make_scope_guard` has the following signature.
   noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 ```
 
+The template and function arguments need to respect certain preconditions,
+which are documented (below)[#preconditions].
+
 ## Detailed documentation
 
-While usage is meant to be mostly intuitive, documentation going into more
-detail can be found below, along with the rationale for some of the design
-decisions. I hope they make sense, but my opinions are not set in stone. I
-welcome bug reports and improvement suggestions.
+While usage is meant to be mostly intuitive, more detailed documentation
+can be found below, along with the rationale for some of the design
+decisions. I hope they make sense, but I welcome bug reports and improvement
+suggestions.
+
+### No extra arguments
+
+As visible in the signature, `make_scope_guard` accepts no arguments beyond
+the callback (see related precondition [below](#invocable-with-no-arguments).
+I could simply not see a need for them, but more on that
+[below](#why-so-little-).
 
 ### Type deduction and SFINAE
 
@@ -122,13 +137,16 @@ The exception specification of `make_scope_guard` is such that making a scope
 guard is often a _nothrow_ operation. Notice in particular that
 `make_scope_guard` is `noexcept` in the following cases:
 
-- when `callback` is an lvalue or lvalue reference
-- when `callback` is an rvalue or rvalue reference of a type with:
+1. when `callback` is an lvalue or lvalue reference (`Callback` deduced to be
+a reference)
+2. when `callback` is an rvalue or rvalue reference of a type with:
     * a `noexcept` move constructor, and
-    * a `noexcept` destructor
+    * a `noexcept` destructor (anyway required when `Callback` is not a
+    reference &ndash; see [preconditions](#preconditions))
 
 However, `make_scope_guard` is _not_ `noexcept` when it needs to rely upon an
-operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` destructor)
+operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` move
+constructor)
 
 See [tests](compile_time_tests.cpp) for examples.
 
@@ -142,34 +160,38 @@ member functions:
 2. a constructor taking a callback
 3. a move constructor
 
-The first and second items are not meant for direct usage &ndash; for obvious
+1 and 2 are not meant for direct usage &ndash; for obvious
 reasons in the case of the destructor and because `make_scope_guard` is
-preferable than a direct constructor call (at least until class template
-argument deduction). 3. has relatively limited use but
-is required for initialization with assignment syntax (see
-[below](#moving-scope-guards) for details).
+preferable than a direct constructor call, as it supports type deduction,
+allowing a universal reference parameter. 3 is required for initialization
+with assignment syntax (see [below](#moving-scope-guards) for details).
 
 All remaining special member functions are `deleted`. In particular, scope
 guards cannot be default-constructed, copy-constructed, or assigned to.
 
 #### Why so little?
 
-The goal of this approach is two-fold:
+The goal of this approach are:
 
-- to keep complexity to a minimum, avoiding superfluous object states leaking
+1. to keep complexity to a minimum, avoiding superfluous object states leaking
 into the domain of whatever problem the client is trying to solve.
-- encouraging a single explicit way of doing something makes for clearer code
+2. encouraging a single explicit way of doing something makes for clearer code
+3. to strive for _single responsibility_
 
 For instance, what problem could a default-constructed scope guard possibly
 help solve? I cannot think of any real world example. Scope guards that do
 nothing can always be created with an explicit no-op callback.
 
 This is also why no "dismiss" operation is provided here, even though it is
-often present in other implementations. In most cases, the scope of the guard
-should be reduced; in the rest, the logic can be moved to the callback itself.
+often present in other implementations. The same is achievable by reducing the
+scope of the guard or moving logic into the callback.
+
+A decision following the principle in 3 is the exclusion of extra arguments.
+Why add the responsibility of being a "closure" to the scope guard, when we have
+lambdas and binds?
 
 All of this makes for a relatively simple and general invariant. A scope guard
-object in the code is almost always something that the reader can assume will
+object in the code is _almost always_ something that the reader can assume will
 do something at the end of the scope and at no other occasion. There is only one
 exception, caused by moves, whose benefits were judged to surpass these
 downsides.
@@ -178,24 +200,21 @@ downsides.
 
 Objects created with `make_scope_guard` can be moved. This
 possibility exists mainly to allow initialization with assignment syntax and
-auto type deduction, as in `auto foo = make_scope_guard(bar);`. Even though
-there is no assignment taking place, this still requires the move constructor.
-But having one means that, given an existing scope guard `g1`, the following
-code is valid and useful for ownership transfer:
+auto type deduction, as in `auto foo = make_scope_guard(bar);`.The following
+code is also valid and useful for ownership transfer:
 
 ```c++
 auto g2 = std::move(g1);
 ```
 
-However, moved-from scope guards should be regarded with caution. They
-constitute the single case violating the intended ideal that scope guards always
-execute their callback (that responsibility is transfered to the scope guard
-that is thus created). Alas, moved-from objects stay behind in C++ and we still
-need them. In the case of scope guards they do not do anything special, even
-though they are _technically valid_. The [invariants](#invariants) have to be
-more complex because of them.
+Moved-from scope guards should be regarded with some caution. If it
+were not for them, scope guards would always execute their callback. With moves,
+that responsibility is transfered and moved-from guards stay behind. They remain
+_technically valid_, but there is nothing useful they can do. They exist for
+purely technical reasons and are best left alone and thought-of as garbage
+awaiting removal.
 
-Here is an example of the effect of moving:
+Here is an example of how it works:
 
 ```c++
 {
@@ -210,10 +229,6 @@ std::cout << "bli";
 
 This would print `blablebli`, showing that `bla` is printed only once, when `g2`
 leaves scope.
-
-The state of moved-from scope guard exists for purely technical reasons only and
-there is nothing useful that can be done with such objects. They are best
-left alone and thought-of as garbage awaiting removal.
 
 ### Invariants
 
@@ -231,9 +246,12 @@ moved-from are considered moved-from themselves.
 The callback that is used to create a scope guard must respect the following
 preconditions.
 
-#### invocable with no arguments
-The callback must be invocable with no arguments. Use a lambda to pass
-something that takes arguments in its original form. For example:
+#### Design choices
+
+##### invocable with no arguments
+
+The callback must be invocable with no arguments. Use a capturing lambda to
+pass something that takes arguments in its original form. For example:
 
 ```c++
 void my_resource_release(Resource& r) noexcept;
@@ -242,9 +260,9 @@ make_scope_guard([&some_resource]() noexcept
                  { my_resource_release(some_resource); }); // OK
 ```
 
-This precondition is enforced at compile time.
+_This precondition is enforced at compile time._
 
-#### void return
+##### void return
 
 The callback must return void. Returning anything else is intentionally
 rejected. This forces the client to confirm their intention, by explicitly
@@ -259,47 +277,84 @@ make_scope_guard([]() noexcept {/*bool ignored =*/ foo();}); // OK
 The idea is not only to catch unintentional cases but also to highlight
 intentional ones for code readers.
 
-This precondition is enforced at compile time.
+_This precondition is enforced at compile time._
 
-#### no throw
+##### no-throw-invocable
 
-The callback _is required_ not to throw. If you want to use something that
-might throw, you can wrap it in a `try-catch` block, explicitly choosing what
-to do with any exceptions that might arise. For example:
+The callback _is required_ not to throw when invoked. If you want to use
+something that might throw, you can wrap it in a `try-catch` block, explicitly
+choosing what to do with any exceptions that might arise. For example:
 
 ```c++
-bool throwing() { throw std::runtime_error{"some error"}; }
+bool throwing() { throw std::runtime_error{"attention"}; }
 make_scope_guard([]() noexcept
 {
   try { throwing(); } catch(...) { /* choosing to ignore */ }
 });
 ```
 
-Notice that, **_by default_, this precondition is not enforced at compile
-time**. To find out how to enforce it at compile time
-[read on](#option--sg-require-noexcept-in-cpp17-).
-
 Throwing from a `scope_guard` callback results in a call to
 `std::terminate`. This follows the same approach as custom deleters in such
 standard library types as `unique_ptr` and `shared_ptr` (see
 `[unique.ptr.single.ctor]` and `[unique.ptr.single.dtor]` in the C++
-standard.)
-
-I acknowledge that the destructor for `scope_guard` could be conditionally
+standard.) I considered making the destructor for `scope_guard` conditionally
 `noexcept` instead, but that is not advisable either and could
 create a false sense of safety (better _fail-fast_-ish, I suppose).
 
-Personally, I favor enforcing that the callback be
-`noexcept` at compile-time, but this not only restricts acceptable callback
-types, to my knowledge it is not even possible until C++17. That is because the
-exception specification is not part of the type system
-[until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
+_By default, this precondition is not enforced at compile time_. To find out
+how to change that, see [below](#option--sg-require-noexcept-in-cpp17-).
+
+#### More or less obvious
+
+##### no-throw-destructible if non-reference template argument
+
+If the template argument `Callback` is not a reference, then it must not throw
+upon destruction. A reference can be used if necessary:
+
+```c++
+struct throwing
+{
+  ~throwing() noexcept(false) { throw std::runtime_error{"some error"}; }
+  void operator()() noexcept {}
+};
+
+try
+{
+  throwing tmp;
+  make_scope_guard([&tmp](){ t(); })
+} catch(...) { /* handle somehow */ }
+```
+
+_This precondition is enforced at compile time._
+
+##### const-invocable if const reference
+
+If the callback is const, there must be an appropriate `const` `operator()`
+that respects the other preconditions.
+
+_This precondition is enforced at compile time._
+
+##### appropriate lifetime if lvalue reference template argument
+
+If the callback is passed by lvalue reference, it must be valid at least
+until the corresponding scope guard goes out of scope. This is the case
+when the template argument is deduced from an lvalue or lvalue reference.
+
+_This precondition is not enforced_ at compile time._
+
+##### movable or copyable if non-reference template argument
+
+If the template argument `Callback` is not a reference, then it needs to be
+either copyable or movable. This is the case when the template argument is
+deduced from an rvalue or rvalue reference.
+
+_This precondition is enforced at compile time._
 
 ### Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
 
 If &ge;C++17 is used, the preprocessor macro `SG_REQUIRE_NOEXCEPT_IN_CPP17`
 can be defined to make `scope_guard`'s constructor require a nothrow invocable
-at compile-time, e.g.
+at compile time, e.g.
 
 ```c++
 #define SG_REQUIRE_NOEXCEPT_IN_CPP17 // (no effect in <C++17)
@@ -328,20 +383,23 @@ auto stdf_declt = std::function<decltype(f)>{f};       // ERROR (at least in g++
 auto stdf = std::function<void()>{f};                  // fine, but drops noexcept info
 ```
 
-Since `SG_REQUIRE_NOEXCEPT_IN_CPP17` means rejecting anything that
-is not known to possess an `operator() noexcept`, the additional
-safety sacrifices generality. Of course the user can still use functions and
-lambdas to wrap anything else, e.g.:
+Therefore, the additional safety sacrifices generality. Of course, clients can
+still use functions and lambdas to wrap anything else, e.g.:
 
     make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
 
+Personally, I favor using this option if possible, but it requires C++17 as the
+exception specification is not part of a function's type
+[until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
+
 ## Tests
-A number of compile-time and run-time tests can be automatically run in multiple
+A number of compile time and run-time tests can be automatically run in multiple
 configurations.
 
 There are a few dependencies to execute the tests:
 - C++11 capable compiler, preferably C++17 capable (c++1z is fine if it provides
-the symbol [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
+the symbol
+[__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
 - [Cmake](https://cmake.org/) (at least version 3.8)
 - [Catch2](https://github.com/catchorg/Catch2)
 
@@ -368,7 +426,7 @@ the symbol [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/exper
     $ make test
     ```
 
-This will run catch and compile-time tests with different combinations of
+This will run catch and compile time tests with different combinations of
 SG_REQUIRE_NOEXCEPT_IN_CPP17 and C++ standard, depending on compiler
 capabilities. If the compiler supports exception specifications as part of the
 type system (

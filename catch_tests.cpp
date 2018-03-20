@@ -1062,7 +1062,7 @@ TEST_CASE("The SFINAE testing tool creates a make_scope_guard, preferentially "
   reset();
 }
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
           "failure caused by a non-callable can be recovered-from without a "
           "compilation error")
@@ -1084,7 +1084,7 @@ TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
   REQUIRE(count == 4u);
 }
 
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
           "failure caused by a callable that takes arguments can be recovered "
           "from without a compilation error")
@@ -1112,11 +1112,29 @@ TEST_CASE("When deducing make_scope_guard's callback type, a substitution "
   REQUIRE(count == 2u);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When deducing make_scope_guard's callback type,  substitution "
+          "failure caused by a callable that is not noexcept-destructible can "
+          "be recovered-from without a compilation error")
+{
+  reset();
+
+  struct local
+  {
+    ~local() noexcept(false) {}
+    void operator()() noexcept {}
+  } obj;
+
+  sfinae_tester(std::move(obj));
+
+  REQUIRE(count == 1u);
+}
+
 #ifdef SG_REQUIRE_NOEXCEPT
-//////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When deducing make_scope_guard's callback type, and when noexcept "
           "is required, a substitution failure caused by a callable that is "
-          "not noexcept can be recovered from without a compilation error")
+          "not noexcept can be recovered-from without a compilation error")
 {
   reset();
   sfinae_tester([](){}); // not marked noexcept
@@ -1275,20 +1293,17 @@ TEST_CASE("scope_guards execute their callback exactly once when leaving "
   REQUIRE(123 == returning(123));
   REQUIRE(count == 1u);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
-          "execute its callback when moved, nor when leaving scope, but the "
-          "thus-constructed guard still does execute its callback when leaving "
-          "scope.")
+TEST_CASE("When a scope_guard is move-constructed, the original callback is "
+          "executed only once, by the destination scope_guard (the source"
+          "scope_guard does not call it)")
 {
   reset();
 
   {
     auto source = make_scope_guard(inc);
     {
-      using CB = decltype(source)::callback_type;
-      const detail::scope_guard<CB> dest{std::move(source)};
+      auto dest = std::move(source);
       REQUIRE_FALSE(count); // inc not executed with source move
     }
     REQUIRE(count == 1u); // inc executed with destruction of dest
@@ -1296,6 +1311,27 @@ TEST_CASE("When a scope_guard is move-constructed, the moved guard does not "
 
   REQUIRE(count == 1u); // inc not executed with destruction of source
 }
+
+#if __cplusplus >= 201402L
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When a scope_guard is move-captured, the original callback is "
+          "executed only once, by the destination scope_guard (the source"
+          "scope_guard does not call it)")
+{
+  reset();
+
+  {
+    auto source = make_scope_guard(inc);
+    {
+      auto lambda = [dest = std::move(source)]() noexcept { };
+      REQUIRE_FALSE(count); // inc not executed with move capture
+    }
+    REQUIRE(count == 1u); // inc executed with destruction of capturing lambda
+  }
+
+  REQUIRE(count == 1u); // inc not executed with destruction of source
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace
