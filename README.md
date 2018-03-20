@@ -20,7 +20,7 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 
 ## Table of contents
 
-- [scope_guard](#scope-guard)
+- [scope_guard](#scope_guard)
   * [Table of contents](#table-of-contents)
   * [Features](#features)
     + [Main features](#main-features)
@@ -30,9 +30,9 @@ All necessary code is provided in a [single header](scope_guard.hpp)
   * [Detailed documentation](#detailed-documentation)
     + [No extra arguments](#no-extra-arguments)
     + [Type deduction and SFINAE](#type-deduction-and-sfinae)
-    + [Conditional `noexcept`](#conditional--noexcept-)
+    + [Conditional `noexcept`](#conditional-noexcept)
     + [Remaining interface](#remaining-interface)
-      - [Why so little?](#why-so-little-)
+      - [Why so little?](#why-so-little)
     + [Moving scope guards](#moving-scope-guards)
     + [Invariants](#invariants)
     + [Preconditions](#preconditions)
@@ -45,12 +45,11 @@ All necessary code is provided in a [single header](scope_guard.hpp)
         * [const-invocable if const reference](#const-invocable-if-const-reference)
         * [appropriate lifetime if lvalue reference template argument](#appropriate-lifetime-if-lvalue-reference-template-argument)
         * [movable or copyable if non-reference template argument](#movable-or-copyable-if-non-reference-template-argument)
-    + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option--sg-require-noexcept-in-cpp17-)
-      - [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
+    + [Option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#option-sg_require_noexcept_in_cpp17)
+      - [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring-noexcept-callbacks-at-compile-time)
   * [Tests](#tests)
     + [Instructions for running the tests](#instructions-for-running-the-tests)
 
-<sup><sub>><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></sub></sup>
 
 ## Features
 
@@ -65,7 +64,7 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 (see [below](#option-sg_require_noexcept_in_cpp17))
 - [x] _SFINAE-friendliness_ (see [below](#type-deduction-and-sfinae))
 - [x] expose correct exception specification (conditionally-`noexcept` maker,
-see [below](#conditional--noexcept-))
+see [below](#conditional-noexcept))
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
@@ -115,7 +114,7 @@ suggestions.
 As visible in the signature, `make_scope_guard` accepts no arguments beyond
 the callback (see related precondition [below](#invocable-with-no-arguments).
 I could simply not see a need for them, but more on that
-[below](#why-so-little-).
+[below](#why-so-little).
 
 ### Type deduction and SFINAE
 
@@ -302,7 +301,7 @@ standard.) I considered making the destructor for `scope_guard` conditionally
 create a false sense of safety (better _fail-fast_-ish, I suppose).
 
 _By default, this precondition is not enforced at compile time_. To find out
-how to change that, see [below](#option--sg-require-noexcept-in-cpp17-).
+how to change that, see [below](#option-sg_require_noexcept_in_cpp17).
 
 #### More or less obvious
 
