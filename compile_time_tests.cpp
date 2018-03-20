@@ -552,14 +552,35 @@ namespace
   }
 
   /**
+   * Test compilation failures when trying to create a scope guard from a
+   * callback directly through its constructor
+   */
+  void test_direct_construction_forbidden()
+  {
+#ifdef test_57
+    detail::scope_guard{non_throwing};
+#endif
+#ifdef test_58
+    auto x = detail::scope_guard(non_throwing);
+#endif
+#ifdef test_59
+    auto x = detail::scope_guard<void(&)()noexcept>{non_throwing};
+#endif
+#ifdef test_60
+    auto lambda = []() noexcept {};
+    detail::scope_guard<decltype(lambda)>{std::move(lambda)};
+#endif
+  }
+
+  /**
    * Test compilation failures when trying to inherit from scope_guard
    */
-#ifdef test_57
+#ifdef test_61
   struct concrete_specialized_guard
     : detail::scope_guard<void(*)()noexcept>
   {};
 #endif
-#ifdef test_58
+#ifdef test_62
   template<typename T>
   struct specialized_guard : detail::scope_guard<T>
   {
@@ -599,6 +620,7 @@ int main()
   test_disallowed_move_assignment();
   test_disallowed_return();
   test_noncopyable_nonmovable_bad();
+  test_direct_construction_forbidden();
 
   return 0;
 }

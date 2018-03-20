@@ -27,26 +27,27 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Demonstration that direct constructor call is possible, but not "
-          "advisable.")
+TEST_CASE("Demonstration that direct constructor is not desirable.")
 {
   using detail::scope_guard;
 
-//  scope_guard{inc}; // Error: does not deduce template args (at least
-                      // until C++17); it also does not accept everything...
+  // even if the constructor was public, it would be cumbersome...
 
-//  scope_guard<decltype(inc)>{inc}; // ... Error: cannot instantiate data field
-                                     // with function type...
+/*  scope_guard{inc};  ... error: does not deduce template args (at least
+                       until C++17); it also does not accept everything... */
 
-  scope_guard<void(&)()noexcept>{
-    static_cast<void(&)()noexcept>(inc)}; // ... could use ref cast...
+/*  scope_guard<decltype(inc)>{inc}; ... error: cannot instantiate data field
+                                     with function type... */
 
-  auto& inc_ref = inc;
-  scope_guard<decltype(inc_ref)>{inc_ref}; // ... or actual ref...
+/*  scope_guard<void(&)()noexcept>{
+      static_cast<void(&)()noexcept>(inc)}; ... could use ref cast... */
 
-  scope_guard<decltype(inc)&&>{std::move(inc)}; // ... or even rvalue ref, which
-                                                // with functions is treated
-                                                // just like an lvalue...
+/*  auto& inc_ref = inc;
+    scope_guard<decltype(inc_ref)>{inc_ref}; ... or actual ref... */
+
+/*  scope_guard<decltype(inc)&&>{std::move(inc)}; ... or even rvalue ref, which
+                                                  with functions is treated
+                                                  just like an lvalue... */
 
   make_scope_guard(inc); // ... but the BEST is really to use the make function
 }
