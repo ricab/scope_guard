@@ -161,10 +161,9 @@ member functions:
 
 1 and 2 are not meant for direct usage &ndash; for obvious
 reasons in the case of the destructor and because `make_scope_guard` is
-preferable than a direct constructor call (at least until class template
-argument deduction). 3 has relatively limited use but
-is required for initialization with assignment syntax (see
-[below](#moving-scope-guards) for details).
+preferable than a direct constructor call, as it supports type deduction,
+allowing a universal reference parameter. 3 is required for initialization
+with assignment syntax (see [below](#moving-scope-guards) for details).
 
 All remaining special member functions are `deleted`. In particular, scope
 guards cannot be default-constructed, copy-constructed, or assigned to.
