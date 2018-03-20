@@ -177,10 +177,10 @@ foreach(cxx17 ${cxx17_possibilities})
 
     # add noexcept compilation tests for this standard/noexcept-requirement
     # combination
-    foreach(count RANGE 0 56) # range inclusive in cmake (so 57 tests)
+    foreach(count RANGE 0 58) # range inclusive in cmake (so 59 tests)
                               # 0-32: always succeed (0 = all test macros off)
                               # 33-44: fail when requiring noexcept
-                              # 45-56: always fail
+                              # 45-58: always fail
       expect_result(success ${count} ${cxx17} ${reqne})
       add_compilation_test(compile_time_tests.cpp
                            ${success} ${cxx17} ${reqne} ${count})

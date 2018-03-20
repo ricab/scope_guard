@@ -550,6 +550,33 @@ namespace
     make_scope_guard(std::move(ncnm));
 #endif
   }
+
+  /**
+   * Test compilation failures when trying to inherit from scope_guard
+   */
+#ifdef test_57
+  struct concrete_specialized_guard
+    : detail::scope_guard<void(*)()noexcept>
+  {};
+#endif
+#ifdef test_58
+  template<typename T>
+  struct specialized_guard : detail::scope_guard<T>
+  {
+    explicit specialized_guard(T&& t)
+      : detail::scope_guard<T>{std::forward<T>(t)}
+    {}
+  };
+
+  template<typename T>
+  specialized_guard<T> make_specialized_guard(T&& t)
+  {
+    return specialized_guard<T>{std::forward<T>(t)};
+  }
+
+  auto special = make_specialized_guard([]()noexcept{});
+#endif
+
 }
 
 int main()
