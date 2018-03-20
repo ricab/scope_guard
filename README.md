@@ -105,23 +105,23 @@ which are documented [below](#preconditions).
 ## Detailed documentation
 
 While usage is meant to be mostly intuitive, more detailed documentation
-can be found below, along with the rationale for some of the design
+can be found below, along with the rationale for some design
 decisions. I hope they make sense, but I welcome bug reports and improvement
 suggestions.
 
 ### No extra arguments
 
-As visible in the signature, `make_scope_guard` accepts no arguments beyond
-the callback (see related precondition [below](#invocable-with-no-arguments).
-I could simply not see a need for them, but more on that
-[below](#why-so-little).
+As the signature shows, `make_scope_guard` accepts no arguments beyond
+the callback (see related precondition [below](#invocable-with-no-arguments))
+I could not see a need for them, but more on that [below](#why-so-little).
 
 ### Type deduction and SFINAE
 
 Template argument deduction allows the underlying callback type to be
-automatically derived from the argument. That type, which is identified as
-`Callback` in the template signature above, is then provided as a nested
-type with the name `callback_type` (e.g. `decltype(guard)::callback_type;`.)
+automatically derived from the argument. That type &ndash; `Callback` in the
+signature [above](#signature) &ndash; is then provided as the nested type
+`callback_type`. Given a scope guard object `guard`, it can be accessed with
+`decltype(guard)::callback_type`.
 
 The function `make_scope_guard` is _SFINAE-friendly_. In other words, an
 invalid application of `make_scope_guard` by the compiler when trying to
