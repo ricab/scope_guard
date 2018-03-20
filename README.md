@@ -112,7 +112,7 @@ suggestions.
 ### No extra arguments
 
 As the signature shows, `make_scope_guard` accepts no arguments beyond
-the callback (see related precondition [below](#invocable-with-no-arguments))
+the callback (see the [related precondition](#invocable-with-no-arguments)).
 I could not see a need for them, but more on that [below](#why-so-little).
 
 ### Type deduction and SFINAE
@@ -161,8 +161,8 @@ member functions:
 
 1 and 2 are not meant for direct usage &ndash; for obvious
 reasons in the case of the destructor and because `make_scope_guard` is
-preferable than a direct constructor call, as it supports type deduction,
-allowing a universal reference parameter. 3 is required for initialization
+preferable to a direct constructor call, as it supports type deduction,
+allowing a _universal reference_ parameter. 3 is required for initialization
 with assignment syntax (see [below](#moving-scope-guards) for details).
 
 All remaining special member functions are `deleted`. In particular, scope
@@ -170,7 +170,7 @@ guards cannot be default-constructed, copy-constructed, or assigned to.
 
 #### Why so little?
 
-The goal of this approach are:
+The goals of this approach are:
 
 1. to keep complexity to a minimum, avoiding superfluous object states leaking
 into the domain of whatever problem the client is trying to solve.
