@@ -116,10 +116,10 @@ namespace sg
     public:
       typedef Callback callback_type;
 
-      ~scope_guard() noexcept; // highlight noexcept dtor
-
       scope_guard(scope_guard&& other)
       noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
+
+      ~scope_guard() noexcept; // highlight noexcept dtor
 
       scope_guard(const scope_guard&) = delete;
       scope_guard& operator=(const scope_guard&) = delete;

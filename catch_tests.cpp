@@ -27,7 +27,7 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Demonstration that direct constructor is not desirable.")
+TEST_CASE("Showing that direct constructor is not desirable.")
 {
   using detail::scope_guard;
 
