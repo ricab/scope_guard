@@ -81,7 +81,7 @@ namespace sg
     class scope_guard;
 
     template<typename Callback>
-    class scope_guard<Callback>
+    class scope_guard<Callback> final
     {
     public:
       typedef Callback callback_type;
