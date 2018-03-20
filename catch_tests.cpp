@@ -830,7 +830,7 @@ namespace
   struct const_method_holder
   {
     const_method_holder() = default;
-    void const_inc_method() noexcept { incc(m_count); }
+    void const_inc_method() const noexcept { incc(m_count); }
 
     mutable unsigned m_count = 0u;
   };
