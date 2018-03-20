@@ -2,7 +2,7 @@
 
 
 A public, general, simple, fast, and SFINAE-friendly C++11 scope guard which
-forbids implicitly ignored returns and optionally enforces noexcept at compile
+forbids implicitly ignored returns and optionally enforces `noexcept` at compile
 time (in C++17).
 
 Usage is easy:
@@ -63,7 +63,7 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#option-sg_require_noexcept_in_cpp17))
 - [x] _SFINAE-friendliness_ (see [below](#type-deduction-and-sfinae))
-- [x] expose correct exception specification (conditionally-`noexcept` maker,
+- [x] expose correct exception specification (conditional `noexcept`,
 see [below](#conditional-noexcept))
 
 ### Other characteristics
@@ -83,7 +83,7 @@ like:
 
 ```c++
 auto guard1 = make_scope_guard(my_callback);
-auto guard2 = make_scope_guard([]()noexcept{ /* do something */ });
+auto guard2 = make_scope_guard([]() noexcept { /* do something */ });
 ...
 ```
 
@@ -100,7 +100,7 @@ The template function `make_scope_guard` has the following signature
 ```
 
 The template and function arguments need to respect certain preconditions,
-which are documented (below)[#preconditions].
+which are documented [below](#preconditions).
 
 ## Detailed documentation
 
