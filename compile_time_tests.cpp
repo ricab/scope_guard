@@ -49,16 +49,16 @@ namespace
   } throwing_functor;
   struct non_throwing_struct
   {
-    void operator()() noexcept { non_throwing(); }
+    void operator()() const noexcept { non_throwing(); }
   } non_throwing_functor;
   struct meh_struct
   {
-    void operator()() { meh(); }
+    void operator()() const { meh(); }
   } meh_functor;
 
   struct returning_struct
   {
-    int operator()() noexcept { return returning(); }
+    int operator()() const noexcept { return returning(); }
   } returning_functor;
 
   struct nocopy_nomove // non-copyable and non-movable

@@ -625,7 +625,7 @@ namespace
 
   struct StatefulFunctor
   {
-    StatefulFunctor(unsigned& c) : m_c{c} {}
+    explicit StatefulFunctor(unsigned& c) : m_c{c} {}
     void operator()() const noexcept { incc(m_c); }
 
     unsigned& m_c;
@@ -1122,7 +1122,7 @@ TEST_CASE("When deducing make_scope_guard's callback type,  substitution "
   struct local
   {
     ~local() noexcept(false) {}
-    void operator()() noexcept {}
+    void operator()() const noexcept {}
   } obj;
 
   sfinae_tester(std::move(obj));
@@ -1339,7 +1339,7 @@ namespace
   template<typename Callback>
   struct scope_guard_holder
   {
-    scope_guard_holder(detail::scope_guard<Callback>&& guard) noexcept
+    explicit scope_guard_holder(detail::scope_guard<Callback>&& guard) noexcept
       : m_guard{std::move(guard)}
     {}
 
