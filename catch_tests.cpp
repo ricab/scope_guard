@@ -243,7 +243,7 @@ TEST_CASE("An lvalue reference to a plain function pointer can be used to "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("An plain-function-pointer-lvalue-reference-based scope_guard "
+TEST_CASE("A plain-function-pointer-lvalue-reference-based scope_guard "
           "executes the function exactly once when leaving scope.")
 {
   reset();
@@ -267,7 +267,7 @@ TEST_CASE("An rvalue reference to a plain function pointer can be used to "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
+TEST_CASE("A plain-function-pointer-rvalue-reference-based scope_guard "
           "executes the function exactly once when leaving scope.")
 {
   reset();
@@ -329,7 +329,6 @@ TEST_CASE("A scope_guard that is created with a "
   reset();
 
   {
-    REQUIRE_FALSE(count);
     const auto stdf = make_std_function(inc);
     const auto guard = make_scope_guard(stdf);
     REQUIRE_FALSE(count);
@@ -354,9 +353,7 @@ TEST_CASE("A scope_guard that is created with an "
   reset();
 
   {
-    REQUIRE_FALSE(count);
-    const auto guard =
-        make_scope_guard(make_std_function(inc));
+    const auto guard = make_scope_guard(make_std_function(inc));
     REQUIRE_FALSE(count);
   }
 
@@ -373,14 +370,13 @@ TEST_CASE("An lvalue reference to a std::function that wraps a regular "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A scope_guard that is created with an "
+TEST_CASE("A scope_guard that is created with a "
           "regular-function-wrapping std::function lvalue reference "
           "executes that std::function exactly once when leaving scope.")
 {
   reset();
 
   {
-    REQUIRE_FALSE(count);
     const auto stdf = make_std_function(inc);
     const auto& stdf_ref = stdf;
     const auto guard = make_scope_guard(stdf_ref);
@@ -406,7 +402,6 @@ TEST_CASE("A scope_guard that is created with an "
   reset();
 
   {
-    REQUIRE_FALSE(count);
     const auto stdf = make_std_function(inc);
     const auto guard = make_scope_guard(std::move(stdf));
     REQUIRE_FALSE(count);
@@ -428,7 +423,7 @@ namespace
 TEST_CASE("A lambda function with no capture can be used to create a "
           "scope_guard.")
 {
-  const auto guard = make_scope_guard([]()noexcept{});
+  make_scope_guard([]()noexcept{});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -714,7 +709,7 @@ TEST_CASE("An lvalue reference to a noncopyable and nonmovable functor can be "
           "used to create a scope_guard")
 {
   nocopy_nomove ncnm{};
-  auto& ncnm_ref = ncnm;
+  const auto& ncnm_ref = ncnm;
   make_scope_guard(ncnm_ref);
 }
 
@@ -727,8 +722,8 @@ TEST_CASE("A scope_guard created with an lvalue reference to a noncopyable and "
 
   {
     nocopy_nomove ncnm{};
-    auto& ncnm_ref = ncnm;
-    auto guard = make_scope_guard(ncnm_ref);
+    const auto& ncnm_ref = ncnm;
+    const auto guard = make_scope_guard(ncnm_ref);
 
     REQUIRE_FALSE(count);
   }
@@ -752,7 +747,7 @@ TEST_CASE("A scope_guard created with an lvalue noncopyable and nonmovable "
 
   {
     nocopy_nomove ncnm{};
-    auto guard = make_scope_guard(ncnm);
+    const auto guard = make_scope_guard(ncnm);
 
     REQUIRE_FALSE(count);
   }
@@ -778,7 +773,7 @@ TEST_CASE("A scope_guard created with a const lvalue noncopyable and "
 
   {
     const nocopy_nomove ncnm{};
-    auto guard = make_scope_guard(ncnm);
+    const auto guard = make_scope_guard(ncnm);
 
     REQUIRE_FALSE(count);
   }
@@ -886,7 +881,8 @@ TEST_CASE("A lambda-wrapped-regular-method-based scope_guard executes the "
   regular_method_holder h{};
 
   {
-    auto guard = make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+    const auto guard = make_scope_guard([&h]() noexcept
+                                        { h.regular_inc_method(); });
     REQUIRE_FALSE(h.m_count);
   }
 
@@ -908,7 +904,7 @@ TEST_CASE("A bound-regular-method-based scope_guard executes the method "
   regular_method_holder h{};
 
   {
-    auto guard = make_scope_guard(
+    const auto guard = make_scope_guard(
       std::bind(&regular_method_holder::regular_inc_method, &h));
     REQUIRE_FALSE(h.m_count);
   }
@@ -920,7 +916,7 @@ TEST_CASE("A bound-regular-method-based scope_guard executes the method "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda-wrapped const method can be used to create a scope_guard")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
   make_scope_guard([&h]() noexcept { h.const_inc_method(); });
 }
 
@@ -928,10 +924,11 @@ TEST_CASE("A lambda-wrapped const method can be used to create a scope_guard")
 TEST_CASE("A lambda-wrapped-const-method-based scope_guard executes the "
           "method exactly once when leaving scope")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
 
   {
-    auto guard = make_scope_guard([&h]() noexcept { h.const_inc_method(); });
+    const auto guard = make_scope_guard([&h]() noexcept
+                                        { h.const_inc_method(); });
     REQUIRE_FALSE(h.m_count);
   }
 
@@ -942,7 +939,7 @@ TEST_CASE("A lambda-wrapped-const-method-based scope_guard executes the "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound const method can be used to create a scope_guard")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
   make_scope_guard(std::bind(&const_method_holder::const_inc_method, h));
 }
 
@@ -950,10 +947,10 @@ TEST_CASE("A bound const method can be used to create a scope_guard")
 TEST_CASE("A bound-const-method-based scope_guard executes the method "
           "exactly once when leaving scope")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
 
   {
-    auto guard = make_scope_guard(
+    const auto guard = make_scope_guard(
       std::bind(&const_method_holder::const_inc_method, &h));
     REQUIRE_FALSE(h.m_count);
   }
@@ -1304,7 +1301,7 @@ TEST_CASE("When a scope_guard is move-constructed, the original callback is "
   {
     auto source = make_scope_guard(inc);
     {
-      auto dest = std::move(source);
+      const auto dest = std::move(source);
       REQUIRE_FALSE(count); // inc not executed with source move
     }
     REQUIRE(count == 1u); // inc executed with destruction of dest
