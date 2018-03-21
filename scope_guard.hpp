@@ -121,6 +121,8 @@ namespace sg
 
       ~scope_guard() noexcept; // highlight noexcept dtor
 
+      void dismiss() noexcept;
+
       scope_guard(const scope_guard&) = delete;
       scope_guard& operator=(const scope_guard&) = delete;
       scope_guard& operator=(scope_guard&&) = delete;
@@ -169,6 +171,13 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
   , m_active{std::move(other.m_active)}
 {
   other.m_active = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+template<typename Callback>
+inline void sg::detail::scope_guard<Callback>::dismiss() noexcept
+{
+  m_active = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
