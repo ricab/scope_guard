@@ -610,14 +610,29 @@ namespace
   }
 
   /**
+   * Test compilation failures when trying to use modifying operations on a
+   * const scope guard
+   */
+  void test_const_guard_cannot_do_everything()
+  {
+    const auto guard = make_scope_guard(non_throwing);
+#ifdef test_68
+    guard.dismiss();
+#endif
+#ifdef test_69
+    auto another = std::move(guard);
+#endif
+  }
+
+  /**
    * Test compilation failures when trying to inherit from scope_guard
    */
-#ifdef test_68
+#ifdef test_70
   struct concrete_specialized_guard
     : detail::scope_guard<void(*)()noexcept>
   {};
 #endif
-#ifdef test_69
+#ifdef test_71
   template<typename T>
   struct specialized_guard : detail::scope_guard<T>
   {
