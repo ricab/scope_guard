@@ -378,21 +378,39 @@ namespace
   }
 
   /**
+   * Test dismiss is noexcept
+   */
+  void test_dismiss_is_noexcept()
+  {
+#ifdef test_29
+    static_assert(noexcept(make_scope_guard(non_throwing).dismiss()),
+                  "scope_guard::dismiss not noexcept");
+#endif
+#ifdef test_30
+    static_assert(noexcept(make_scope_guard(non_throwing_lambda).dismiss()),
+                  "scope_guard::dismiss not noexcept");
+#endif
+#ifdef test_31
+    static_assert(noexcept(make_scope_guard(non_throwing_functor).dismiss()),
+                  "scope_guard::dismiss not noexcept");
+#endif
+  }
+
+  /**
    * Test scope_guard can always be created with noexcept marked callables
    */
   void test_noexcept_good()
   {
-#ifdef test_29
+#ifdef test_32
     make_scope_guard(non_throwing);
 #endif
-#ifdef test_30
+#ifdef test_33
     make_scope_guard(non_throwing_lambda);
 #endif
-#ifdef test_31
+#ifdef test_34
     make_scope_guard(non_throwing_functor);
 #endif
   }
-
 
   /* --- tests that fail iff nothrow_invocable is required --- */
 
@@ -403,19 +421,19 @@ namespace
    */
   void test_noexcept_bad()
   {
-#ifdef test_32
+#ifdef test_35
     make_scope_guard(throwing);
 #endif
-#ifdef test_33
+#ifdef test_36
     make_scope_guard(throwing_stdfun);
 #endif
-#ifdef test_34
+#ifdef test_37
     make_scope_guard(throwing_lambda);
 #endif
-#ifdef test_35
+#ifdef test_38
     make_scope_guard(throwing_bound);
 #endif
-#ifdef test_36
+#ifdef test_39
     make_scope_guard(throwing_functor);
 #endif
   }
@@ -427,19 +445,19 @@ namespace
    */
   void test_noexcept_fixable()
   {
-#ifdef test_37
+#ifdef test_40
     make_scope_guard(meh);
 #endif
-#ifdef test_38
+#ifdef test_41
     make_scope_guard(meh_stdfun);
 #endif
-#ifdef test_39
+#ifdef test_42
     make_scope_guard(meh_lambda);
 #endif
-#ifdef test_40
+#ifdef test_43
     make_scope_guard(meh_bound);
 #endif
-#ifdef test_41
+#ifdef test_44
     make_scope_guard(meh_functor);
 #endif
   }
@@ -452,11 +470,35 @@ namespace
    */
   void test_noexcept_unfortunate()
   {
-#ifdef test_42
+#ifdef test_45
     make_scope_guard(non_throwing_stdfun);
 #endif
-#ifdef test_43
+#ifdef test_46
     make_scope_guard(non_throwing_bound);
+#endif
+  }
+
+  void test_dismiss_is_noexcept_even_if_bad_callable()
+  {
+#ifdef test_47
+    static_assert(noexcept(make_scope_guard(throwing).dismiss()),
+                  "scope_guard::dismiss not noexcept");
+#endif
+#ifdef test_48
+    static_assert(noexcept(make_scope_guard(throwing_stdfun).dismiss()),
+                  "scope_guard::dismiss not noexcept");
+#endif
+#ifdef test_49
+    static_assert(noexcept(make_scope_guard(throwing_lambda).dismiss()),
+                  "scope_guard::dismiss not noexcept");
+#endif
+#ifdef test_50
+    static_assert(noexcept(make_scope_guard(throwing_bound).dismiss()),
+                  "scope_guard::dismiss not noexcept");
+#endif
+#ifdef test_51
+    static_assert(noexcept(make_scope_guard(throwing_functor).dismiss()),
+                  "scope_guard::dismiss not noexcept");
 #endif
   }
 
@@ -465,10 +507,10 @@ namespace
 
   void test_throwing_dtor_throw_spec_bad()
   {
-#ifdef test_44
+#ifdef test_52
     make_scope_guard(potentially_throwing_dtor{});
 #endif
-#ifdef test_45
+#ifdef test_53
     potentially_throwing_dtor x;
     make_scope_guard(std::move(x));
 #endif
@@ -480,7 +522,7 @@ namespace
   void test_disallowed_copy_construction()
   {
     const auto guard1 = make_scope_guard(non_throwing);
-#ifdef test_46
+#ifdef test_54
     const auto guard2 = guard1;
 #endif
   }
@@ -492,7 +534,7 @@ namespace
   {
     const auto guard1 = make_scope_guard(non_throwing_lambda);
     auto guard2 = make_scope_guard(non_throwing_functor);
-#ifdef test_47
+#ifdef test_55
     guard2 = guard1;
 #endif
   }
@@ -503,7 +545,7 @@ namespace
   void test_disallowed_move_assignment()
   {
     auto guard = make_scope_guard(non_throwing);
-#ifdef test_48
+#ifdef test_56
     guard = make_scope_guard(non_throwing_lambda);
 #endif
   }
@@ -514,19 +556,19 @@ namespace
    */
   void test_disallowed_return()
   {
-#ifdef test_49
+#ifdef test_57
     make_scope_guard(returning);
 #endif
-#ifdef test_50
+#ifdef test_58
     make_scope_guard(returning_stdfun);
 #endif
-#ifdef test_51
+#ifdef test_59
     make_scope_guard(returning_lambda);
 #endif
-#ifdef test_52
+#ifdef test_60
     make_scope_guard(returning_bound);
 #endif
-#ifdef test_53
+#ifdef test_61
     make_scope_guard(returning_functor);
 #endif
   }
@@ -537,10 +579,10 @@ namespace
    */
   void test_noncopyable_nonmovable_bad()
   {
-#ifdef test_54
+#ifdef test_62
     make_scope_guard(nocopy_nomove{});
 #endif
-#ifdef test_55
+#ifdef test_63
     nocopy_nomove ncnm{};
     make_scope_guard(std::move(ncnm));
 #endif
@@ -552,16 +594,16 @@ namespace
    */
   void test_direct_construction_forbidden()
   {
-#ifdef test_56
+#ifdef test_64
     detail::scope_guard{non_throwing};
 #endif
-#ifdef test_57
+#ifdef test_65
     auto x = detail::scope_guard(non_throwing);
 #endif
-#ifdef test_58
+#ifdef test_66
     auto x = detail::scope_guard<void(&)()noexcept>{non_throwing};
 #endif
-#ifdef test_59
+#ifdef test_67
     auto lambda = []() noexcept {};
     detail::scope_guard<decltype(lambda)>{std::move(lambda)};
 #endif
@@ -570,12 +612,12 @@ namespace
   /**
    * Test compilation failures when trying to inherit from scope_guard
    */
-#ifdef test_60
+#ifdef test_68
   struct concrete_specialized_guard
     : detail::scope_guard<void(*)()noexcept>
   {};
 #endif
-#ifdef test_61
+#ifdef test_69
   template<typename T>
   struct specialized_guard : detail::scope_guard<T>
   {
@@ -603,11 +645,13 @@ int main()
   test_nomove_throwing_copy_throw_spec();
   test_nothrow_throw_spec();
   test_noncopyable_nonmovable_good();
+  test_dismiss_is_noexcept();
   test_noexcept_good();
 
   test_noexcept_bad(); // this results in a call to std::terminate
   test_noexcept_fixable();
   test_noexcept_unfortunate();
+  test_dismiss_is_noexcept_even_if_bad_callable();
 
   test_throwing_dtor_throw_spec_bad();
   test_disallowed_copy_construction();
