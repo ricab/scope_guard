@@ -92,7 +92,14 @@ A scope guard object is returned with
 - the provided callback as _associated callback_
 - _active_ state
 
+###### Exception specification:
+
+As the signature shows, instances of this function template are `noexcept` _iff_
+`Callback` can be _nothrow_ constructed from `Callback&&` (after reference
+collapse). Notice this is always the case if `Callback` is a reference type.
+
 ###### Example:
+
 ```c++
 const auto guard = make_scope_guard([]() noexcept { /* do something */ });
 ```
@@ -107,7 +114,7 @@ _associated callback_ exactly once when leaving scope.
 2. A scope guard that is in _inactive state_ never executes its
 _associated callback_
 
-###### Public members
+###### Public members:
 
 1. Type `callback_type`
 2. `dismiss` function
@@ -117,9 +124,9 @@ _associated callback_
 #### Member type `calback_type`
 
 Template argument deduction allows the underlying callback type to be
-automatically derived from the argument. That type &ndash; `Callback` in the
-signature of `make_scope_guard` [above](#maker-function-template) &ndash; is
-provided as the member type `callback_type`.
+automatically derived from the function argument. That type &ndash; `Callback`
+in the signature of `make_scope_guard` [above](#maker-function-template) &ndash;
+is provided as the member type `callback_type`.
 
 ###### Member type declaration:
 
@@ -150,13 +157,18 @@ None.
 ###### Postconditions:
 The dismissed scope guard is in _inactive state_.
 
+###### Exception specification:
+
+`noexcept`.
+
 ###### Example:
+
 ```c++
 bool do_transaction()
 {
   do_part1();
   auto undo = make_scope_guard(undo_part1);
-  do_part_2();
+  do_part2();
   undo.dismiss();
 }
 ```
@@ -168,19 +180,13 @@ possibility exists mainly to allow initialization with assignment syntax, as in
 `auto g1 = make_scope_guard(f);`. It may also be useful for explicit _ownership_
 transfer: `auto g2 = std::move(g1);`
 
-A scope guard move transfers the callback
-and call responsibility (or lack thereof). Moved-from scope guards are valid but
-useless. They are best regarded as garbage awaiting destruction.
+A scope-guard move transfers the callback and call responsibility (or lack
+thereof). Moved-from scope guards are valid but useless. They are best regarded
+as garbage awaiting destruction.
 
 ###### Member function signature:
 
 Unspecified.
-
-###### Exception specification
-
-Moving a scope guard is `noexcept` _iff_ the type of its _associated callback_
-is
-[_nothrow constructible_](http://en.cppreference.com/w/cpp/types/is_constructible).
 
 ###### Preconditions:
 
@@ -197,6 +203,12 @@ the moved-from guard before the move operation;
 - The moved-from guard is in _inactive state_.
 - The moved-from guard is associated with a valid but unspecified callback.
 
+###### Exception specification:
+
+`noexcept` _iff_ `Callback` can be _nothrow_ constructed from `Callback&&`
+(after reference collapse). Notice this is always the case if `Callback` is a
+reference type.
+
 ###### Example:
 ```c++
 {
@@ -212,9 +224,7 @@ std::cout << "bli";
 
 #### Destructor
 
-Scope guards have a destructor that does not throw. This is related to two of
-the preconditions discussed below: [no-throw-invocable](#no-throw-invocable) and
-[no-throw-destructible if non-reference template argument](#no-throw-destructible-if-non-reference-template-argument).
+Scope guards have a destructor.
 
 ###### Member function signature:
 
@@ -229,6 +239,16 @@ None.
 - the callback was executed _iff_ the guard was in _active state_ before
 destruction;
 - the guard is no longer valid
+
+###### Exception specification:
+
+`noexcept`. This motivates two of the preconditions discussed below:
+[no-throw-invocable](#no-throw-invocable) and
+[no-throw-destructible if non-reference template argument](#no-throw-destructible-if-non-reference-template-argument).
+
+###### Example:
+
+Non applicable.
 
 ## Detailed documentation
 
