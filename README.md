@@ -21,9 +21,40 @@ these. In general, in can be anything that respects
 All necessary code is provided in a [single header](scope_guard.hpp)
 (the remaining code is for tests.)
 
-## Table of contents
+## Outline
 
-TODO
+- [scope_guard](#scope-guard)
+  * [Outline](#outline)
+  * [Features](#features)
+    + [Main features](#main-features)
+    + [Other characteristics](#other-characteristics)
+  * [Setup](#setup)
+  * [Client interface](#client-interface)
+    + [Maker function template](#maker-function-template)
+    + [scope guard objects](#scope-guard-objects)
+      - [Member type `calback_type`](#member-type--calback-type-)
+      - [Dismiss](#dismiss)
+      - [Move constructor](#move-constructor)
+      - [Destructor](#destructor)
+    + [Compilation option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#compilation-option--sg-require-noexcept-in-cpp17-)
+  * [Preconditions](#preconditions)
+      - [invocable with no arguments](#invocable-with-no-arguments)
+      - [void return](#void-return)
+      - [_nothrow_-invocable](#-nothrow--invocable)
+      - [_nothrow_-destructible if non-reference template argument](#-nothrow--destructible-if-non-reference-template-argument)
+      - [const-invocable if const reference](#const-invocable-if-const-reference)
+      - [appropriate lifetime if lvalue reference template argument](#appropriate-lifetime-if-lvalue-reference-template-argument)
+      - [movable or copyable if non-reference template argument](#movable-or-copyable-if-non-reference-template-argument)
+  * [Design choices and concepts](#design-choices-and-concepts)
+    + [Type deduction and SFINAE](#type-deduction-and-sfinae)
+    + [No extra arguments](#no-extra-arguments)
+    + [Conditional `noexcept`](#conditional--noexcept-)
+    + [Private constructor](#private-constructor)
+    + [no return](#no-return)
+    + [nothrow invocation](#nothrow-invocation)
+    + [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
+  * [Tests](#tests)
+    + [Instructions for running the tests](#instructions-for-running-the-tests)
 
 
 ## Features
@@ -92,13 +123,19 @@ This function template is [_SFINAE-friendly_](#sfinae-friendly).
 The template and function arguments need to respect certain preconditions
 which are discussed in more detail [below](#preconditions):
 
-- [invocable with no arguments](#invocable-with-no-arguments)
-- [void return](#void-return)
-- [_nothrow_-invocable](#nothrow-invocable)
-- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference) template argument
-- [const-invocable if const reference](#const-invocable-if-const-reference) template argument
-- [appropriate lifetime if lvalue reference](#appropriate-lifetime-if-lvalue-reference) template argument
-- [movable or copyable if non-reference](#movable-or-copyable-if-non-reference) template argument
+- [invocable with no arguments](#invocable-with-no-arguments) &ndash; enforced
+at compile time
+- [void return](#void-return) &ndash; enforced at compile time
+- [_nothrow_-invocable](#nothrow-invocable) &ndash; not enforced at compile time
+by default
+- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference)
+template argument &ndash; enforced at compile time
+- [const-invocable if const reference](#const-invocable-if-const-reference)
+template argument &ndash; enforced at compile time
+- [appropriate lifetime if lvalue reference](#appropriate-lifetime-if-lvalue-reference)
+template argument &ndash; not enforced at compile time
+- [movable or copyable if non-reference](#movable-or-copyable-if-non-reference)
+template argument &ndash; enforced at compile time
 
 ###### Postconditions:
 
