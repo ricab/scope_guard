@@ -95,9 +95,9 @@ or could be improved, feel free to open an issue.
 Setup consists merely of making the [header file](scope_guard.hpp) available to
 the compiler. That can be achieved by any of the following options:
 
-1. placing it directly in the client project's include path
-2. placing it in a central include path that is known to the compiler
-3. placing it in an arbitrary path and configuring the compiler to include that
+- placing it directly in the client project's include path
+- placing it in a central include path that is known to the compiler
+- placing it in an arbitrary path and configuring the compiler to include that
 path
 
 The preprocessor definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` MAY be provided
@@ -107,8 +107,8 @@ to the compiler. The effect of this option is explained
 ## Client interface
 
 The public interface consists of a template function to create scope guard
-objects, a few members of those objects, and one compilation option (through a
-preprocessor macro definition.)
+objects, a few members of those objects, and one boolean compilation option that
+can be activated with a preprocessor macro definition.
 
 Here is an outline of the client interface:
 
@@ -125,12 +125,16 @@ Here is an outline of the client interface:
 
 ### Maker function template
 
-The free function template `make_scope_guard` is the primary public interface
-&ndash; most uses do not require anything else. It provides a way for clients to
-create a scope guard object from a specified callback. Scope guards created this
-way are automatically destroyed when going out of scope, at which point they
-execute their _associated_ callback, unless they were meanwhile
-[_dismissed_](#member-function-dismiss) or [_moved_](#member-move-constructor).
+The free function template `make_scope_guard` is the primary element of the
+public interface &ndash; most uses do not require anything else. It provides a
+way for clients to create a scope guard object with the specified callback as
+_associated callback_.
+
+Scope guards execute their _associated callback_ when they are destroyed, unless
+they were meanwhile [dismissed](#member-function-dismiss) or
+[moved](#member-move-constructor). Like other variables, scope guards with
+automatic storage are destroyed when they go out of scope, which explains their
+name.
 
 This function template is [SFINAE-friendly](#sfinae-friendliness).
 
@@ -167,7 +171,7 @@ A scope guard object is returned with
 
 As the signature shows, instances of this function template are `noexcept` _iff_
 `Callback` can be _nothrow_ constructed from `Callback&&` (after reference
-collapse). Notice this is always the case if `Callback` is a reference type.
+collapsing). Notice this is always the case if `Callback` is a reference type.
 
 ###### Example:
 
