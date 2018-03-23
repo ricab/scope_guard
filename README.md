@@ -21,41 +21,16 @@ these. In general, in can be anything that respects
 All necessary code is provided in a [single header](scope_guard.hpp)
 (the remaining code is for tests.)
 
-## Outline
+## Broad document outline
 
 - [scope_guard](#scope-guard)
   * [Outline](#outline)
   * [Features](#features)
-    + [Main features](#main-features)
-    + [Other characteristics](#other-characteristics)
   * [Setup](#setup)
   * [Client interface](#client-interface)
-    + [Maker function template](#maker-function-template)
-    + [scope guard objects](#scope-guard-objects)
-      - [Member type `calback_type`](#member-type--calback-type-)
-      - [Dismiss](#dismiss)
-      - [Move constructor](#move-constructor)
-      - [Destructor](#destructor)
-    + [Compilation option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#compilation-option--sg-require-noexcept-in-cpp17-)
   * [Preconditions](#preconditions)
-      - [invocable with no arguments](#invocable-with-no-arguments)
-      - [void return](#void-return)
-      - [_nothrow_-invocable](#-nothrow--invocable)
-      - [_nothrow_-destructible if non-reference template argument](#-nothrow--destructible-if-non-reference-template-argument)
-      - [const-invocable if const reference](#const-invocable-if-const-reference)
-      - [appropriate lifetime if lvalue reference template argument](#appropriate-lifetime-if-lvalue-reference-template-argument)
-      - [movable or copyable if non-reference template argument](#movable-or-copyable-if-non-reference-template-argument)
   * [Design choices and concepts](#design-choices-and-concepts)
-    + [Type deduction and SFINAE](#type-deduction-and-sfinae)
-    + [No extra arguments](#no-extra-arguments)
-    + [Conditional `noexcept`](#conditional--noexcept-)
-    + [Private constructor](#private-constructor)
-    + [no return](#no-return)
-    + [nothrow invocation](#nothrow-invocation)
-    + [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
   * [Tests](#tests)
-    + [Instructions for running the tests](#instructions-for-running-the-tests)
-
 
 ## Features
 
@@ -82,7 +57,7 @@ what have you
 - [x] Unlicense'd
 - [x] `snake_case` style
 
-## Issues
+### Issues
 
 Bug reports and suggestions are welcome. If you find that something is incorrect
 or could be improved, feel free to open an issue.
@@ -102,7 +77,20 @@ See [tests](catch_tests.cpp) for use-case examples.
 
 The public interface consists of a template function to create scope guard
 objects, a few members of those objects, and one compilation option (through a
-preprocessor macro definition)
+preprocessor macro definition.)
+
+Here is an outline of the client interface:
+
+- [Maker function template](#maker-function-template)
+- [Scope guard objects](#scope-guard-objects)
+  * [Invariants:](#invariants)
+  * [Public members:](#public-members)
+  * [Public _deleted_ members:](#public-deleted-members)
+  * [Member type `calback_type`](#member-type-calback-type)
+  * [Dismiss](#dismiss)
+  * [Move constructor](#move-constructor)
+  * [Destructor](#destructor)
+  * [Compilation option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#compilation-option-sg-require-noexcept-in-cpp17)
 
 ### Maker function template
 
@@ -125,22 +113,20 @@ This function template is [_SFINAE-friendly_](#sfinae-friendly).
 
 ###### Preconditions:
 
-The template and function arguments need to respect certain preconditions
-which are discussed in more detail [below](#preconditions):
+The template and function arguments need to respect certain preconditions. They
+are listed here and discussed in more detail [below](#preconditions).
 
-- [invocable with no arguments](#invocable-with-no-arguments) &ndash; enforced
-at compile time
-- [void return](#void-return) &ndash; enforced at compile time
-- [_nothrow_-invocable](#nothrow-invocable) &ndash; not enforced at compile time
-by default
+- [invocable with no arguments](#invocable-with-no-arguments)
+- [void return](#void-return)
+- [_nothrow_-invocable](#nothrow-invocable)
 - [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference)
-template argument &ndash; enforced at compile time
+template argument
 - [const-invocable if const reference](#const-invocable-if-const-reference)
-template argument &ndash; enforced at compile time
+template argument
 - [appropriate lifetime if lvalue reference](#appropriate-lifetime-if-lvalue-reference)
-template argument &ndash; not enforced at compile time
+template argument
 - [movable or copyable if non-reference](#movable-or-copyable-if-non-reference)
-template argument &ndash; enforced at compile time
+template argument
 
 ###### Postconditions:
 
@@ -161,7 +147,7 @@ collapse). Notice this is always the case if `Callback` is a reference type.
 const auto guard = make_scope_guard([]() noexcept { /* do something */ });
 ```
 
-### scope guard objects
+### Scope guard objects
 
 Scope guard objects have some unspecified type with:
 
@@ -346,14 +332,28 @@ make_scope_guard([]() noexcept {}); // OK
 ## Preconditions
 
 This section explains the preconditions that the callback passed to
-`make_scope_guard` is subject to.
+`make_scope_guard` is subject to. Here they are listed again:
+
+- [invocable with no arguments](#invocable-with-no-arguments)
+- [void return](#void-return)
+- [_nothrow_-invocable](#nothrow-invocable)
+- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference)
+template argument
+- [const-invocable if const reference](#const-invocable-if-const-reference)
+template argument
+- [appropriate lifetime if lvalue reference](#appropriate-lifetime-if-lvalue-reference)
+template argument
+- [movable or copyable if non-reference](#movable-or-copyable-if-non-reference)
+template argument
 
 #### invocable with no arguments
 
 The callback MUST be invocable with no arguments. The client MAY use a capturing
 lambda to easily pass something that takes arguments in its original form.
 
-_This precondition is enforced at compile time._
+###### Compile time enforcement:
+
+This precondition _is enforced_ at compile time.
 
 ###### Example:
 
@@ -370,7 +370,9 @@ The callback MUST return void. Returning anything else is
 [intentionally](TODOlink) rejected. The user MAY wrap their call in a
 lambda that ignores the return.
 
-_This precondition is enforced at compile time._
+###### Compile time enforcement:
+
+This precondition _is enforced_ at compile time.
 
 ###### Example:
 
@@ -388,7 +390,9 @@ associated with an active scope guard when it goes out of scope results in a
 call to `std::terminate`. Clients MAY use a lambda to wrap something that throws
 in a `try-catch` block, choosing to deal with or ignore exceptions.
 
-_By default, this precondition is not enforced at compile time_. That can be
+###### Compile time enforcement:
+
+_By default_, this precondition _is not enforced_ at compile time. That can be
 [changed]((#option-sg_require_noexcept_in_cpp17)) in &ge;C++17.
 
 ###### Example:
@@ -406,7 +410,9 @@ make_scope_guard([]() noexcept
 If the template argument `Callback` is not a reference, then it MUST NOT throw
 upon destruction. The user MAY use a reference if necessary:
 
-_This precondition is enforced at compile time._
+###### Compile time enforcement:
+
+This precondition _is enforced_ at compile time.
 
 ###### Example:
 
@@ -429,7 +435,9 @@ try
 If the callback is `const`, there MUST be an appropriate `const` `operator()`
 that respects the other preconditions.
 
-_This precondition is enforced at compile time._
+###### Compile time enforcement:
+
+This precondition _is enforced_ at compile time.
 
 ###### Example:
 
@@ -449,7 +457,9 @@ If the callback is passed by lvalue reference, it MUST be valid at least until
 the corresponding scope guard goes out of scope. Notice this is the case when
 the template argument is deduced from both an lvalue or lvalue reference.
 
-_This precondition is not enforced_ at compile time._
+###### Compile time enforcement:
+
+This precondition _is not enforced_ at compile time.
 
 #### movable or copyable if non-reference template argument
 
@@ -457,12 +467,22 @@ If the template argument `Callback` is not a reference, then it MUST be
 either copyable or movable (or both). This is the case when the template
 argument is deduced from an rvalue or rvalue reference.
 
-_This precondition is enforced at compile time._
+###### Compile time enforcement:
+
+This precondition _is enforced_ at compile time.
 
 ## Design choices and concepts
 
 This section tries to clarify concepts used in the interface and discusses the
-rationale for some design decisions.
+rationale for some design decisions. The outline is:
+
+- [Type deduction and SFINAE](#type-deduction-and-sfinae)
+- [No extra arguments](#no-extra-arguments)
+- [Conditional `noexcept`](#conditional--noexcept-)
+- [Private constructor](#private-constructor)
+- [no return](#no-return)
+- [nothrow invocation](#nothrow-invocation)
+- [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
 
 ### Type deduction and SFINAE
 
