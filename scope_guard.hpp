@@ -1,6 +1,8 @@
 /*
  *  Created on: 13/02/2018
  *      Author: ricab
+ *
+ * See README.md for documentation of this header's public interface.
  */
 
 #ifndef SCOPE_GUARD_HPP_
@@ -12,8 +14,6 @@
 #if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
 #define SG_REQUIRE_NOEXCEPT
 #endif
-
-// Documentation of public interface is in the file README.md
 
 namespace sg
 {
