@@ -27,26 +27,27 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("Demonstration that direct constructor call is possible, but not "
-          "advisable.")
+TEST_CASE("Showing that direct constructor is not desirable.")
 {
   using detail::scope_guard;
 
-//  scope_guard{inc}; // Error: does not deduce template args (at least
-                      // until C++17); it also does not accept everything...
+  // even if the constructor was public, it would be cumbersome...
 
-//  scope_guard<decltype(inc)>{inc}; // ... Error: cannot instantiate data field
-                                     // with function type...
+/*  scope_guard{inc};  ... error: does not deduce template args (at least
+                       until C++17); it also does not accept everything... */
 
-  scope_guard<void(&)()noexcept>{
-    static_cast<void(&)()noexcept>(inc)}; // ... could use ref cast...
+/*  scope_guard<decltype(inc)>{inc}; ... error: cannot instantiate data field
+                                     with function type... */
 
-  auto& inc_ref = inc;
-  scope_guard<decltype(inc_ref)>{inc_ref}; // ... or actual ref...
+/*  scope_guard<void(&)()noexcept>{
+      static_cast<void(&)()noexcept>(inc)}; ... could use ref cast... */
 
-  scope_guard<decltype(inc)&&>{std::move(inc)}; // ... or even rvalue ref, which
-                                                // with functions is treated
-                                                // just like an lvalue...
+/*  auto& inc_ref = inc;
+    scope_guard<decltype(inc_ref)>{inc_ref}; ... or actual ref... */
+
+/*  scope_guard<decltype(inc)&&>{std::move(inc)}; ... or even rvalue ref, which
+                                                  with functions is treated
+                                                  just like an lvalue... */
 
   make_scope_guard(inc); // ... but the BEST is really to use the make function
 }
@@ -73,6 +74,30 @@ TEST_CASE("A plain-function-based scope_guard executes the function exactly "
   REQUIRE(count == 1u);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, plain-function-based scope_guard can be dismissed.")
+{
+  make_scope_guard(inc).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed plain-function-based scope_guard does not execute its "
+          "callback at all.")
+{
+  reset();
+
+  {
+    auto guard = make_scope_guard(inc);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue reference to a plain function can be used to create a "
           "scope_guard.")
@@ -94,6 +119,33 @@ TEST_CASE("An lvalue-reference-to-plain-function-based scope_guard executes "
   }
 
   REQUIRE(count == 1u);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, lvalue-reference-to-plain-function-based scope_guard "
+          "can be dismissed.")
+{
+  auto& inc_ref = inc;
+  make_scope_guard(inc_ref).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed lvalue-reference-to-plain-function-based scope_guard "
+          "does not execute its callback at all.")
+{
+  reset();
+
+  {
+    auto& inc_ref = inc;
+    auto guard = make_scope_guard(inc_ref);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +172,32 @@ TEST_CASE("An lvalue-const-reference-to-plain-function-based scope_guard "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, lvalue-const-reference-to-plain-function-based "
+          "scope_guard can be dismissed.")
+{
+  const auto& inc_ref = inc;
+  make_scope_guard(inc_ref).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed lvalue-const-reference-to-plain-function-based "
+          "scope_guard does not execute its callback at all.")
+{
+  reset();
+
+  {
+    const auto& inc_ref = inc;
+    auto guard = make_scope_guard(inc_ref);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue reference to a plain function can be used to create a "
           "scope_guard.")
 {
@@ -138,6 +216,30 @@ TEST_CASE("An rvalue-reference-to-plain-function-based scope_guard executes "
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, rvalue-reference-to-plain-function-based scope_guard "
+          "can be dismissed.")
+{
+  make_scope_guard(std::move(inc)).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed rvalue-reference-to-plain-function-based scope_guard "
+          "does not execute its callback at all.")
+{
+  reset();
+
+  {
+    auto guard = make_scope_guard(std::move(inc));
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 
 /* --- std::ref and std::cref --- */
@@ -165,6 +267,30 @@ TEST_CASE("A reference-wrapper-to-plain-function-based scope_guard executes "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, reference-wrapper-to-plain-function-based scope_guard "
+          "can be dismissed.")
+{
+  make_scope_guard(std::ref(inc)).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed reference-wrapper-to-plain-function-based scope_guard "
+          "does not execute its callback at all.")
+{
+  reset();
+
+  {
+    auto guard = make_scope_guard(std::ref(inc));
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A const reference wrapper to a plain function can be used to create "
           "a scope_guard.")
 {
@@ -183,6 +309,30 @@ TEST_CASE("A const-reference-wrapper-to-plain-function-based scope_guard "
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, const-reference-wrapper-to-plain-function-based "
+          "scope_guard can be dismissed.")
+{
+  make_scope_guard(std::cref(inc)).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed const-reference-wrapper-to-plain-function-based "
+          "scope_guard does not execute its callback at all.")
+{
+  reset();
+
+  {
+    auto guard = make_scope_guard(std::cref(inc));
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 #endif
 
@@ -212,6 +362,32 @@ TEST_CASE("An lvalue-plain-function-pointer-based scope_guard executes the "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, lvalue-plain-function-pointer-based scope_guard can be "
+          "dismissed.")
+{
+  const auto fp = &inc;
+  make_scope_guard(fp).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed lvalue-plain-function-pointer-based scope_guard does "
+          "not execute its callback at all.")
+{
+  reset();
+
+  {
+    const auto fp = &inc;
+    auto guard = make_scope_guard(fp);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue plain function pointer can be used to create a "
           "scope_guard.")
 {
@@ -233,6 +409,30 @@ TEST_CASE("An rvalue-plain-function-pointer-based scope_guard executes the "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, rvalue-plain-function-pointer-based scope_guard can be "
+          "dismissed.")
+{
+  make_scope_guard(&inc).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed rvalue-plain-function-pointer-based scope_guard does "
+          "not execute its callback at all.")
+{
+  reset();
+
+  {
+    auto guard = make_scope_guard(&inc);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An lvalue reference to a plain function pointer can be used to "
           "create a scope_guard.")
 {
@@ -242,7 +442,7 @@ TEST_CASE("An lvalue reference to a plain function pointer can be used to "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("An plain-function-pointer-lvalue-reference-based scope_guard "
+TEST_CASE("A plain-function-pointer-lvalue-reference-based scope_guard "
           "executes the function exactly once when leaving scope.")
 {
   reset();
@@ -258,6 +458,34 @@ TEST_CASE("An plain-function-pointer-lvalue-reference-based scope_guard "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, plain-function-pointer-lvalue-reference-based "
+          "scope_guard can be dismissed.")
+{
+  const auto fp = &inc;
+  const auto& fp_ref = fp;
+  make_scope_guard(fp_ref).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed plain-function-pointer-lvalue-reference-based "
+          "scope_guard does not execute its callback at all.")
+{
+  reset();
+
+  {
+    const auto fp = &inc;
+    const auto& fp_ref = fp;
+    auto guard = make_scope_guard(fp_ref);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue reference to a plain function pointer can be used to "
           "create a scope_guard.")
 {
@@ -266,7 +494,7 @@ TEST_CASE("An rvalue reference to a plain function pointer can be used to "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
+TEST_CASE("A plain-function-pointer-rvalue-reference-based scope_guard "
           "executes the function exactly once when leaving scope.")
 {
   reset();
@@ -278,6 +506,32 @@ TEST_CASE("An plain-function-pointer-rvalue-reference-based scope_guard "
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, plain-function-pointer-rvalue-reference-based "
+          "scope_guard can be dismissed.")
+{
+  const auto fp = &inc;
+  make_scope_guard(std::move(fp)).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed plain-function-pointer-rvalue-reference-based "
+          "scope_guard does not execute its callback at all.")
+{
+  reset();
+
+  {
+    const auto fp = &inc;
+    auto guard = make_scope_guard(std::move(fp));
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 
 /* --- std::function lvalues/rvalues and references thereof --- */
@@ -328,13 +582,39 @@ TEST_CASE("A scope_guard that is created with a "
   reset();
 
   {
-    REQUIRE_FALSE(count);
     const auto stdf = make_std_function(inc);
     const auto guard = make_scope_guard(stdf);
     REQUIRE_FALSE(count);
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const scope_guard that is created with a "
+          "regular-function-wrapping lvalue std::function can be dismissed.")
+{
+  const auto stdf = make_std_function(inc);
+  make_scope_guard(stdf).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed scope_guard that was created with a "
+          "regular-function-wrapping lvalue std::function does not execute its "
+          "callback at all.")
+{
+  reset();
+
+  {
+    const auto stdf = make_std_function(inc);
+    auto guard = make_scope_guard(stdf);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -353,13 +633,37 @@ TEST_CASE("A scope_guard that is created with an "
   reset();
 
   {
-    REQUIRE_FALSE(count);
-    const auto guard =
-        make_scope_guard(make_std_function(inc));
+    const auto guard = make_scope_guard(make_std_function(inc));
     REQUIRE_FALSE(count);
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const scope_guard that is created with an "
+          "regular-function-wrapping rvalue std::function can be dismissed.")
+{
+  make_scope_guard(make_std_function(inc)).dismiss();
+  make_scope_guard(std::function<void()>{inc}).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed scope_guard that was created with an "
+          "regular-function-wrapping rvalue std::function does not execute its "
+          "callback at all.")
+{
+  reset();
+
+  {
+    auto guard = make_scope_guard(make_std_function(inc));
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -372,14 +676,13 @@ TEST_CASE("An lvalue reference to a std::function that wraps a regular "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TEST_CASE("A scope_guard that is created with an "
+TEST_CASE("A scope_guard that is created with a "
           "regular-function-wrapping std::function lvalue reference "
           "executes that std::function exactly once when leaving scope.")
 {
   reset();
 
   {
-    REQUIRE_FALSE(count);
     const auto stdf = make_std_function(inc);
     const auto& stdf_ref = stdf;
     const auto guard = make_scope_guard(stdf_ref);
@@ -387,6 +690,36 @@ TEST_CASE("A scope_guard that is created with an "
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const scope_guard that was created with a "
+          "regular-function-wrapping std::function lvalue reference can be "
+          "dismissed.")
+{
+  const auto stdf = make_std_function(inc);
+  const auto& stdf_ref = stdf;
+  make_scope_guard(stdf_ref).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed scope_guard that was created with a "
+          "regular-function-wrapping std::function lvalue reference does not "
+          "execute its callback at all.")
+{
+  reset();
+
+  {
+    const auto stdf = make_std_function(inc);
+    const auto& stdf_ref = stdf;
+    auto guard = make_scope_guard(stdf_ref);
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -405,13 +738,40 @@ TEST_CASE("A scope_guard that is created with an "
   reset();
 
   {
-    REQUIRE_FALSE(count);
     const auto stdf = make_std_function(inc);
     const auto guard = make_scope_guard(std::move(stdf));
     REQUIRE_FALSE(count);
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const scope_guard that is created with a "
+          "regular-function-wrapping std::function rvalue reference can be "
+          "dismissed.")
+{
+  const auto stdf = make_std_function(inc);
+  make_scope_guard(std::move(stdf)).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed scope_guard that was created with a "
+          "regular-function-wrapping std::function rvalue reference does not "
+          "execute its callback at all.")
+{
+  reset();
+
+  {
+    const auto stdf = make_std_function(inc);
+    auto guard = make_scope_guard(std::move(stdf));
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 #endif
 
@@ -427,7 +787,7 @@ namespace
 TEST_CASE("A lambda function with no capture can be used to create a "
           "scope_guard.")
 {
-  const auto guard = make_scope_guard([]()noexcept{});
+  make_scope_guard([]()noexcept{});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -442,6 +802,29 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
   }
 
   REQUIRE(lambda_no_capture_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, no-capture-lambda-based scope_guard can be dismissed.")
+{
+  make_scope_guard([]()noexcept{}).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed no-capture-lambda-based scope_guard does not execute "
+          "its callback at all.")
+{
+  {
+    REQUIRE_FALSE(lambda_no_capture_count);
+    auto guard = make_scope_guard([]() noexcept
+                                  { incc(lambda_no_capture_count); });
+    REQUIRE_FALSE(lambda_no_capture_count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(lambda_no_capture_count);
+  }
+
+  REQUIRE_FALSE(lambda_no_capture_count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -465,6 +848,32 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
   }
 
   REQUIRE(lambda_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, capturing-lambda-based scope_guard can be dismissed.")
+{
+  auto i = 0.0f;
+  const auto f = -1;
+  make_scope_guard([f, &i]()noexcept{ i = static_cast<int>(*&f); }).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed capturing-lambda-based scope_guard does not execute its "
+          "callback at all.")
+{
+  auto lambda_count = 0u;
+
+  {
+    auto guard = make_scope_guard([&lambda_count]() noexcept
+                                  { incc(lambda_count); });
+    REQUIRE_FALSE(lambda_count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(lambda_count);
+  }
+
+  REQUIRE_FALSE(lambda_count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -492,6 +901,34 @@ TEST_CASE("A const-capturing-lambda-based scope_guard executes the lambda when "
   REQUIRE(lambda_count == 1u);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A non-const, const-capturing-lambda-based scope_guard can be "
+          "dismissed.")
+{
+  auto f = 0.0f;
+  const auto i = -1;
+  const auto lambda = [&f, i]() noexcept { f = *&i; };
+  make_scope_guard(lambda).dismiss();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed const-capturing-lambda-based scope_guard does not "
+          "execute its callback at all.")
+{
+  auto lambda_count = 0u;
+
+  {
+    const auto lambda = [&lambda_count]() noexcept { incc(lambda_count); };
+    auto guard = make_scope_guard(lambda);
+    REQUIRE_FALSE(lambda_count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(lambda_count);
+  }
+
+  REQUIRE_FALSE(lambda_count);
+}
+
 /* --- mixes of plain function, std::function, and lambda indirections --- */
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -512,6 +949,31 @@ TEST_CASE("A scope_guard created with a regular-function-calling lambda, "
   REQUIRE(count == lambda_count);
   REQUIRE(count == 1u);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed scope_guard that was created with a "
+          "regular-function-calling lambda, does not execute its callback at "
+          "all.")
+{
+  reset();
+  auto lambda_count = 0u;
+
+  {
+    auto guard = make_scope_guard([&lambda_count]() noexcept
+                                  { inc(); incc(lambda_count); });
+    REQUIRE_FALSE(count);
+    REQUIRE_FALSE(lambda_count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+    REQUIRE_FALSE(lambda_count);
+  }
+
+  REQUIRE_FALSE(count);
+  REQUIRE_FALSE(lambda_count);
+}
+
+/* only sparse dismiss tests below this point */
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda function calling a std::function can be used to create a "
@@ -588,6 +1050,23 @@ TEST_CASE("A bound-function-based scope_guard calls the bound function exactly "
   }
 
   REQUIRE(boundf_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed bound-function-based scope_guard does not execute its "
+          "callback at all")
+{
+  auto boundf_count = 0u;
+
+  {
+    auto guard = make_scope_guard(std::bind(incc, std::ref(boundf_count)));
+    REQUIRE_FALSE(boundf_count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(boundf_count);
+  }
+
+  REQUIRE_FALSE(boundf_count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -713,7 +1192,7 @@ TEST_CASE("An lvalue reference to a noncopyable and nonmovable functor can be "
           "used to create a scope_guard")
 {
   nocopy_nomove ncnm{};
-  auto& ncnm_ref = ncnm;
+  const auto& ncnm_ref = ncnm;
   make_scope_guard(ncnm_ref);
 }
 
@@ -726,13 +1205,34 @@ TEST_CASE("A scope_guard created with an lvalue reference to a noncopyable and "
 
   {
     nocopy_nomove ncnm{};
-    auto& ncnm_ref = ncnm;
-    auto guard = make_scope_guard(ncnm_ref);
+    const auto& ncnm_ref = ncnm;
+    const auto guard = make_scope_guard(ncnm_ref);
 
     REQUIRE_FALSE(count);
   }
 
   REQUIRE(count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed scope_guard that was created with an lvalue reference "
+          "to a noncopyable and nonmovable functor does not execute its "
+          "callback at all.")
+{
+  reset();
+
+  {
+    nocopy_nomove ncnm{};
+    const auto& ncnm_ref = ncnm;
+    auto guard = make_scope_guard(ncnm_ref);
+
+    REQUIRE_FALSE(count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(count);
+  }
+
+  REQUIRE_FALSE(count);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -751,7 +1251,7 @@ TEST_CASE("A scope_guard created with an lvalue noncopyable and nonmovable "
 
   {
     nocopy_nomove ncnm{};
-    auto guard = make_scope_guard(ncnm);
+    const auto guard = make_scope_guard(ncnm);
 
     REQUIRE_FALSE(count);
   }
@@ -777,7 +1277,7 @@ TEST_CASE("A scope_guard created with a const lvalue noncopyable and "
 
   {
     const nocopy_nomove ncnm{};
-    auto guard = make_scope_guard(ncnm);
+    const auto guard = make_scope_guard(ncnm);
 
     REQUIRE_FALSE(count);
   }
@@ -885,11 +1385,29 @@ TEST_CASE("A lambda-wrapped-regular-method-based scope_guard executes the "
   regular_method_holder h{};
 
   {
-    auto guard = make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+    const auto guard = make_scope_guard([&h]() noexcept
+                                        { h.regular_inc_method(); });
     REQUIRE_FALSE(h.m_count);
   }
 
   REQUIRE(h.m_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed lambda-wrapped-regular-method-based scope_guard does "
+          "not execute its callback at all.")
+{
+  regular_method_holder h{};
+
+  {
+    auto guard = make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+    REQUIRE_FALSE(h.m_count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE_FALSE(h.m_count);
 }
 
 #ifndef SG_REQUIRE_NOEXCEPT
@@ -907,7 +1425,7 @@ TEST_CASE("A bound-regular-method-based scope_guard executes the method "
   regular_method_holder h{};
 
   {
-    auto guard = make_scope_guard(
+    const auto guard = make_scope_guard(
       std::bind(&regular_method_holder::regular_inc_method, &h));
     REQUIRE_FALSE(h.m_count);
   }
@@ -919,7 +1437,7 @@ TEST_CASE("A bound-regular-method-based scope_guard executes the method "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda-wrapped const method can be used to create a scope_guard")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
   make_scope_guard([&h]() noexcept { h.const_inc_method(); });
 }
 
@@ -927,10 +1445,11 @@ TEST_CASE("A lambda-wrapped const method can be used to create a scope_guard")
 TEST_CASE("A lambda-wrapped-const-method-based scope_guard executes the "
           "method exactly once when leaving scope")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
 
   {
-    auto guard = make_scope_guard([&h]() noexcept { h.const_inc_method(); });
+    const auto guard = make_scope_guard([&h]() noexcept
+                                        { h.const_inc_method(); });
     REQUIRE_FALSE(h.m_count);
   }
 
@@ -941,7 +1460,7 @@ TEST_CASE("A lambda-wrapped-const-method-based scope_guard executes the "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound const method can be used to create a scope_guard")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
   make_scope_guard(std::bind(&const_method_holder::const_inc_method, h));
 }
 
@@ -949,15 +1468,33 @@ TEST_CASE("A bound const method can be used to create a scope_guard")
 TEST_CASE("A bound-const-method-based scope_guard executes the method "
           "exactly once when leaving scope")
 {
-  const_method_holder h{};
+  const const_method_holder h{};
 
   {
-    auto guard = make_scope_guard(
+    const auto guard = make_scope_guard(
       std::bind(&const_method_holder::const_inc_method, &h));
     REQUIRE_FALSE(h.m_count);
   }
 
   REQUIRE(h.m_count == 1u);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed, bound-const-method-based scope_guard does not execute "
+          "its callback at all.")
+{
+  const const_method_holder h{};
+
+  {
+    auto guard = make_scope_guard(
+      std::bind(&const_method_holder::const_inc_method, &h));
+    REQUIRE_FALSE(h.m_count);
+
+    guard.dismiss();
+    REQUIRE_FALSE(h.m_count);
+  }
+
+  REQUIRE_FALSE(h.m_count);
 }
 #endif
 
@@ -1250,6 +1787,25 @@ TEST_CASE("Test nested scopes")
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Dismissing a scope_guard multiple times is the same as dismissing it"
+          "only once")
+{
+  reset();
+
+  for(auto i = 0; i < 100; ++i)
+  {
+    {
+      auto guard = make_scope_guard(inc);
+      for(int c = 0; c <= i; ++c)
+        guard.dismiss();
+      REQUIRE_FALSE(count);
+    }
+
+    REQUIRE_FALSE(count);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("scope_guards execute their callback exactly once when leaving "
           "scope due to an exception")
 {
@@ -1270,6 +1826,30 @@ TEST_CASE("scope_guards execute their callback exactly once when leaving "
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("dismissed scope_guards do not execute their callback when leaving "
+          "scope due to an exception")
+{
+  reset();
+  auto countl = 0u;
+
+  try
+  {
+    auto guard = make_scope_guard(inc);
+    auto guardl = make_scope_guard([&countl]() noexcept { ++countl; });
+
+    guard.dismiss();
+    guardl.dismiss();
+
+    throw "foo";
+  }
+  catch(...)
+  {
+    REQUIRE_FALSE(count);
+    REQUIRE_FALSE(countl);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
 namespace
 {
   unsigned returning(unsigned ret)
@@ -1277,6 +1857,18 @@ namespace
     if(ret)
     {
       const auto guard = make_scope_guard(inc);
+      return ret;
+    }
+
+    return 0u;
+  }
+
+  unsigned dismissing_and_returning(unsigned ret)
+  {
+    if(ret)
+    {
+      auto guard = make_scope_guard(inc);
+      guard.dismiss();
       return ret;
     }
 
@@ -1293,6 +1885,17 @@ TEST_CASE("scope_guards execute their callback exactly once when leaving "
   REQUIRE(123 == returning(123));
   REQUIRE(count == 1u);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("dismissed scope_guards do not execute their callback when leaving "
+          "scope due to a return.")
+{
+  reset();
+
+  REQUIRE(123 == dismissing_and_returning(123));
+  REQUIRE_FALSE(count);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("When a scope_guard is move-constructed, the original callback is "
           "executed only once, by the destination scope_guard (the source"
@@ -1303,13 +1906,68 @@ TEST_CASE("When a scope_guard is move-constructed, the original callback is "
   {
     auto source = make_scope_guard(inc);
     {
-      auto dest = std::move(source);
+      const auto dest = std::move(source);
       REQUIRE_FALSE(count); // inc not executed with source move
     }
     REQUIRE(count == 1u); // inc executed with destruction of dest
   }
 
   REQUIRE(count == 1u); // inc not executed with destruction of source
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("When a scope_guard is move-constructed from a dismissed guard, none "
+          "of the guards execute their callback")
+{
+  reset();
+
+  {
+    auto source = make_scope_guard(inc);
+    {
+      source.dismiss();
+      const auto dest = std::move(source);
+      REQUIRE_FALSE(count); // inc not executed with source move
+    }
+    REQUIRE_FALSE(count); // inc not executed with destruction of dest
+  }
+
+  REQUIRE_FALSE(count); // inc not executed with destruction of source
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Dismissing a moved-from scope_guard is valid, but has no effect.")
+{
+  reset();
+
+  {
+    auto source = make_scope_guard(inc);
+    {
+      const auto dest = std::move(source);
+      source.dismiss();
+      REQUIRE_FALSE(count); // inc not executed with source move or dismiss
+    }
+    REQUIRE(count == 1u); // inc executed with destruction of dest
+  }
+
+  REQUIRE(count == 1u); // inc not executed with destruction of source
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("A dismissed moved-to scope_guard does not execute its callback")
+{
+  reset();
+
+  {
+    auto source = make_scope_guard(inc);
+    {
+      auto dest = std::move(source);
+      dest.dismiss();
+      REQUIRE_FALSE(count); // inc not executed with source move or dest dismiss
+    }
+    REQUIRE_FALSE(count); // inc not executed with destruction of dest
+  }
+
+  REQUIRE_FALSE(count); // inc not executed with destruction of source
 }
 
 #if __cplusplus >= 201402L

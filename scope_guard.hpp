@@ -13,9 +13,8 @@
 #define SG_REQUIRE_NOEXCEPT
 #endif
 
-/**
- * Namespace for the scope_guard
- */
+// Documentation of public interface is in the file README.md
+
 namespace sg
 {
   namespace detail
@@ -73,30 +72,54 @@ namespace sg
     {};
 
 
-    /* --- The actual scope_guard type --- */
+    /* --- The actual scope_guard template --- */
 
     template<typename Callback,
              typename = typename std::enable_if<
                is_proper_sg_callback_t<Callback>::value>::type>
     class scope_guard;
 
+  } // namespace detail
+
+  /* --- Now the single public maker function --- */
+
+  template<typename Callback>
+  detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
+  noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /* we
+                            need this declared here to make it a friend below */
+
+  namespace detail
+  {
+
+    /* --- The template specialization that defines the interface --- */
+
     template<typename Callback>
-    class scope_guard<Callback>
+    class scope_guard<Callback> final
     {
     public:
       typedef Callback callback_type;
-
-      explicit scope_guard(Callback&& callback)
-      noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 
       scope_guard(scope_guard&& other)
       noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 
       ~scope_guard() noexcept; // highlight noexcept dtor
 
+      void dismiss() noexcept;
+
+    public:
+      scope_guard() = delete;
       scope_guard(const scope_guard&) = delete;
       scope_guard& operator=(const scope_guard&) = delete;
       scope_guard& operator=(scope_guard&&) = delete;
+
+    private:
+      explicit scope_guard(Callback&& callback)
+      noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
+                                                      meant for friends only */
+
+      friend scope_guard<Callback> make_scope_guard<Callback>(Callback&&)
+      noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
+        only make_scope_guard can create guards from scratch (i.e. non-move) */
 
     private:
       Callback m_callback;
@@ -106,28 +129,6 @@ namespace sg
 
   } // namespace detail
 
-
-  /* --- Now the single public maker function --- */
-
-  /**
-   * Function template to create a scope_guard.
-   *
-   * @param callback A callable function, function pointer, functor, or
-   * reference thereof, that must:
-   * @li require no parameters;
-   * @li return void;
-   * @li not throw.
-   * @attention The latter is not enforced upon compilation unless >=C++17 is
-   * used and the preprocessor macro SG_REQUIRE_NOEXCEPT_IN_CPP17 is defined.
-   * If the callback throws, std::terminate is called.
-   * @note Check the documentation in @c README.md for more details).
-   *
-   * @return A scope guard, that is, an RAII object that executes the provided
-   * callback when leaving scope.
-   */
-  template<typename Callback>
-  detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
-  noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 
 } // namespace sg
 
@@ -155,6 +156,13 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
   , m_active{std::move(other.m_active)}
 {
   other.m_active = false;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+template<typename Callback>
+inline void sg::detail::scope_guard<Callback>::dismiss() noexcept
+{
+  m_active = false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
