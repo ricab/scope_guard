@@ -5,32 +5,51 @@ A public, general, simple, fast, and SFINAE-friendly C++11 scope guard which
 forbids implicitly ignored returns and optionally enforces `noexcept` at compile
 time (in C++17).
 
-Usage is simple:
+## Outline
 
-```c++
-auto guard = make_scope_guard(my_callback);
-```
-
-A scope guard is an object that employs RAII to guarantee execution of the
-provided callback when leaving scope, be it through a fall-through, a return,
-or an exception. That callback can be a a function, a function pointer, a
-functor, a lambda, a bind result, a std::function, or a reference to any of
-these. In general, in can be anything that respects
-[a few preconditions](maker-function-template).
-
-All necessary code is provided in a [single header](scope_guard.hpp)
-(the remaining code is for tests.)
-
-## Broad document outline
-
-- [scope_guard](#scope-guard)
+- [scope_guard](#scope_guard)
   * [Outline](#outline)
+  * [Introduction](#introduction)
+  * [Acknowledgments](#acknowledgments)
   * [Features](#features)
   * [Setup](#setup)
   * [Client interface](#client-interface)
   * [Preconditions](#preconditions)
   * [Design choices and concepts](#design-choices-and-concepts)
   * [Tests](#tests)
+
+## Introduction
+
+A scope guard is an object that employs RAII to guarantee execution of the
+provided callback when leaving scope, be it through a _fall-through_, a return,
+or an exception. That callback can be a a function, a function pointer, a
+functor, a lambda, a bind result, a std::function, or a reference to any of
+these, as long as it respects the preconditions.
+
+All necessary code is provided in a [single header](scope_guard.hpp)
+(the remaining code is for tests.)
+
+Usage is simple:
+
+```c++
+#include "scope_guard.hpp"
+...
+{
+  ...
+  auto guard = make_scope_guard(my_callback);
+    ...
+} // my_callback is executed
+```
+
+## Acknowledgments
+
+The concept of "scope guard" was [first proposed](http://drdobbs.com/184403758)
+publicly by Andrei Alexandrescu and Petru Marginean and it is well known in the
+C++ community these days. It has been proposed for standardization (see
+[N4189](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4189.pdf))
+but is still not part of the standard library, as of March 2018. While there
+are many implementations available, I did not find any with the
+characteristics I aim for here.
 
 ## Features
 
