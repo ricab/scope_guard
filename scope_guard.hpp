@@ -123,6 +123,8 @@ namespace sg
 
       void dismiss() noexcept;
 
+    public:
+      scope_guard() = delete;
       scope_guard(const scope_guard&) = delete;
       scope_guard& operator=(const scope_guard&) = delete;
       scope_guard& operator=(scope_guard&&) = delete;
