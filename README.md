@@ -186,7 +186,7 @@ Scope guard objects have some unspecified type with:
 #### Invariants:
 1. A scope guard object that is in an _active state_ executes its
 _associated callback_ exactly once when leaving scope.
-2. A scope guard that is in _inactive state_ never executes its
+2. A scope guard that is in _inactive state_ does not execute its
 _associated callback_
 
 #### List of available public members:
@@ -198,16 +198,14 @@ _associated callback_
 
 #### List of _deleted_ public members:
 
-Scope guards cannot be default-constructed, copy-constructed, or assigned to.
-
 1. default constructor
 2. copy constructor
 3. copy assignment operator
 4. move assignment operator
 
 Note: Deleted special members cannot be used, but they participate in overload
-resolution. In other words, it is part of the client's interface that they are
-explicitly disallowed.
+resolution. They are explicitly disallowed and that is part of the client's
+interface.
 
 #### Member type `calback_type`
 
@@ -225,7 +223,7 @@ typedef Callback callback_type;
 ###### Example:
 
 ```c++
-`decltype(guard)::callback_type` // where guard is a scope guard object
+using my_cb = typename decltype(guard)::callback_type; //where guard is a scope guard object
 ```
 
 #### Member function `dismiss`
