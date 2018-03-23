@@ -18,7 +18,7 @@ document are to be interpreted as described in RFC 2119._</sub>
   * [Features](#features)
   * [Setup](#setup)
   * [Client interface](#client-interface)
-  * [Preconditions](#preconditions)
+  * [Preconditions](#preconditions-4)
   * [Design choices and concepts](#design-choices-and-concepts)
   * [Tests](#tests)
 
@@ -60,15 +60,15 @@ characteristics I aim for here.
 ### Main features
 - [x] &ge; C++11
 - [x] Reduced interface
-- [x] Fast (no added runtime `std::function` penalties)
+- [x] Thin callback wrapping (no added `std::function` or virtual table
+penalties)
 - [x] General: accepts any callable that respects a few
-[preconditions](#preconditions)
+[preconditions](#preconditions-4)
 - [x] no implicitly ignored return (see [below](#void-return))
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#compilation-option-sg_require_noexcept_in_cpp17))
-- [x] _SFINAE-friendliness_ (see [below](#sfinae-friendliness))
-- [x] expose correct exception specification (conditional `noexcept`,
-see [below](#conditional-noexcept))
+- [x] _SFINAE friendliness_ (see [below](#sfinae-friendliness))
+- [x] exposes careful exception specifications (conditional `noexcept`)
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
@@ -111,12 +111,14 @@ Here is an outline of the client interface:
 
 - [Maker function template](#maker-function-template)
 - [Scope guard objects](#scope-guard-objects)
-  * [Invariants:](#invariants)
+  * [Invariants](#invariants)
+  * [List of available public members](#list-of-available-public-members)
+  * [List of deleted public members](#list-of-deleted-public-members)
   * [Member type `calback_type`](#member-type-calback_type)
-  * [Dismiss](#dismiss)
-  * [Move constructor](#move-constructor)
-  * [Destructor](#destructor)
-  * [Compilation option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#compilation-option-sg_require_noexcept_in_cpp17)
+  * [Member function `dismiss`](#member-function-dismiss)
+  * [Member move constructor](#member-move-constructor)
+  * [Member destructor](#member-destructor)
+- [Compilation option `SG_REQUIRE_NOEXCEPT_IN_CPP17`](#compilation-option-sg_require_noexcept_in_cpp17)
 
 ### Maker function template
 
@@ -125,7 +127,7 @@ The free function template `make_scope_guard` is the primary public interface
 create a scope guard object from a specified callback. Scope guards created this
 way are automatically destroyed when going out of scope, at which point they
 execute their _associated_ callback, unless they were meanwhile
-_[dismissed](#dismiss)_ or _[moved](#move-constructor)_.
+[_dismissed_](#member-function-dismiss) or [_moved_](#member-move-constructor).
 
 This function template is [SFINAE-friendly](#sfinae-friendliness).
 
@@ -140,12 +142,12 @@ This function template is [SFINAE-friendly](#sfinae-friendliness).
 ###### Preconditions:
 
 The template and function arguments need to respect certain preconditions. They
-are listed here and discussed in more detail [below](#preconditions).
+are listed here and discussed in more detail ahead.
 
 - [invocable with no arguments](#invocable-with-no-arguments)
 - [void return](#void-return)
-- [_nothrow_-invocable](#_nothrow_-invocable)
-- [_nothrow_-destructible if non-reference](#_nothrow_-destructible-if-non-reference-template-argument)
+- [_nothrow_-invocable](#nothrow-invocable)
+- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference-template-argument)
 template argument
 - [const-invocable if const reference](#const-invocable-if-const-reference)
 - [appropriate lifetime if lvalue reference](#appropriate-lifetime-if-lvalue-reference)
@@ -180,14 +182,14 @@ _associated callback_ exactly once when leaving scope.
 2. A scope guard that is in _inactive state_ never executes its
 _associated callback_
 
-###### Public members:
+#### List of available public members:
 
 1. Type `callback_type`
 2. `dismiss` function
 3. move constructor
 4. destructor
 
-###### Public _deleted_ members:
+#### List of _deleted_ public members:
 
 Scope guards cannot be default-constructed, copy-constructed, or assigned to.
 
@@ -219,7 +221,7 @@ typedef Callback callback_type;
 `decltype(guard)::callback_type` // where guard is a scope guard object
 ```
 
-#### Dismiss
+#### Member function `dismiss`
 Scope guards can be dismissed to cancel callback execution. Dismissed scope
 guards are valid but useless. They are best regarded as garbage awaiting
 destruction.
@@ -252,7 +254,7 @@ bool do_transaction()
 }
 ```
 
-#### Move constructor
+#### Member move constructor
 
 Objects created with `make_scope_guard` can be moved. This
 possibility exists mainly to allow initialization with assignment syntax, as in
@@ -301,7 +303,7 @@ std::cout << "bli";
 // prints "blablebli"
 ```
 
-#### Destructor
+#### Member destructor
 
 Scope guards have a destructor.
 
@@ -322,8 +324,8 @@ destruction;
 ###### Exception specification:
 
 `noexcept`. This motivates two of the preconditions discussed below:
-[_nothrow_-invocable](#_nothrow_-invocable) and
-[_nothrow_-destructible if non-reference](#_nothrow_-destructible-if-non-reference-template-argument).
+[_nothrow_-invocable](#nothrow-invocable) and
+[_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference-template-argument).
 
 ###### Example:
 
@@ -359,8 +361,8 @@ This section explains the preconditions that the callback passed to
 
 - [invocable with no arguments](#invocable-with-no-arguments)
 - [void return](#void-return)
-- [_nothrow_-invocable](#_nothrow_-invocable)
-- [_nothrow_-destructible if non-reference](#_nothrow_-destructible-if-non-reference-template-argument)
+- [_nothrow_-invocable](#nothrow-invocable)
+- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference-template-argument)
 template argument
 - [const-invocable if const reference](#const-invocable-if-const-reference)
 template argument
@@ -390,7 +392,7 @@ make_scope_guard([&some_resource]() noexcept
 #### void return
 
 The callback MUST return void. Returning anything else is
-[intentionally](TODOlink) rejected. The user MAY wrap their call in a
+[intentionally](#no-return) rejected. The user MAY wrap their call in a
 lambda that ignores the return.
 
 ###### Compile time enforcement:
@@ -416,7 +418,7 @@ in a `try-catch` block, choosing to deal with or ignore exceptions.
 ###### Compile time enforcement:
 
 _By default_, this precondition _is not enforced_ at compile time. That can be
-[changed]((#option-sg_require_noexcept_in_cpp17)) in &ge;C++17.
+[changed](#compilation-option-sg_require_noexcept_in_cpp17) in &ge;C++17.
 
 ###### Example:
 
@@ -537,8 +539,8 @@ guard is often a _nothrow_ operation. Notice in particular that
 a reference)
 2. when `callback` is an rvalue or rvalue reference of a type with:
     * a `noexcept` move constructor, and
-    * a `noexcept` destructor (anyway required when `Callback` is not a
-    reference &ndash; see [preconditions](#preconditions))
+    * (a `noexcept` destructor - already required in this case &ndash;
+see [preconditions](#preconditions-4))
 
 However, `make_scope_guard` is _not_ `noexcept` when it needs to rely upon an
 operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` move
@@ -646,9 +648,8 @@ make test ARGS=-j16 # I find N*2 for N hardware threads to be a good choice here
 This will run catch and compile time tests with different combinations of
 SG_REQUIRE_NOEXCEPT_IN_CPP17 and C++ standard, depending on compiler
 capabilities. If the compiler supports exception specifications as part of the
-type system (
-[P0012R1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html)
-),
+type system
+([P0012R1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html)),
 both C++11 and C++17 cases are tested (cases X, Y, W, and Z in the table below).
 Otherwise, only C++11 is tested (cases X and Y below). Notice that `noexcept` is
 only effectively required in case Z.
