@@ -45,7 +45,7 @@ what have you
 - [x] Extensively tested, with both
 [compile time tests](compile_time_tests.cpp) and
 [runtime-tests](catch_tests.cpp)
-- [x] Unlicense(d)
+- [x] Unlicense'd
 - [x] `snake_case` style
 
 ## Setup
@@ -81,9 +81,16 @@ _[dismissed](#dismiss)_ or _[moved](#move-constructor)_.
 
 ###### Preconditions:
 
-TODO: better list preconditions here in title form and link to details below
-The template and function arguments need to respect certain preconditions,
-which are documented [below](#preconditions).
+The template and function arguments need to respect certain preconditions
+which are discussed in more detail [below](#preconditions):
+
+- [invocable with no arguments](#invocable-with-no-arguments)
+- [void return](#void-return)
+- [_nothrow_-invocable](#nothrow-invocable)
+- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference) template argument
+- [const-invocable if const reference](#const-invocable-if-const-reference) template argument
+- [appropriate lifetime if lvalue reference](#appropriate-lifetime-if-lvalue-reference) template argument
+- [movable or copyable if non-reference](#movable-or-copyable-if-non-reference) template argument
 
 ###### Postconditions:
 
