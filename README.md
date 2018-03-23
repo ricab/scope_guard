@@ -5,6 +5,10 @@ A public, general, simple, fast, and SFINAE-friendly C++11 scope guard which
 forbids implicitly ignored returns and optionally enforces `noexcept` at compile
 time (in C++17).
 
+_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in RFC 2119._
+
 ## Outline
 
 - [scope_guard](#scope_guard)
@@ -73,6 +77,8 @@ what have you
 - [x] Extensively tested, with both
 [compile time tests](compile_time_tests.cpp) and
 [runtime-tests](catch_tests.cpp)
+- [x] Carefully documented (and adheres to
+[RFC2119](https://tools.ietf.org/html/rfc2119))
 - [x] Unlicense'd
 - [x] `snake_case` style
 
@@ -83,14 +89,17 @@ or could be improved, feel free to open an issue.
 
 ## Setup
 
-Simply copy the [header file](scope_guard.hpp) to your project (or
-somewhere accessible to your compiler), and include it. The preprocessor
-definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` MAY be provided to the compiler.
-The effect of this option is explained
+Setup consists merely of making the [header file](scope_guard.hpp) available to
+the compiler. That can be achieved by any of the following options:
+
+1. placing it directly in the client project
+2. placing it in a central include path that is known to the compiler
+3. placing it in an arbitrary path and configuring the compiler to include that
+path
+
+The preprocessor definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` MAY be provided
+to the compiler. The effect of this option is explained
 [below](#option-SG_REQUIRE_NOEXCEPT_IN_CPP17).
-
-See [tests](catch_tests.cpp) for use-case examples.
-
 
 ## Client interface
 
