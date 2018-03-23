@@ -607,13 +607,15 @@ There are a few dependencies to execute the tests:
 - C++11 capable compiler, preferably C++17 capable (c++1z is fine if it provides
 the symbol
 [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
-- [Cmake](https://cmake.org/) (at least version 3.8)
-- [Catch2](https://github.com/catchorg/Catch2)
+- A version of [Cmake](https://cmake.org/) (at least version 3.8) in the
+interval [3.8, 4)
+- A version of [Catch2](https://github.com/catchorg/Catch2)
 
 ### Instructions for running the tests
 (For GNU/Linux, should be analogous in other systems.)
 
-1. Install [cmake](https://cmake.org/) (&ge; v3.8)
+1. Install [cmake](https://cmake.org/) &ndash; a version in the interval
+[3.8, 4);
 2. Get and install [Catch2](https://github.com/catchorg/Catch2):
     ```sh
     $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
