@@ -5,9 +5,9 @@ A public, general, simple, fast, and SFINAE-friendly C++11 scope guard which
 forbids implicitly ignored returns and optionally enforces `noexcept` at compile
 time (in C++17).
 
-_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+<sub>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
 NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in RFC 2119._
+document are to be interpreted as described in RFC 2119._</sub>
 
 ## Outline
 
