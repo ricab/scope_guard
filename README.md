@@ -82,6 +82,11 @@ what have you
 - [x] Unlicense'd
 - [x] `snake_case` style
 
+## Issues
+
+Bug reports and suggestions are welcome. If you find that something is incorrect
+or could be improved, feel free to open an issue.
+
 ## Setup
 
 Simply copy the [header file](scope_guard.hpp) to your project (or
@@ -457,7 +462,7 @@ _This precondition is enforced at compile time._
 ## Design choices and concepts
 
 This section tries to clarify concepts used in the interface and discusses the
-rationale for some design decisions. TODO bugs and suggestions welcom
+rationale for some design decisions.
 
 ### Type deduction and SFINAE
 
