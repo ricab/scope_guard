@@ -22,25 +22,25 @@ namespace
 
 
   using StdFun = std::function<void()>;
-  StdFun throwing_stdfun{throwing};
-  StdFun non_throwing_stdfun{non_throwing}; // drops noexcept
-  StdFun meh_stdfun{meh};
+  const StdFun throwing_stdfun{throwing};
+  const StdFun non_throwing_stdfun{non_throwing}; // drops noexcept
+  const StdFun meh_stdfun{meh};
 
-  std::function<int()> returning_stdfun{returning}; // drops noexcept
-
-
-  auto throwing_lambda = []{ throwing(); };
-  auto non_throwing_lambda = []() noexcept { non_throwing(); };
-  auto meh_lambda = []{ meh(); };
-
-  auto returning_lambda = []() noexcept { return returning(); };
+  const std::function<int()> returning_stdfun{returning}; // drops noexcept
 
 
-  auto throwing_bound = std::bind(throwing);
-  auto non_throwing_bound = std::bind(non_throwing); // drops noexcept
-  auto meh_bound = std::bind(meh);
+  const auto throwing_lambda = []{ throwing(); };
+  const auto non_throwing_lambda = []() noexcept { non_throwing(); };
+  const auto meh_lambda = []{ meh(); };
 
-  auto returning_bound = std::bind(returning); // drops noexcept
+  const auto returning_lambda = []() noexcept { return returning(); };
+
+
+  const auto throwing_bound = std::bind(throwing);
+  const auto non_throwing_bound = std::bind(non_throwing); // drops noexcept
+  const auto meh_bound = std::bind(meh);
+
+  const auto returning_bound = std::bind(returning); // drops noexcept
 
 
   struct throwing_struct
