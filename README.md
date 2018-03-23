@@ -322,8 +322,8 @@ destruction;
 ###### Exception specification:
 
 `noexcept`. This motivates two of the preconditions discussed below:
-[no-throw-invocable](#no-throw-invocable) and
-[no-throw-destructible if non-reference template argument](#no-throw-destructible-if-non-reference-template-argument).
+[_nothrow_-invocable](#_nothrow_-invocable) and
+[_nothrow_-destructible if non-reference](#_nothrow_-destructible-if-non-reference-template-argument).
 
 ###### Example:
 
@@ -359,8 +359,8 @@ This section explains the preconditions that the callback passed to
 
 - [invocable with no arguments](#invocable-with-no-arguments)
 - [void return](#void-return)
-- [_nothrow_-invocable](#nothrow-invocable)
-- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference)
+- [_nothrow_-invocable](#_nothrow_-invocable)
+- [_nothrow_-destructible if non-reference](#_nothrow_-destructible-if-non-reference-template-argument)
 template argument
 - [const-invocable if const reference](#const-invocable-if-const-reference)
 template argument
@@ -500,13 +500,13 @@ This precondition _is enforced_ at compile time.
 This section tries to clarify concepts used in the interface and discusses the
 rationale for some design decisions. The outline is:
 
-- [Type deduction and SFINAE](#type-deduction-and-sfinae)
+- [SFINAE friendliness](#sfinae-friendliness)
 - [No extra arguments](#no-extra-arguments)
-- [Conditional `noexcept`](#conditional--noexcept-)
+- [Conditional `noexcept`](#conditional-noexcept)
 - [Private constructor](#private-constructor)
 - [no return](#no-return)
 - [nothrow invocation](#nothrow-invocation)
-- [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring--noexcept--callbacks-at-compile-time)
+- [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring-noexcept-callbacks-at-compile-time)
 
 ### SFINAE friendliness
 
