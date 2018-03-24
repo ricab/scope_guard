@@ -223,7 +223,7 @@ typedef Callback callback_type;
 ###### Example:
 
 ```c++
-using my_cb = typename decltype(guard)::callback_type; //where guard is a scope guard object
+using my_cb = typename decltype(guard)::callback_type; // where guard is a scope guard object
 ```
 
 #### Member function `dismiss`
@@ -251,11 +251,18 @@ The dismissed scope guard is in _inactive state_.
 
 ```c++
 bool do_transaction()
-{
-  do_part1();
-  auto undo = make_scope_guard(undo_part1);
-  do_part2();
-  undo.dismiss();
+{ // example with early returns
+  if(!do_step1())
+    return false;
+
+  auto undo = make_scope_guard(rollback);
+  if(!do_step2());
+    return false;
+  if(!do_step3());
+    return false;
+
+  undo.dismiss(); // <-- using dismiss
+  return true;
 }
 ```
 
@@ -263,12 +270,12 @@ bool do_transaction()
 
 Objects created with `make_scope_guard` can be moved. This
 possibility exists mainly to allow initialization with assignment syntax, as in
-`auto g1 = make_scope_guard(f);`. It may also be useful for explicit _ownership_
-transfer: `auto g2 = std::move(g1);`
+`auto g1 = make_scope_guard(f);`. In general, it allows transferring
+scope guarding responsibility: `auto g2 = std::move(g1);`.
 
-A scope-guard move transfers the callback and call responsibility (or lack
-thereof). Moved-from scope guards are valid but useless. They are best regarded
-as garbage awaiting destruction.
+A scope-guard move transfers the callback and corresponding call responsibility
+(or lack thereof). Moved-from scope guards are valid but useless. They are best
+regarded as garbage awaiting destruction.
 
 ###### Member function signature:
 
@@ -343,10 +350,10 @@ can be defined to make `scope_guard`'s constructor require a nothrow invocable
 at compile time.
 
 Notice however, that this restricts the types that `scope_guard` accepts
-considerably. That is one of the reasons why it is disabled by default. The
-other is to maintain the same behavior as in &lt;C++17. Please consider some
-further implications
+considerably, as explained
 [below](#implications-of-requiring-noexcept-callbacks-at-compile-time).
+That is one of the reasons why it is disabled by default. The
+other is to maintain the same behavior as in &lt;C++17.
 
 This option has no effect unless &ge;C++17 is used.
 
@@ -388,10 +395,11 @@ This precondition _is enforced_ at compile time.
 ###### Example:
 
 ```c++
-void my_resource_release(Resource& r) noexcept;
-make_scope_guard(my_resource_release); // ERROR: which resource?
-make_scope_guard([&some_resource]() noexcept
-                 { my_resource_release(some_resource); }); // OK
+void my_release(Resource& r) noexcept;
+make_scope_guard(my_release); // ERROR: which resource?
+make_scope_guard(my_release, my_resource); // ERROR: one argument only, please
+make_scope_guard([&my_resource]() noexcept
+                 { my_release(my_resource); }); // OK
 ```
 
 #### void return
@@ -423,7 +431,8 @@ in a `try-catch` block, choosing to deal with or ignore exceptions.
 ###### Compile time enforcement:
 
 _By default_, this precondition _is not enforced_ at compile time. That can be
-[changed](#compilation-option-sg_require_noexcept_in_cpp17) in &ge;C++17.
+[changed](#compilation-option-sg_require_noexcept_in_cpp17) when using
+&ge;C++17.
 
 ###### Example:
 
@@ -484,7 +493,7 @@ This precondition _is enforced_ at compile time.
 #### appropriate lifetime if lvalue reference
 
 If the template argument is an lvalue reference, then the function argument MUST
-be valid at least until the corresponding scope guard goes out of scope. Notice
+be valid at least until the corresponding scope guard is destroyed. Notice
 this is the case when the template argument is deduced from both lvalues and
 lvalue references.
 
@@ -531,8 +540,8 @@ As the signature shows, `make_scope_guard` accepts no arguments beyond
 the callback (see the [related precondition](#invocable-with-no-arguments)).
 I could not see a compelling need for them. When lambdas and binds are
 available, the scope guard is better off keeping a _single responsibility_ of
-guarding the scope and leaving the responsibility of closure to those other
-types.
+guarding the scope and leaving the complementary responsibility of closure to
+those other types.
 
 ### Conditional `noexcept`
 
@@ -542,14 +551,9 @@ guard is often a _nothrow_ operation. Notice in particular that
 
 1. when `callback` is an lvalue or lvalue reference (`Callback` deduced to be
 a reference)
-2. when `callback` is an rvalue or rvalue reference of a type with:
-    * a `noexcept` move constructor, and
-    * (a `noexcept` destructor - already required in this case &ndash;
-see [preconditions](#preconditions-in-detail))
-
-However, `make_scope_guard` is _not_ `noexcept` when it needs to rely upon an
-operation that is not `noexcept` (e.g. rvalue with `noexcept(false)` move
-constructor)
+2. when `callback` is an rvalue or rvalue reference of a type with a `noexcept`
+move constructor (and a `noexcept` destructor, but that is already required by
+the [preconditions](#preconditions-in-detail) in this case)
 
 You can look for `noexcept` in [compilation tests](compile_time_tests.cpp) for
 examples.
