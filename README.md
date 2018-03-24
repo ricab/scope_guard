@@ -466,9 +466,11 @@ struct throwing
 
 try
 {
-  throwing tmp;
-  make_scope_guard([&tmp](){ t(); })
-} catch(...) { /* handle somehow */ }
+  throwing_dtor tmp;
+  make_scope_guard([&tmp](){ tmp(); })
+  // tmp still alive
+} // tmp only destroyed here
+catch(...) { /* handle somehow */ }
 ```
 
 #### const-invocable if const reference
