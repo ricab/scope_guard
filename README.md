@@ -5,11 +5,11 @@ A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
 at compile time (in C++17), all in a SFINAE-friendly way.
 
-<sup>_This project follows [Semantic Versioning](https://semver.org/)</sup>
+<small>This project follows [Semantic Versioning](https://semver.org/)</small>
 
-<sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+<small>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
 NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in RFC 2119._</sup>
+document are to be interpreted as described in RFC 2119._</small>
 
 ## Outline
 
@@ -554,7 +554,7 @@ guard is often a _nothrow_ operation. Notice in particular that
 1. when `callback` is an lvalue or lvalue reference (`Callback` deduced to be
 a reference)
 2. when `callback` is an rvalue or rvalue reference of a type with a `noexcept`
-move constructor (and a `noexcept` destructor, but that is already required by
+move constructor (and a `noexcept` destructor, but that is already REQUIRED by
 the [preconditions](#preconditions-in-detail) in this case)
 
 You can look for `noexcept` in [compilation tests](compile_time_tests.cpp) for
