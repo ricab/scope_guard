@@ -561,20 +561,18 @@ examples.
 ### Private constructor
 
 The form of construction that is used by `make_scope_guard` to create scope
-guards is not part of the public interface. The purpose is to prevent
-unintentional misuse, preventing dynamic storage duration (_scope_ guards would
-need a different name if that was allowed) and guiding the user to type
-deduction with universal references, which would not be available in the
-constructor (at least in &lt;C++17.)
+guards is not part of the public interface. The purpose is to guide the user to
+type deduction with universal references and make unintentional misuse difficult
+(e.g. dynamic allocation of scope_guards).
 
-### no return
+### No return
 
 This forces the client to confirm their intention, by explicitly
 writing code to ignore a return, if that really is what they want. The idea is
 not only to catch unintentional cases but also to highlight intentional ones for
 code readers.
 
-### nothrow invocation
+### Nothrow invocation
 
 Throwing from a callback implies throwing from scope guards' destructor, causing
 the program to terminate. This follows the same approach as custom deleters in
@@ -601,12 +599,9 @@ auto stdf = std::function<void()>{f};                  // fine, but drops noexce
 ```
 
 Therefore, the additional safety sacrifices generality. Of course, clients can
-still use functions and lambdas to wrap anything else, e.g.:
-
-    make_scope_guard([&foo]()noexcept{std::bind(bar, foo)})
-
-Personally, I favor using this option if possible, but it requires C++17 as the
-exception specification is not part of a function's type
+still use compliant alternatives to wrap anything else. Personally, I favor
+using this option if possible, but it requires C++17, as the exception
+specification is not part of a function's type
 [until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
 
 ## Tests
@@ -618,16 +613,14 @@ There are a few dependencies to execute the tests:
 - C++11 capable compiler, preferably C++17 capable (c++1z is fine if it provides
 the symbol
 [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
-- A version of [Cmake](https://cmake.org/) (at least version 3.8) in the
-interval [3.8, 4)
-- A version of [Catch2](https://github.com/catchorg/Catch2)
+- [Cmake](https://cmake.org/) &ndash; a version in the interval [3.8, 4)
+- [Catch2](https://github.com/catchorg/Catch2)
 
 ### Instructions for running the tests
 (For GNU/Linux, should be analogous in other systems.)
 
-1. Install [cmake](https://cmake.org/) &ndash; a version in the interval
-[3.8, 4);
-2. Get and install [Catch2](https://github.com/catchorg/Catch2):
+1. Install [cmake](https://cmake.org/)
+2. Install [Catch2](https://github.com/catchorg/Catch2):
     ```sh
     $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
     $ mkdir <catch_bin_dir>
@@ -641,7 +634,7 @@ interval [3.8, 4)
     $ git clone https://github.com/ricab/scope_guard.git <guard_src_dir>
     $ mkdir <guard_bin_dir>
     $ cd <guard_bin_dir>
-    $ cmake [options] <guard_src_dir>
+    $ cmake <guard_src_dir>
     $ make
     $ make test
     ```
@@ -650,18 +643,18 @@ To speed things up, the last two commands can be given a number of threads to
 execute in parallel. For instance:
 
 ```sh
-make -j4 # only 4 separate compilations are done at this step
-make test ARGS=-j16 # I find N*2 for N hardware threads to be a good choice here (considering I/O overhead)
+make -j4 # max 4 compilations needed
+make test ARGS=-j16 # I suggest twice the number of hardware threads (to compensate for I/O)
 ```
 
 This will run catch and compile time tests with different combinations of
-SG_REQUIRE_NOEXCEPT_IN_CPP17 and C++ standard, depending on compiler
+`SG_REQUIRE_NOEXCEPT_IN_CPP17` and C++ standard, depending on compiler
 capabilities. If the compiler supports exception specifications as part of the
 type system
 ([P0012R1](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html)),
-both C++11 and C++17 cases are tested (cases X, Y, W, and Z in the table below).
-Otherwise, only C++11 is tested (cases X and Y below). Notice that `noexcept` is
-only effectively required in case Z.
+both C++11 and C++17 standards are tested (cases X, Y, W, and Z in the table
+below). Otherwise, only C++11 is tested (cases X and Y below). Notice that
+`noexcept` is only effectively required in case Z.
 
 | standard/pp-define                                   | c++11 | c++17  |
 | ---------------------------------------------------- |:-----:|:------:|
@@ -670,4 +663,4 @@ only effectively required in case Z.
 
 Note: to obtain more output (e.g. because there was a failure), the command
 `make test` can be replaced with `VERBOSE=1 make test_verbose`. This shows the
-command lines used in compilation tests, as well as the test output.
+command lines used in compilation tests, as well as detailed test output.
