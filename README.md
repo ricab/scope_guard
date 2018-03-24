@@ -5,9 +5,11 @@ A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
 at compile time (in C++17), all in a SFINAE-friendly way.
 
-<sub>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+<sup>_This project follows [Semantic Versioning](https://semver.org/)</sup>
+
+<sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
 NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in RFC 2119._</sub>
+document are to be interpreted as described in RFC 2119._</sup>
 
 ## Outline
 
