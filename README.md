@@ -21,14 +21,6 @@ Usage is simple:
 } // my_callback is executed
 ```
 
-##### Notes
-
-<sub>This project follows [Semantic Versioning](https://semver.org/).</sub>
-
-<sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
-NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in RFC 2119._</sup>
-
 ## Outline
 
 - [scope_guard](#scope_guard)
@@ -54,6 +46,14 @@ during compilation and the rest being hopefully intuitive.
 
 All necessary code is provided in a [single header](scope_guard.hpp)
 (the remaining code is for tests).
+
+##### Notes
+
+<sub>This project follows [Semantic Versioning](https://semver.org/).</sub>
+
+<sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in RFC 2119._</sup>
 
 ## Acknowledgments
 
