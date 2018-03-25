@@ -5,6 +5,24 @@ A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
 at compile time (in C++17), all in a SFINAE-friendly way.
 
+##### TLDR
+
+Get it [here](scope_guard.hpp) and read the introduction to get started quickly.
+
+Usage is simple:
+
+```c++
+#include "scope_guard.hpp"
+...
+{
+  ...
+  auto guard = make_scope_guard(my_callback);
+    ...
+} // my_callback is executed
+```
+
+##### Notes
+
 <sub>This project follows [Semantic Versioning](https://semver.org/).</sub>
 
 <sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
@@ -31,23 +49,11 @@ provided callback when leaving scope, be it through a _fall-through_, a return,
 or an exception. That callback can be a a function, a function pointer, a
 functor, a lambda, a bind result, a std::function, a reference to any of
 these, or any other callable, as long as it respects a few
-[preconditions](#preconditions-in-detail) (most of which are enforced during
-compilation).
+[preconditions](#preconditions-in-detail) &ndash; most of which are enforced
+during compilation and the rest being hopefully intuitive.
 
 All necessary code is provided in a [single header](scope_guard.hpp)
 (the remaining code is for tests).
-
-Usage is simple:
-
-```c++
-#include "scope_guard.hpp"
-...
-{
-  ...
-  auto guard = make_scope_guard(my_callback);
-    ...
-} // my_callback is executed
-```
 
 ## Acknowledgments
 
