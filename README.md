@@ -7,7 +7,6 @@ at compile time (in C++17), all in a SFINAE-friendly way.
 ##### TLDR
 
 Get it [here](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp).
-
 Usage is simple:
 
 ```c++
