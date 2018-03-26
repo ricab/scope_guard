@@ -1,13 +1,12 @@
 # scope_guard
 
-
 A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
 at compile time (in C++17), all in a SFINAE-friendly way.
 
 ##### TLDR
 
-Get it [here](scope_guard.hpp) and read the introduction to get started quickly.
+Get it [here](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp).
 
 Usage is simple:
 
@@ -18,7 +17,7 @@ Usage is simple:
   ...
   auto guard = make_scope_guard(my_callback);
     ...
-} // my_callback is executed
+} // my_callback is invoked
 ```
 
 ## Outline
