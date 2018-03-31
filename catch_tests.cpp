@@ -197,6 +197,13 @@ TEST_CASE("A dismissed lvalue-const-reference-to-plain-function-based "
   REQUIRE_FALSE(count);
 }
 
+/* Rvalue references to function should not work with make_scope_guard when type
+deduction is employed: non-ref function type would be deduced, which cannot be a
+data member. This is the case in MSVC, which is why the tests below are disabled
+for that compiler. Clang and GCC accept it though, deducing rvalue reference
+type, which is apparently treated as lvalue reference. */
+
+#ifndef _MSC_VER
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue reference to a plain function can be used to create a "
           "scope_guard.")
@@ -241,6 +248,7 @@ TEST_CASE("A dismissed rvalue-reference-to-plain-function-based scope_guard "
 
   REQUIRE_FALSE(count);
 }
+#endif
 
 /* --- std::ref and std::cref --- */
 
