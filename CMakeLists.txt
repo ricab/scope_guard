@@ -111,6 +111,7 @@ function(add_catch_tests_batch src cxx17 require_noexcept)
   derive_common_test_strings(tst exe ftr # out params
       "catch_batch" TRUE ${cxx17} ${require_noexcept}) # in params
   add_test_exe(${exe} ${src} ${ftr} ${require_noexcept})
+  target_link_libraries(${exe} PRIVATE Catch2::Catch)
   add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
 endfunction()
 
