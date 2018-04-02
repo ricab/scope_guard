@@ -135,9 +135,17 @@ function(add_compilation_test src should_succeed cxx17 require_noexcept countid)
   # add macro to select active code section
   target_compile_definitions(${exe} PRIVATE ${def})
 
+  # determine the test command
+  set(tst_cmd ${CMAKE_COMMAND} --build . --target ${exe} --config $<CONFIG>)
+
+  # if using MSBuild, prevent logo and warning summary
+  if(${CMAKE_GENERATOR} MATCHES "[vV]isual [sS]tudio")
+    list(APPEND tst_cmd -- /nologo /verbosity:minimal)
+  endif()
+
   # create the test
   add_test(NAME ${tst}
-           COMMAND ${CMAKE_COMMAND} --build . --target ${exe} --config $<CONFIG>
+           COMMAND ${tst_cmd}
            WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 
   # configure the test to expect compilation success or failure
