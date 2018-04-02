@@ -840,7 +840,7 @@ TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
   auto f = 0.0f;
   const auto i = -1;
-  make_scope_guard([&f, i]()noexcept{ f = *&i; });
+  make_scope_guard([&f, i]()noexcept{ f = static_cast<float>(*&i); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -861,8 +861,8 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A non-const, capturing-lambda-based scope_guard can be dismissed.")
 {
-  auto i = 0.0f;
-  const auto f = -1;
+  auto i = -1;
+  const auto f = 0.0f;
   make_scope_guard([f, &i]()noexcept{ i = static_cast<int>(*&f); }).dismiss();
 }
 
@@ -890,7 +890,7 @@ TEST_CASE("A const lambda function with capture can be used to create a "
 {
   auto f = 0.0f;
   const auto i = -1;
-  const auto lambda = [&f, i]() noexcept { f = *&i; };
+  const auto lambda = [&f, i]() noexcept { f = static_cast<float>(*&i); };
   make_scope_guard(lambda);
 }
 
@@ -915,7 +915,7 @@ TEST_CASE("A non-const, const-capturing-lambda-based scope_guard can be "
 {
   auto f = 0.0f;
   const auto i = -1;
-  const auto lambda = [&f, i]() noexcept { f = *&i; };
+  const auto lambda = [&f, i]() noexcept { f = static_cast<float>(*&i); };
   make_scope_guard(lambda).dismiss();
 }
 
