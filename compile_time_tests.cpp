@@ -6,6 +6,8 @@
 #include "scope_guard.hpp"
 #include <utility>
 #include <functional>
+#include <stdexcept>
+
 using namespace sg;
 
 /* --- first some test helpers --- */

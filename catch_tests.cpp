@@ -197,6 +197,13 @@ TEST_CASE("A dismissed lvalue-const-reference-to-plain-function-based "
   REQUIRE_FALSE(count);
 }
 
+/* Rvalue references to function should not work with make_scope_guard when type
+deduction is employed: non-ref function type would be deduced, which cannot be a
+data member. This is the case in MSVC, which is why the tests below are disabled
+for that compiler. Clang and GCC accept it though, deducing rvalue reference
+type, which is treated as lvalue reference. */
+
+#ifndef _MSC_VER
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("An rvalue reference to a plain function can be used to create a "
           "scope_guard.")
@@ -241,6 +248,7 @@ TEST_CASE("A dismissed rvalue-reference-to-plain-function-based scope_guard "
 
   REQUIRE_FALSE(count);
 }
+#endif
 
 /* --- std::ref and std::cref --- */
 
@@ -546,7 +554,7 @@ namespace
   };
 
   template<typename Ret, typename... Args>
-  struct remove_noexcept<Ret(Args...) noexcept(true)>
+  struct remove_noexcept<Ret(Args...) noexcept>
   {
     using type = Ret(Args...);
   };
@@ -832,7 +840,7 @@ TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
   auto f = 0.0f;
   const auto i = -1;
-  make_scope_guard([&f, i]()noexcept{ f = *&i; });
+  make_scope_guard([&f, i]()noexcept{ f = static_cast<float>(*&i); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -853,8 +861,8 @@ TEST_CASE("A capturing-lambda-based scope_guard executes the lambda when "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A non-const, capturing-lambda-based scope_guard can be dismissed.")
 {
-  auto i = 0.0f;
-  const auto f = -1;
+  auto i = -1;
+  const auto f = 0.0f;
   make_scope_guard([f, &i]()noexcept{ i = static_cast<int>(*&f); }).dismiss();
 }
 
@@ -882,7 +890,7 @@ TEST_CASE("A const lambda function with capture can be used to create a "
 {
   auto f = 0.0f;
   const auto i = -1;
-  const auto lambda = [&f, i]() noexcept { f = *&i; };
+  const auto lambda = [&f, i]() noexcept { f = static_cast<float>(*&i); };
   make_scope_guard(lambda);
 }
 
@@ -907,7 +915,7 @@ TEST_CASE("A non-const, const-capturing-lambda-based scope_guard can be "
 {
   auto f = 0.0f;
   const auto i = -1;
-  const auto lambda = [&f, i]() noexcept { f = *&i; };
+  const auto lambda = [&f, i]() noexcept { f = static_cast<float>(*&i); };
   make_scope_guard(lambda).dismiss();
 }
 
