@@ -554,7 +554,7 @@ namespace
   };
 
   template<typename Ret, typename... Args>
-  struct remove_noexcept<Ret(Args...) noexcept(true)>
+  struct remove_noexcept<Ret(Args...) noexcept>
   {
     using type = Ret(Args...);
   };
