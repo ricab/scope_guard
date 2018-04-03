@@ -21,7 +21,7 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
   set(clang_warnings "-Weverything -pedantic -Wno-c++98-compat \
     -Wno-unreachable-code -Wno-padded -Wno-exit-time-destructors \
     -Wno-global-constructors -Wno-exit-time-destructors -Wno-unused-variable \
-    -Wno-unused-member-function -Wno-unused-function")
+    -Wno-unused-member-function -Wno-unused-function -Wno-class-varargs")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${clang_warnings}")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wpedantic \
