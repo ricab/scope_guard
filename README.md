@@ -15,7 +15,7 @@ Usage is simple:
 {
   ...
   auto guard = make_scope_guard(my_callback);
-    ...
+  ...
 } // my_callback is invoked
 ```
 
@@ -229,7 +229,8 @@ typedef Callback callback_type;
 ###### Example:
 
 ```c++
-using my_cb = typename decltype(guard)::callback_type; // where guard is a scope guard object
+using my_cb = typename decltype(guard)::callback_type; /* where guard
+                                              is a scope guard object */
 ```
 
 #### Member function `dismiss`
@@ -403,7 +404,7 @@ This precondition _is enforced_ at compile time.
 ```c++
 void my_release(Resource& r) noexcept;
 make_scope_guard(my_release); // ERROR: which resource?
-make_scope_guard(my_release, my_resource); // ERROR: one argument only, please
+make_scope_guard(my_release, my_resource); // ERROR: 1 arg only, please
 make_scope_guard([&my_resource]() noexcept
                  { my_release(my_resource); }); // OK
 ```
@@ -652,7 +653,8 @@ execute in parallel. For instance:
 
 ```sh
 make -j4 # max 4 compilations needed
-make test ARGS=-j16 # I suggest twice the number of hardware threads (to compensate for I/O)
+make test ARGS=-j16 # I suggest twice the number of hardware threads
+                    # (to compensate for I/O)
 ```
 
 This will run catch and compile time tests with different combinations of
