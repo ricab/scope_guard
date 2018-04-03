@@ -81,7 +81,7 @@ namespace sg
 
 
     /* --- Now the friend maker --- */
-   
+
     template<typename Callback>
     detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
     noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /* we
@@ -136,7 +136,7 @@ namespace sg
 
   template<typename Callback>
   detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
-  noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /* 
+  noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
   merely a wrapper that could not be a direct scope_guard friend due to MSVC
   bugs: https://is.gd/xFfFhE. Better workaround proposals welcome. */
 
