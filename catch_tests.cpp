@@ -1687,6 +1687,86 @@ TEST_CASE("When deducing make_scope_guard's callback type, and when noexcept "
 }
 #endif
 
+////////////////////////////////////////////////////////////////////////////////
+namespace
+{
+  bool goodbye_said = false;
+
+  void fallback() noexcept
+  {
+    goodbye_said = false;
+  }
+
+  struct good_stream
+  {
+    void close() noexcept { goodbye_said = true; }
+  };
+
+  struct bad_stream
+  {
+    bool close() noexcept { goodbye_said = true; return true; } // returns
+  };
+
+  struct uncertain_stream
+  {
+    void close() { goodbye_said = true; } // not noexcept
+  };
+
+  template<typename Stream>
+  struct sclosr
+  {
+    Stream& m_s;
+
+    auto operator()()
+    noexcept(noexcept(m_s.close()))
+    -> decltype(std::declval<Stream>().close())
+    {
+      return m_s.close();
+    }
+  };
+
+  template<typename Stream>
+  auto get_closing_guard(Stream& s)
+  -> decltype(make_scope_guard(sclosr<Stream>{s})) /* not using lambda because
+     it can't appear in unevaluated contexts; not using bind because it does not
+     preserve noexcept */
+  {
+    return make_scope_guard(sclosr<Stream>{s});
+  }
+
+  auto get_closing_guard(...) -> decltype(make_scope_guard(fallback))
+  {
+    return make_scope_guard(fallback);
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+TEST_CASE("Another SFINAE usage example")
+{
+  {
+    good_stream s;
+    auto guard = get_closing_guard(s);
+  }
+  REQUIRE(goodbye_said);
+
+  {
+    bad_stream s;
+    auto guard = get_closing_guard(s);
+  }
+  REQUIRE_FALSE(goodbye_said);
+
+  {
+    uncertain_stream s;
+    auto guard = get_closing_guard(s);
+  }
+#ifdef SG_REQUIRE_NOEXCEPT
+  REQUIRE_FALSE(goodbye_said);
+#else
+  REQUIRE(goodbye_said);
+#endif
+
+}
+
 /* --- miscellaneous --- */
 
 ////////////////////////////////////////////////////////////////////////////////
