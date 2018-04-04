@@ -9,7 +9,7 @@ A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
 at compile time (in C++17), all in a SFINAE-friendly way.
 
-##### TLDR
+#### TLDR
 
 Get it [here](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp).
 Usage is simple:
@@ -24,19 +24,6 @@ Usage is simple:
 } // my_callback is invoked
 ```
 
-## Outline
-
-- [scope_guard](#scope_guard)
-  * [Outline](#outline)
-  * [Introduction](#introduction)
-  * [Acknowledgments](#acknowledgments)
-  * [Features](#features)
-  * [Setup](#setup)
-  * [Client interface](#client-interface)
-  * [Preconditions in detail](#preconditions-in-detail)
-  * [Design choices and concepts](#design-choices-and-concepts)
-  * [Tests](#tests)
-
 ## Introduction
 
 A scope guard is an object that employs RAII to execute a
@@ -47,16 +34,11 @@ these, or any other callable, as long as it respects a few
 [preconditions](#preconditions-in-detail) &ndash; most of which are enforced
 during compilation, the rest being hopefully intuitive.
 
-All necessary code is provided in a [single header](scope_guard.hpp)
-(the remaining code is for tests).
+All necessary code is provided in a
+[single header](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp)
+(the remaining files are only for testing and documentation).
 
-##### Notes
-
-<sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
-NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
-document are to be interpreted as described in RFC 2119._</sup>
-
-## Acknowledgments
+### Acknowledgments
 
 The concept of "scope guard" was [proposed](http://drdobbs.com/184403758)
 by Andrei Alexandrescu and Petru Marginean and it is well known in the
@@ -109,7 +91,7 @@ the compiler. That can be achieved by any of the following options:
 - placing it in an arbitrary path and configuring the compiler to include that
 path
 
-The preprocessor definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` MAY be provided
+The preprocessor definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` may be provided
 to the compiler. The effect of this option is explained
 [below](#compilation-option-sg_require_noexcept_in_cpp17).
 
