@@ -14,7 +14,7 @@ Usage is simple:
 ...
 {
   ...
-  auto guard = make_scope_guard(my_callback);
+  auto guard = sg::make_scope_guard(my_callback);
   ...
 } // my_callback is invoked
 ```
@@ -131,10 +131,10 @@ Here is an outline of the client interface:
 
 ### Maker function template
 
-The free function template `make_scope_guard` is the primary element of the
-public interface &ndash; most uses do not require anything else. It provides a
-way for clients to create a scope guard object with the specified callback as
-_associated callback_.
+The free function template `make_scope_guard` resides in `namespace sg` and
+is the primary element of the public interface &ndash; most uses do not require
+anything else. It provides a way for clients to create a scope guard object with
+the specified callback as _associated callback_.
 
 Scope guards execute their _associated callback_ when they are destroyed, unless
 they were meanwhile [dismissed](#member-function-dismiss) or
@@ -182,7 +182,7 @@ collapsing). Notice this is always the case if `Callback` is a reference type.
 ###### Example:
 
 ```c++
-const auto guard = make_scope_guard([]() noexcept { /* do something */ });
+const auto guard = sg::make_scope_guard([]() noexcept { /* do stuff */ });
 ```
 
 ### Scope guard objects
@@ -262,7 +262,7 @@ bool do_transaction()
   if(!do_step1())
     return false;
 
-  auto undo = make_scope_guard(rollback);
+  auto undo = sg::make_scope_guard(rollback);
   if(!do_step2());
     return false;
   if(!do_step3());
@@ -312,7 +312,7 @@ reference type.
 ###### Example:
 ```c++
 {
-  auto g1 = make_scope_guard([]() noexcept { std::cout << "bla"; });
+  auto g1 = sg::make_scope_guard([]() noexcept { std::cout << "bla"; });
   {
     auto g2 = std::move(g1);
   } // g2 leaves scope here
@@ -403,10 +403,10 @@ This precondition _is enforced_ at compile time.
 
 ```c++
 void my_release(Resource& r) noexcept;
-make_scope_guard(my_release); // ERROR: which resource?
-make_scope_guard(my_release, my_resource); // ERROR: 1 arg only, please
-make_scope_guard([&my_resource]() noexcept
-                 { my_release(my_resource); }); // OK
+sg::make_scope_guard(my_release); // ERROR: which resource?
+sg::make_scope_guard(my_release, my_resource); // ERROR: 1 arg only, please
+sg::make_scope_guard([&my_resource]() noexcept
+                     { my_release(my_resource); }); // OK
 ```
 
 #### void return
@@ -423,8 +423,8 @@ This precondition _is enforced_ at compile time.
 
 ```c++
 bool foo() noexcept;
-make_scope_guard(foo); // ERROR: does not return void
-make_scope_guard([]() noexcept {/*bool ignored =*/ foo();}); // OK
+sg::make_scope_guard(foo); // ERROR: does not return void
+sg::make_scope_guard([]() noexcept {/*bool ignored =*/ foo();}); // OK
 ```
 
 #### _nothrow_-invocable
@@ -445,8 +445,7 @@ _By default_, this precondition _is not enforced_ at compile time. That can be
 
 ```c++
 bool throwing() { throw std::runtime_error{"attention"}; }
-make_scope_guard([]() noexcept
-{
+sg::make_scope_guard([]() noexcept {
   try { throwing(); } catch(...) { /* taking the blue pill */ }
 });
 ```
@@ -472,7 +471,7 @@ struct throwing
 try
 {
   throwing_dtor tmp;
-  make_scope_guard([&tmp](){ tmp(); })
+  sg::make_scope_guard([&tmp](){ tmp(); })
   // tmp still alive
 } // tmp only destroyed here
 catch(...) { /* handle somehow */ }
@@ -496,7 +495,7 @@ This precondition _is enforced_ at compile time.
     void operator()() const noexcept { }
   } const foo;
 
-  auto guard = make_scope_guard(foo); // OK, foo const with const op()
+  auto guard = sg::make_scope_guard(foo); // OK, foo const with const op()
 ```
 
 #### appropriate lifetime if lvalue reference
@@ -598,13 +597,14 @@ but that is not advisable either and could create a false sense of safety
 Unfortunately, even in C++17 things are not ideal, and information on
 exception specification is not propagated to types like `std::function` or
 the result of `std::bind` and `std::ref`. For instance, the following code
-does not compile in C++17:
+does not compile in C++17, at least in _gcc_ and _clang_:
 
 ```c++
 void f() noexcept { }
-auto stdf_noexc = std::function<void(&)()noexcept>{f}; // ERROR (at least in g++ and clang++)
-auto stdf_declt = std::function<decltype(f)>{f};       // ERROR (at least in g++ and clang++)
-auto stdf = std::function<void()>{f};                  // fine, but drops noexcept info
+auto stdf_noexc = std::function<void(&)()noexcept>{f}; // ERROR
+auto stdf_declt = std::function<decltype(f)>{f};       // ERROR
+auto stdf = std::function<void()>{f};                  /* fine, but drops
+                                                          noexcept info */
 ```
 
 Therefore, the additional safety sacrifices generality. Of course, clients can
