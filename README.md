@@ -11,7 +11,7 @@ at compile time (in C++17), all in a SFINAE-friendly way.
 
 ##### TLDR
 
-Get it [here](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp).
+Get it [here](scope_guard.hpp).
 Usage is simple:
 
 ```c++
@@ -31,12 +31,11 @@ provided callback when leaving scope, be it through a _fall-through_, a return,
 or an exception. That callback can be a a function, a function pointer, a
 functor, a lambda, a bind result, a std::function, a reference to any of
 these, or any other callable, as long as it respects a few
-[preconditions](#preconditions-in-detail) &ndash; most of which are enforced
+[preconditions](docs/precond.md) &ndash; most of which are enforced
 during compilation, the rest being hopefully intuitive.
 
-All necessary code is provided in a
-[single header](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp)
-(the remaining files are only for testing and documentation).
+All necessary code is provided in a [single header](scope_guard.hpp) (the
+remaining files are only for testing and documentation).
 
 #### Acknowledgments
 
@@ -56,13 +55,13 @@ characteristics I aimed for here.
 - [x] Thin callback wrapping: no added `std::function` or virtual table
 penalties
 - [x] General: accepts any callable that respects a few
-[preconditions](#preconditions-in-detail)
-- [x] No implicitly ignored return (see [below](#void-return))
+[preconditions](docs/precond.md)
+- [x] No implicitly ignored return (details [here](docs/precond.md#void-return))
 - [x] Option to enforce `noexcept` in C++17
-(see [below](#compilation-option-sg_require_noexcept_in_cpp17))
-- [x] Exposes careful exception specifications (`noexcept` with conditions when
+(details [here](docs/interface.md#compilation-option-sg_require_noexcept_in_cpp17))
+- [x] Modern exception specifications (`noexcept` with conditions when
 necessary)
-- [x] _SFINAE friendliness_ (see [below](#sfinae-friendliness))
+- [x] _SFINAE friendliness_ (see [here](docs/design.md#sfinae-friendliness))
 
 #### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
@@ -71,10 +70,16 @@ what have you
 - [x] Extensively tested, with both
 [compile time tests](compile_time_tests.cpp) and
 [runtime-tests](catch_tests.cpp)
-- [x] Carefully documented (and adheres to
-[RFC2119](https://tools.ietf.org/html/rfc2119))
+- [x] Carefully documented
+- [x] Adheres to [RFC2119](https://tools.ietf.org/html/rfc2119)
 - [x] Unlicense'd
 - [x] `snake_case` style
+
+#### Notes
+
+<sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
+NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
+document are to be interpreted as described in RFC 2119._</sup>
 
 #### Issues
 
@@ -91,9 +96,9 @@ the compiler. That can be achieved by any of the following options:
 - placing it in an arbitrary path and configuring the compiler to include that
 path
 
-The preprocessor definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` may be provided
+The preprocessor definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` MAY be provided
 to the compiler. The effect of this option is explained
-[below](#compilation-option-sg_require_noexcept_in_cpp17).
+[here](docs/interface.md#compilation-option-sg_require_noexcept_in_cpp17).
 
 ## Further documentation
 
