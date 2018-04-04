@@ -1,5 +1,10 @@
 # scope_guard
 
+
+[![GitHub release](https://img.shields.io/github/release/ricab/scope_guard/all.svg)](https://github.com/ricab/scope_guard/releases)
+[![semver](https://img.shields.io/badge/semver-2.0.0-blue.svg)](https://semver.org/spec/v2.0.0.html)
+[![GitHub license](https://img.shields.io/github/license/ricab/scope_guard.svg)](https://github.com/ricab/scope_guard/blob/master/LICENSE)
+
 A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
 at compile time (in C++17), all in a SFINAE-friendly way.
@@ -46,8 +51,6 @@ All necessary code is provided in a [single header](scope_guard.hpp)
 (the remaining code is for tests).
 
 ##### Notes
-
-<sub>This project follows [Semantic Versioning](https://semver.org/).</sub>
 
 <sup>_The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL
 NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED",  "MAY", and "OPTIONAL" in this
