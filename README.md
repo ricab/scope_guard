@@ -1,9 +1,9 @@
 # scope_guard
 
 
+[![GitHub license](https://img.shields.io/github/license/ricab/scope_guard.svg)](https://github.com/ricab/scope_guard/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/ricab/scope_guard/all.svg)](https://github.com/ricab/scope_guard/releases)
 [![semver](https://img.shields.io/badge/semver-2.0.0-blue.svg)](https://semver.org/spec/v2.0.0.html)
-[![GitHub license](https://img.shields.io/github/license/ricab/scope_guard.svg)](https://github.com/ricab/scope_guard/blob/master/LICENSE)
 
 A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
