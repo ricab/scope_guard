@@ -40,7 +40,7 @@ or an exception. That callback can be a a function, a function pointer, a
 functor, a lambda, a bind result, a std::function, a reference to any of
 these, or any other callable, as long as it respects a few
 [preconditions](#preconditions-in-detail) &ndash; most of which are enforced
-during compilation and the rest being hopefully intuitive.
+during compilation, the rest being hopefully intuitive.
 
 All necessary code is provided in a [single header](scope_guard.hpp)
 (the remaining code is for tests).
@@ -75,9 +75,9 @@ penalties
 - [x] No implicitly ignored return (see [below](#void-return))
 - [x] Option to enforce `noexcept` in C++17
 (see [below](#compilation-option-sg_require_noexcept_in_cpp17))
-- [x] _SFINAE friendliness_ (see [below](#sfinae-friendliness))
 - [x] Exposes careful exception specifications (`noexcept` with conditions when
 necessary)
+- [x] _SFINAE friendliness_ (see [below](#sfinae-friendliness))
 
 ### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
