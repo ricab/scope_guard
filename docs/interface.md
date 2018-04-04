@@ -26,9 +26,9 @@ Here is an outline of the client interface:
 The free function template `make_scope_guard` resides in `namespace sg` and
 is the primary element of the public interface &ndash; most uses do not require
 anything else. It provides a way for clients to create a scope guard object with
-the specified callback as _associated callback_.
+the specified callback as _associated_.
 
-Scope guards execute their _associated callback_ when they are destroyed, unless
+Scope guards execute their _associated_ callback when they are destroyed, unless
 they were meanwhile [dismissed](#member-function-dismiss) or
 [moved](#member-move-constructor). Like other variables, scope guards with
 automatic storage are destroyed when they go out of scope, which explains their
@@ -62,7 +62,7 @@ template argument
 
 A scope guard object is returned with
 
-- the provided callback as _associated callback_
+- the provided callback as _associated_ callback
 - _active_ state
 
 ###### Exception specification:
@@ -83,9 +83,9 @@ Scope guard objects have some unspecified type with:
 
 #### Invariants:
 1. A scope guard object that is in an _active state_ executes its
-_associated callback_ exactly once when leaving scope.
+_associated_ callback exactly once when leaving scope.
 2. A scope guard that is in _inactive state_ does not execute its
-_associated callback_
+_associated_ callback
 
 #### List of available public members:
 
@@ -190,10 +190,10 @@ None.
 _active state_ before the move operation.
 - The moved-to guard is in _inactive state_ if the moved-from guard was in
 _inactive state_ before the move operation.
-- The moved-to guard is associated with the callback that was associated with
+- The moved-to guard is _associated_ with the callback that was associated with
 the moved-from guard before the move operation;
 - The moved-from guard is in _inactive state_.
-- The moved-from guard is associated with an unspecified callback.
+- The moved-from guard is _associated_ with an unspecified callback.
 
 ###### Exception specification:
 

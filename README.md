@@ -7,7 +7,7 @@
 
 A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
-at compile time (in C++17), all in a SFINAE-friendly way.
+at compile time (in C++17), all in a SFINAE-friendly maner.
 
 ##### TLDR
 
@@ -41,7 +41,7 @@ remaining files are only for testing and documentation).
 
 The concept of "scope guard" was [proposed](http://drdobbs.com/184403758)
 by Andrei Alexandrescu and Petru Marginean and it is well known in the
-C++ community. It was later proposed for standardization (see
+C++ community. It has been proposed for standardization (see
 [N4189](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4189.pdf))
 but is still not part of the standard library, as of March 2018. While there
 are several implementations available, I did not find any with the
