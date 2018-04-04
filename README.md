@@ -9,7 +9,7 @@ A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
 at compile time (in C++17), all in a SFINAE-friendly way.
 
-#### TLDR
+##### TLDR
 
 Get it [here](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp).
 Usage is simple:
@@ -21,7 +21,7 @@ Usage is simple:
   ...
   auto guard = sg::make_scope_guard(my_callback);
   ...
-} // my_callback is invoked
+} // my_callback is invoked at this point
 ```
 
 ## Introduction
@@ -38,7 +38,7 @@ All necessary code is provided in a
 [single header](https://github.com/ricab/scope_guard/blob/master/scope_guard.hpp)
 (the remaining files are only for testing and documentation).
 
-### Acknowledgments
+#### Acknowledgments
 
 The concept of "scope guard" was [proposed](http://drdobbs.com/184403758)
 by Andrei Alexandrescu and Petru Marginean and it is well known in the
@@ -50,7 +50,7 @@ characteristics I aimed for here.
 
 ## Features
 
-### Main features
+#### Main features
 - [x] &ge; C++11
 - [x] Reduced interface
 - [x] Thin callback wrapping: no added `std::function` or virtual table
@@ -64,7 +64,7 @@ penalties
 necessary)
 - [x] _SFINAE friendliness_ (see [below](#sfinae-friendliness))
 
-### Other characteristics
+#### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
 - [x] No macros to make guard &ndash; just write explicit lambda or bind or
 what have you
@@ -76,7 +76,7 @@ what have you
 - [x] Unlicense'd
 - [x] `snake_case` style
 
-### Issues
+#### Issues
 
 Bug reports and suggestions are welcome. If you find that something is incorrect
 or could be improved, feel free to open an issue.
@@ -95,18 +95,20 @@ The preprocessor definition `SG_REQUIRE_NOEXCEPT_IN_CPP17` may be provided
 to the compiler. The effect of this option is explained
 [below](#compilation-option-sg_require_noexcept_in_cpp17).
 
-## Client interface
+## Further documentation
+
+#### Client interface
 
 The client interface is documented [here](docs/interface.md).
 
-## Preconditions in detail
+#### Preconditions in detail
 
 Callback preconditions are explained in detail [here](docs/precond.md).
 
-## Design choices and concepts
+#### Design choices and concepts
 
 Design choices and concepts are discussed [here](docs/design.md).
 
-## Tests
+#### Tests
 
 Instructions on how to run the tests are [here](docs/tests.md).
