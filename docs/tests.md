@@ -51,7 +51,7 @@ both C++11 and C++17 standards are tested (cases X, Y, W, and Z in the table
 below). Otherwise, only C++11 is tested (cases X and Y below). Notice that
 `noexcept` is only effectively required in case Z.
 
-| standard/pp-define                                   | c++11 | c++17  |
+| pp-define\standard                                   | c++11 | c++17  |
 | ---------------------------------------------------- |:-----:|:------:|
 | **SG_REQUIRE_NOEXCEPT_IN_CPP17 undefined**           | X     |   W    |
 | **SG_REQUIRE_NOEXCEPT_IN_CPP17 defined**             | Y     |  *Z*   |
