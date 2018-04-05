@@ -104,11 +104,11 @@ to the compiler. The effect of this option is explained
 
 #### Client interface
 
-The client interface is documented [here](docs/interface.md).
+The client interface is documented in detail [here](docs/interface.md).
 
 #### Preconditions in detail
 
-Callback preconditions are explained in detail [here](docs/precond.md).
+Callback preconditions are explained [here](docs/precond.md).
 
 #### Design choices and concepts
 

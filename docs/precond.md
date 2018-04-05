@@ -59,10 +59,10 @@ sg::make_scope_guard([]() noexcept {/*bool ignored =*/ foo();}); // OK
 ### _nothrow_-invocable
 
 The callback SHOULD NOT throw _when invoked_. Marking callbacks `noexcept` is
-RECOMMENDED. Throwing from a callback that is _associated_ with an active scope
-guard when it goes out of scope results in a call to `std::terminate`. Clients
-MAY use a lambda to wrap something that throws in a `try-catch` block, choosing
-to deal with or ignore exceptions.
+RECOMMENDED. Throwing from a callback that is _associated_ with an _active_
+scope guard when it goes out of scope results in a call to `std::terminate`.
+Clients MAY use a lambda to wrap something that throws in a `try-catch` block,
+choosing to deal with or ignore exceptions.
 
 ###### Compile time enforcement:
 
@@ -131,7 +131,7 @@ This precondition _is enforced_ at compile time.
 ### appropriate lifetime if lvalue reference
 
 If the template argument is an lvalue reference, then the function argument MUST
-be valid at least until all _associated_ _active_ scope guards go out of scope.
+be valid at least until all _associated_ are either destroyed or dismissed.
 Notice this is the case when the template argument is deduced from both lvalues
 and lvalue references.
 

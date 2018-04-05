@@ -13,7 +13,7 @@ Here is an outline of the client interface:
 - [Maker function template](#maker-function-template)
 - [Scope guard objects](#scope-guard-objects)
   * [Invariants](#invariants)
-  * [List of available public members](#list-of-available-public-members)
+  * [Overview of public members](#overview-of-public-members)
   * [List of deleted public members](#list-of-deleted-public-members)
   * [Member type `calback_type`](#member-type-calback_type)
   * [Member function `dismiss`](#member-function-dismiss)
@@ -34,29 +34,29 @@ they were meanwhile [dismissed](#member-function-dismiss) or
 automatic storage are destroyed when they go out of scope, which explains their
 name.
 
-This function template is [SFINAE-friendly](#sfinae-friendliness).
+This function template is [SFINAE-friendly](design.md#sfinae-friendliness).
 
 ###### Function signature:
 
 ```c++
   template<typename Callback>
-  /* unspecified */ make_scope_guard(Callback&& callback)
+  /* unspecified return type */ make_scope_guard(Callback&& callback)
   noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value);
 ```
 
 ###### Preconditions:
 
 The template and function arguments need to respect certain preconditions. They
-are listed here and discussed in more detail ahead.
+are listed here and discussed in more detail [elsewhere](precond.md).
 
-- [invocable with no arguments](#invocable-with-no-arguments)
-- [void return](#void-return)
-- [_nothrow_-invocable](#nothrow-invocable)
-- [_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference-template-argument)
+- [invocable with no arguments](precond.md#invocable-with-no-arguments)
+- [void return](precond.md#void-return)
+- [_nothrow_-invocable](precond.md#nothrow-invocable)
+- [_nothrow_-destructible if non-reference](precond.md#nothrow-destructible-if-non-reference-template-argument)
 template argument
-- [const-invocable if const reference](#const-invocable-if-const-reference)
-- [appropriate lifetime if lvalue reference](#appropriate-lifetime-if-lvalue-reference)
-- [movable or copyable if non-reference](#movable-or-copyable-if-non-reference)
+- [const-invocable if const reference](precond.md#const-invocable-if-const-reference)
+- [appropriate lifetime if lvalue reference](precond.md#appropriate-lifetime-if-lvalue-reference)
+- [movable or copyable if non-reference](precond.md#movable-or-copyable-if-non-reference)
 
 ###### Postconditions:
 
@@ -79,15 +79,16 @@ const auto guard = sg::make_scope_guard([]() noexcept { /* do stuff */ });
 
 ### Scope guard objects
 
-Scope guard objects have some unspecified type with:
+Scope guard objects have some unspecified type that cannot be used as a base
+class.
 
 #### Invariants:
-1. A scope guard object that is in an _active state_ executes its
+1. A scope guard object that is in an _active_ state executes its
 _associated_ callback exactly once when leaving scope.
-2. A scope guard that is in _inactive state_ does not execute its
+2. A scope guard that is in _inactive_ state does not execute its
 _associated_ callback
 
-#### List of available public members:
+#### Overview of public members:
 
 1. Type `callback_type`
 2. `dismiss` function
@@ -102,8 +103,8 @@ _associated_ callback
 4. move assignment operator
 
 Note: Deleted special members cannot be used, but they participate in overload
-resolution. They are explicitly disallowed and that is part of the client's
-interface.
+resolution. They are listed here because they are explicitly disallowed and
+that can be considered as part of the the client's interface.
 
 #### Member type `calback_type`
 
@@ -140,7 +141,7 @@ void dismiss() noexcept;
 None.
 
 ###### Postconditions:
-The dismissed scope guard is in _inactive state_.
+The dismissed scope guard is in _inactive_ state.
 
 ###### Exception specification:
 
@@ -186,18 +187,17 @@ None.
 
 ###### Postconditions:
 
-- The moved-to guard is in _active state_ if the moved-from guard was in
-_active state_ before the move operation.
-- The moved-to guard is in _inactive state_ if the moved-from guard was in
-_inactive state_ before the move operation.
+- The moved-from guard is in _inactive_ state.
+- The moved-from guard is _associated_ with an unspecified callback.
+- The moved-to guard is in the same _activity_ state as the moved-from guard was
+in before the move operation (_active_ moved-to _iff_ previously _active_
+moved-from).
 - The moved-to guard is _associated_ with the callback that was associated with
 the moved-from guard before the move operation;
-- The moved-from guard is in _inactive state_.
-- The moved-from guard is _associated_ with an unspecified callback.
 
 ###### Exception specification:
 
-`noexcept` _iff_ `Callback` can be _nothrow_ constructed from `Callback&&`
+`noexcept` _iff_ `Callback` can be _nothrow-constructed_ from `Callback&&`
 (after reference collapse). Notice this is always the case if `Callback` is a
 reference type.
 
@@ -216,7 +216,7 @@ std::cout << "bli";
 
 #### Member destructor
 
-Scope guards have a destructor.
+Scope guards have a (non-virtual) destructor.
 
 ###### Member function signature:
 
@@ -228,15 +228,15 @@ None.
 
 ###### Postconditions:
 
-- the callback was executed _iff_ the guard was in _active state_ before
+- the callback was executed _iff_ the guard was in _active_ state before
 destruction;
 - the guard is no longer valid
 
 ###### Exception specification:
 
-`noexcept`. This motivates two of the preconditions discussed below:
-[_nothrow_-invocable](#nothrow-invocable) and
-[_nothrow_-destructible if non-reference](#nothrow-destructible-if-non-reference-template-argument).
+`noexcept`. This motivates two of the preconditions:
+[_nothrow_-invocable](precond.md#nothrow-invocable) and
+[_nothrow_-destructible if non-reference](precond.md#nothrow-destructible-if-non-reference-template-argument).
 
 ###### Example:
 
@@ -245,14 +245,13 @@ Non applicable.
 ### Compilation option `SG_REQUIRE_NOEXCEPT_IN_CPP17`
 
 If &ge;C++17 is used, the preprocessor macro `SG_REQUIRE_NOEXCEPT_IN_CPP17`
-can be defined to make `scope_guard`'s constructor require a nothrow invocable
+can be defined to require _nothrow-invocable_ callbacks in `make_scope_guard`
 at compile time.
 
-Notice however, that this restricts the types that `scope_guard` accepts
-considerably, as explained
-[below](#implications-of-requiring-noexcept-callbacks-at-compile-time).
-That is one of the reasons why it is disabled by default. The
-other is to maintain the same behavior as in &lt;C++17.
+Notice however, that this restricts accepted callback types
+[considerably](design#implications-of-requiring-noexcept-callbacks-at-compile-time).
+That is one reason why it is disabled by default. The other is to maintain the
+same behavior as in &lt;C++17.
 
 This option has no effect unless &ge;C++17 is used.
 
