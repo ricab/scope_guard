@@ -13,9 +13,9 @@ rationale for some design decisions. The outline is:
 
 ### Nothrow invocation
 
-Scope guards rely on destructors to execute the client's operation, but throwing
-from destructors is bad practice in C++, so the client's operation can't throw
-either. An
+Scope guards rely on the destructor to execute the client's operation, but
+throwing from destructors is bad practice in C++, so the client's operation
+can't throw either. An
 [option to enforce this](interface.md/#compilation-option-sg_require_noexcept_in_cpp17)
 at compilation is available, but requires C++17 and has
 [other implications](#implications-of-requiring-noexcept-callbacks-at-compile-time).
