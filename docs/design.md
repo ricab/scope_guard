@@ -4,7 +4,7 @@ This section tries to clarify concepts used in the interface and discusses the
 rationale for some design decisions. The outline is:
 
 - [nothrow invocation](#nothrow-invocation)
-  * [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring-noexcept-callbacks-at-compile-time)
+- [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring-noexcept-callbacks-at-compile-time)
 - [no return](#no-return)
 - [Conditional `noexcept`](#conditional-noexcept)
 - [No extra arguments](#no-extra-arguments)
@@ -31,7 +31,7 @@ but that is not advisable either and could create a false sense of safety
 (better _fail-fast_ to discourage the client from relying or otherwise using
 throwing callbacks).
 
-#### Implications of requiring `noexcept` callbacks at compile time
+### Implications of requiring `noexcept` callbacks at compile time
 
 In C++17 the exception specification becomes part of a function's type. That
 enables requiring `noexcept` callbacks for scope guards, something that was not
