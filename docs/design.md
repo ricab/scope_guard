@@ -3,20 +3,13 @@
 This section tries to clarify concepts used in the interface and discusses the
 rationale for some design decisions. The outline is:
 
-- [no return](#no-return)
 - [nothrow invocation](#nothrow-invocation)
   * [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring-noexcept-callbacks-at-compile-time)
+- [no return](#no-return)
 - [Conditional `noexcept`](#conditional-noexcept)
 - [No extra arguments](#no-extra-arguments)
 - [Private constructor](#private-constructor)
 - [SFINAE friendliness](#sfinae-friendliness)
-
-### No return
-
-This forces the client to confirm their intention, by explicitly
-writing code to ignore a return, if that really is what they want. The idea is
-not only to catch unintentional cases but also to highlight intentional ones for
-code readers.
 
 ### Nothrow invocation
 
@@ -50,6 +43,13 @@ still use compliant alternatives to wrap anything else. Personally, I favor
 using this option if possible, but it requires C++17, as the exception
 specification is not part of a function's type
 [until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
+
+### No return
+
+This forces the client to confirm their intention, by explicitly
+writing code to ignore a return, if that really is what they want. The idea is
+not only to catch unintentional cases but also to highlight intentional ones for
+code readers.
 
 ### Conditional `noexcept`
 
