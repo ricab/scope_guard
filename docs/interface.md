@@ -250,10 +250,9 @@ at compile time.
 
 Notice however, that this restricts accepted callback types
 [considerably](design#implications-of-requiring-noexcept-callbacks-at-compile-time).
-That is one reason why it is disabled by default. The other is to maintain the
-same behavior as in &lt;C++17.
 
-This option has no effect unless &ge;C++17 is used.
+This option is disabled by default and enabling it has no effect unless
+&ge;C++17 is used.
 
 ###### Example:
 

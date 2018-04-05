@@ -13,17 +13,30 @@ rationale for some design decisions. The outline is:
 
 ### Nothrow invocation
 
-Throwing from a callback implies throwing from scope guards' destructor, causing
-the program to terminate. This follows the same approach as custom deleters in
-such standard library types as `unique_ptr` and `shared_ptr` (see
-`[unique.ptr.single.ctor]` and `[unique.ptr.single.dtor]` in the C++
-standard.)
+Scope guards rely on destructors to execute the client's operation, but throwing
+from destructors is bad practice in C++, so the client's operation can't throw
+either. An
+[option to enforce this](interface.md/#compilation-option-sg_require_noexcept_in_cpp17)
+at compilation is available, but requires C++17 and has
+[other implications](#implications-of-requiring-noexcept-callbacks-at-compile-time).
+
+In either case, the destructor is declared noexcept. Consequently, throwing from
+a scope guard's callback causes the program to terminate. This follows the same
+approach as custom deleters in such standard library types as `unique_ptr` and
+`shared_ptr` (see `[unique.ptr.single.ctor]` and `[unique.ptr.single.dtor]`
+in the C++ standard).
 
 I considered making scope guards' destructor conditionally `noexcept` instead,
 but that is not advisable either and could create a false sense of safety
-(better _fail-fast_-ish, I suppose).
+(better _fail-fast_ to discourage the client from relying or otherwise using
+throwing callbacks).
 
 #### Implications of requiring `noexcept` callbacks at compile time
+
+In C++17 the exception specification becomes part of a function's type. That
+enables requiring `noexcept` callbacks for scope guards, something that was not
+possible
+[until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
 
 Unfortunately, even in C++17 things are not ideal, and information on
 exception specification is not propagated to types like `std::function` or
@@ -38,11 +51,16 @@ auto stdf = std::function<void()>{f};                  /* fine, but drops
                                                           noexcept info */
 ```
 
-Therefore, the additional safety sacrifices generality. Of course, clients can
-still use compliant alternatives to wrap anything else. Personally, I favor
-using this option if possible, but it requires C++17, as the exception
-specification is not part of a function's type
-[until then](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2015/p0012r1.html).
+Therefore, such types can't be used directly to create scope guards when
+`noexcept` is
+[enforced](interface.md/#compilation-option-sg_require_noexcept_in_cpp17). In
+other words, that option's additional safety sacrifices generality. Of course,
+clients can still use compliant alternatives to wrap anything else (e.g. a
+`noexcept` lambda).
+
+In order to maintain the same behavior accross C++ standard versions, this
+option is disabled by default. I personally favor enabling it, if possible, in
+&ge;C++17.
 
 ### No return
 
