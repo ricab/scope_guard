@@ -5,7 +5,7 @@ rationale for some design decisions. The outline is:
 
 - [no return](#no-return)
 - [nothrow invocation](#nothrow-invocation)
-- [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring-noexcept-callbacks-at-compile-time)
+  * [Implications of requiring `noexcept` callbacks at compile time](#implications-of-requiring-noexcept-callbacks-at-compile-time)
 - [Conditional `noexcept`](#conditional-noexcept)
 - [No extra arguments](#no-extra-arguments)
 - [Private constructor](#private-constructor)
@@ -17,7 +17,6 @@ This forces the client to confirm their intention, by explicitly
 writing code to ignore a return, if that really is what they want. The idea is
 not only to catch unintentional cases but also to highlight intentional ones for
 code readers.
-
 
 ### Nothrow invocation
 
@@ -31,7 +30,7 @@ I considered making scope guards' destructor conditionally `noexcept` instead,
 but that is not advisable either and could create a false sense of safety
 (better _fail-fast_-ish, I suppose).
 
-### Implications of requiring `noexcept` callbacks at compile time
+#### Implications of requiring `noexcept` callbacks at compile time
 
 Unfortunately, even in C++17 things are not ideal, and information on
 exception specification is not propagated to types like `std::function` or
