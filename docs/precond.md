@@ -67,8 +67,8 @@ choosing to deal with or ignore exceptions.
 ###### Compile time enforcement:
 
 _By default_, this precondition _is not enforced_ at compile time. That can be
-[changed](#compilation-option-sg_require_noexcept_in_cpp17) when using
-&ge;C++17.
+[changed](interface.md#compilation-option-sg_require_noexcept_in_cpp17) when
+using &ge;C++17.
 
 ###### Example:
 
