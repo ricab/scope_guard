@@ -231,7 +231,8 @@ guarantee.
 ### No extra arguments
 
 As the signature shows, `make_scope_guard` accepts no arguments beyond
-the callback (see the [related precondition](#invocable-with-no-arguments)).
+the callback (see the
+[related precondition](docs/precond.md#invocable-with-no-arguments)).
 This makes the interface (and implementation) simpler and pure. Operations
 that require arguments can be used indirectly, of course, with some form of
 wrapping. As with the [decision to forbid returns](#no-return), any potential
