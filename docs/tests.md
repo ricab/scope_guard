@@ -8,7 +8,7 @@ There are a few dependencies to execute the tests:
 the symbol
 [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
 - [Cmake](https://cmake.org/) &ndash; a version in the interval [3.8, 4)
-- [Catch2](https://github.com/catchorg/Catch2)
+- [Catch2](https://github.com/catchorg/Catch2) &ndash; any sub-version
 
 ### Instructions for running the tests
 (For GNU/Linux, should be analogous in other systems.)
