@@ -38,7 +38,7 @@ conflicting ideas to the user.
 ###### Options 1.3 and 1.2
 
 A crucial property of exceptions is that they propagate automatically, freeing
-intermediaries from boilerplate code. Option 1.3 makes use of that property and
+intermediaries from boilerplate code. Option 1.3 exploits that property and
 may therefore seem like the ideal default. Alas, _exceptions do not always
 propagate_. In particular, they do not propagate when the stack is already
 unwinding. To put it another way, exception propagation is really only
@@ -130,10 +130,75 @@ option is disabled by default. I personally favor enabling it, if possible, in
 
 ### No return
 
-This forces the client to confirm their intention, by explicitly
-writing code to ignore a return, if that really is what they want. The idea is
-not only to catch unintentional cases but also to highlight intentional ones for
-code readers.
+A scope guard cannot know what to do with any callback returns. It can only
+ignore and discard them. But returns express information that is usually
+important. They are often employed for error handling and, in some programming
+styles, they even transfer resource ownership. Forgetting to check returns is a
+familiar cause of bugs. Linters look for them and compilers provide special
+attributes to warn against them (e.g
+[warn_unused_result](https://gcc.gnu.org/onlinedocs/gcc-4.7.2/gcc/Function-Attributes.html)).
+The attribute [[nodiscard]] was even added to C++17 to help addressing such
+issues.
+
+The situation is still defective in my opinion. The decision of whether to
+ignore a return should belong to the caller, not the provider. But it should be
+an explicit decision (just like casts for conversions). In an ideal world,
+ignored returns should never have been possible without a conscious request
+from the programmer that communicated intent to both the compiler and the
+reader.
+
+Unfortunately that is not how things evolved and existing code relies on
+existing rules. It is not so for new code, which is free to make improvements.
+That is the intention behind the "void return" requirement here. It forces the
+client to confirm their intention, by explicitly writing code to
+[ignore a return](precond.md#void-return), if that really is what they want. It
+catches unintentional cases and highlights intentional ones for the reader.
+
+Downsides have to be weighter too, but in this case I see only two and I don't
+think they are determinant:
+
+1. consistency
+2. performance
+
+Regarding 1, one could argue that the normal programmer expectation is that
+returns can be ignored, taking into account not only language rules but also
+existing APIs. For instance, I realize that the option in `std::thread` and
+`std::function` is to allow returns:
+
+```c++
+bool f() { return false; }
+...
+std::thread t{f}; // Accepted, return is lost
+auto r2 = t.join(); // ERROR, no good, returns void
+std::function<void()> wrap{f}; // Accepted, return is lost
+auto r1 = wrap(); // ERROR, wrap does not return anything
+```
+
+However, while consistency is a desirable property, it is frequently
+incompatible with improvement and hardly a critical one for new undertakings.
+Otherwise, there would never be a place for change and advance would be stalled.
+Asking the reader not to take offense at the title and headings, I suggest a
+look at [Jon Kalb's post](http://slashslash.info/2018/02/a-foolish-consistency/)
+on the matter, which guides my own perspective.
+
+Notice that since it is enforced at compile-time, the user is quickly alerted
+to the approach taken here, so he cannot commit to unintentional mistakes or be
+surprised by runtime problems, which compile time errors mean to avoid.
+
+Concerning 2, it is true that the scope guards will require some returning
+operations to be wrapped in an additional indirection. Function casts can't help
+and the only way to use a returning function is to wrap it in a non-returning
+callable. There are no guarantees that the compiler will inline or optimize the
+wrapping away, so there may be a non-null performance penalty, even if a tiny
+one.
+
+That is the price to pay. I view it as analogous to the price that is payed when
+using std::string rather than char[], vector instead of plain arrays, or lambdas
+instead of functions. As in those cases, it is negligible and almost always
+worth it. In the rare occasions where measuring shows that price to be
+significant, a scope guard is not the right tool. If you can't pay the price of
+a function wrapping, you should probably take the care to ensure manual function
+calls in every scope exit path rather than using a scope guard to begin with.
 
 ### Conditional `noexcept`
 
