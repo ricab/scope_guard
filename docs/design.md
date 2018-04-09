@@ -264,6 +264,16 @@ dangling ref (should be scope_guard<A>, which the compiler deduces when
 using maker) */
 ```
 
+### Unspecified type
+
+I confess the decision not to specify the type of scope guards and keep it as an
+implementation detail is one I am less sure of. The intention is the same as
+with the private constructor: to make misuse hard. It discourages composition
+into other types and other cases where the notion of scope is unclear. And it is
+one less detail for the client to depend on. It is an approach I have seen on
+occasion, but the main inspiration comes from lambdas. I am open to strong
+arguments to the contrary.
+
 ### SFINAE friendliness
 
 The function `make_scope_guard` is _SFINAE-friendly_. In other words, when the
