@@ -9,6 +9,7 @@ rationale for some design decisions. The outline is:
 - [Conditional `noexcept`](#conditional-noexcept)
 - [No extra arguments](#no-extra-arguments)
 - [Private constructor](#private-constructor)
+- [Unspecified type](#unspecified-type)
 - [SFINAE friendliness](#sfinae-friendliness)
 
 ### No exceptions
@@ -202,6 +203,15 @@ calls in every scope exit path rather than using a scope guard to begin with.
 
 ### Conditional `noexcept`
 
+Conditional `noexcept`'s are essential for correct exception specifications in
+modern C++ and could not be neglected by a construct that is particularly
+useful to achieve exception safety. Taking into account that they are a
+relatively recent feature that many programmers are not used to, `noexcept`'s
+make the code more verbose and arguably harder to read, especially when the
+condition uses type traits. But they could not be discarded by an interface that
+has strong non-throwing requirements on input. Hopefully, the way the code
+separates function declarations and definitions facilitates readability.
+
 The exception specification of `make_scope_guard` is such that making a scope
 guard is often a _nothrow_ operation. Notice in particular that
 `make_scope_guard` is `noexcept` in the following cases:
@@ -209,17 +219,26 @@ guard is often a _nothrow_ operation. Notice in particular that
 1. when `callback` is an lvalue or lvalue reference (`Callback` deduced to be
 a reference)
 2. when `callback` is an rvalue or rvalue reference of a type with a `noexcept`
-move constructor (and a `noexcept` destructor, but that is already REQUIRED by
-the [preconditions](#preconditions-in-detail) in this case)
+move constructor (and a `noexcept` destructor, but that is already
+[required](docs/precond.md#nothrow-destructible-if-non-reference-template-argument)
+in such cases)
 
 You can look for `noexcept` in [compilation tests](compile_time_tests.cpp) for
-examples.
+examples of `make_scope_guard` instantiations with and without `noexcept`
+guarantee.
 
 ### No extra arguments
 
 As the signature shows, `make_scope_guard` accepts no arguments beyond
 the callback (see the [related precondition](#invocable-with-no-arguments)).
-I could not see a compelling need for them. When lambdas and binds are
+This makes the interface (and implementation) simpler and pure. Operations
+that require arguments can be used indirectly, of course, with some form of
+wrapping. As with the [decision to forbid returns](#no-return), any potential
+performance impacts of an additional wrapping level are insignificant and not a
+decisive factor. The concept of scope guard always proposes wrapping as a means
+of avoiding repetition and corner-case pitfalls.
+
+I could not see any other compelling case for them. When lambdas and binds are
 available, the scope guard is better off keeping a _single responsibility_ of
 guarding the scope and leaving the complementary responsibility of closure to
 those other types.
@@ -228,8 +247,22 @@ those other types.
 
 The form of construction that is used by `make_scope_guard` to create scope
 guards is not part of the public interface. The purpose is to guide the user to
-type deduction with universal references and make unintentional misuse difficult
-(e.g. dynamic allocation of scope_guards).
+type deduction with universal references and make unintentional misuse
+difficult. For instance, scope guards are not meant for dynamic allocation, or
+they would not be guarding any scope. Making the callback-taking constructor
+private does not make dynamic allocation impossible (because of the move
+constructor, which remains public), but it makes it harder.
+
+The same is true with other misuses, namely when bypassing type deduction. If
+the callback-taking constructor was public, the user might be tempted to use it
+in place of the maker function. He would then have to manually specify a
+template instantiation that would be easy to get wrong. For example:
+
+```c++
+scope_guard<A&&>{std::move(a)}; /* oops, nothing is moved, may end up with
+dangling ref (should be scope_guard<A>, which the compiler deduces when
+using maker) */
+```
 
 ### SFINAE friendliness
 
