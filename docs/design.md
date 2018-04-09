@@ -345,6 +345,9 @@ The function `make_scope_guard` is _SFINAE-friendly_. In other words, when the
 compiler tries to deduce a template argument, an invalid application of
 `make_scope_guard` that is caused by a failure to substitute a candidate type
 (e.g. because the argument is not callable) does not cause a compilation error
-if any other substitution is still possible.
+if any other substitution is still possible. You can look for "sfinae" in
+[catch tests](catch_tests.cpp) for examples.
 
-You can look for "sfinae" in [catch tests](catch_tests.cpp) for examples.
+Making the scope guard SFINAE-friendly is the decision I am less sure of. It
+_felt right_, but it makes error output unclear. I welcome justified opinions on
+the matter and improvement suggestions (on this topic as in others).
