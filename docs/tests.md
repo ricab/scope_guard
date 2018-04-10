@@ -19,7 +19,7 @@ the symbol
     $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
     $ mkdir <catch_bin_dir>
     $ cd <catch_bin_dir>
-    $ cmake <catch_src_dir>
+    $ cmake -DBUILD_TESTING:BOOL=FALSE <catch_src_dir>
     $ make
     $ make install
     ```
