@@ -1,7 +1,2 @@
 language: c++
-script:
-  - mkdir build
-  - cd build
-  - cmake --version
-  - cmake ..
-  - make
+script: mkdir build && cd build && cmake --version && cmake .. && make
