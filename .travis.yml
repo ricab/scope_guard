@@ -21,8 +21,13 @@ install:
   - cd ${TRAVIS_BUILD_DIR} # reset current directory
 
 script:
+  - set -e # stop on failure
   - export VERBOSE=1
-  - mkdir build && cd build && cmake .. && make
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - set +e # restore
 
 git:
   depth: 1
