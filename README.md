@@ -1,5 +1,6 @@
 # scope_guard
 
+[![GitHub stars](https://img.shields.io/github/stars/ricab/scope_guard.svg?style=social&label=Stars)](https://github.com/ricab/scope_guard)
 
 [![GitHub license](https://img.shields.io/github/license/ricab/scope_guard.svg)](https://github.com/ricab/scope_guard/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/ricab/scope_guard/all.svg)](https://github.com/ricab/scope_guard/releases)
