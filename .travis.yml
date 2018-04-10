@@ -18,10 +18,9 @@ install:
   - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=FALSE ..
   - make
   - sudo make install
-  - cd ${TRAVIS_BUILD_DIR} # back to our build directory
+  - cd ${TRAVIS_BUILD_DIR} # reset current directory
 
 script:
-  - pwd -P
   - mkdir build && cd build && cmake .. && make
 
 git:
