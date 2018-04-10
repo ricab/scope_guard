@@ -2,5 +2,6 @@ language: c++
 script:
   - mkdir build
   - cd build
+  - cmake --version
   - cmake ..
   - make
