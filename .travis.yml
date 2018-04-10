@@ -1,2 +1,12 @@
 language: c++
-script: mkdir build && cd build && cmake --version && cmake .. && make
+
+#os:
+#  - linux
+#  - osx
+#
+#compiler:
+#  - gcc
+#  - clang
+
+script:
+  - mkdir build && cd build && cmake --version && cmake .. && make
