@@ -1,0 +1,4 @@
+# ignore local github-pages testing stuff
+_site/
+Gemfile
+Gemfile.lock
