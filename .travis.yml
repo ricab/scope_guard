@@ -10,3 +10,6 @@ language: c++
 
 script:
   - mkdir build && cd build && cmake --version && cmake .. && make
+
+git:
+  depth: 1
