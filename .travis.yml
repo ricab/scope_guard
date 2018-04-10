@@ -9,7 +9,7 @@ language: c++
 #  - clang
 
 script:
-  - mkdir build && cd build && cmake --version && cmake .. && make
+  - mkdir build && cd build && cmake .. && make
 
 git:
   depth: 1
