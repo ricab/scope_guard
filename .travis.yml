@@ -1,0 +1,33 @@
+language: c++
+
+#os:
+#  - linux
+#  - osx
+#
+#compiler:
+#  - gcc
+#  - clang
+
+install:
+  - CATCH_DIR=/tmp/catch CATCH_REMOTE=https://github.com/catchorg/Catch2.git
+  - git clone ${CATCH_REMOTE} ${CATCH_DIR}
+  - cd ${CATCH_DIR}
+  - git checkout $(git describe --tags --abbrev=0)
+  - mkdir build
+  - cd build
+  - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=FALSE ..
+  - make
+  - sudo make install
+  - cd ${TRAVIS_BUILD_DIR} # reset current directory
+
+script:
+  - set -e # stop on failure
+  - export VERBOSE=1
+  - mkdir build
+  - cd build
+  - cmake ..
+  - make
+  - set +e # restore
+
+git:
+  depth: 1
