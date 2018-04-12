@@ -146,7 +146,10 @@ namespace sg
 template<typename Callback>
 sg::detail::scope_guard<Callback>::scope_guard(Callback&& callback)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
-  : m_callback{std::forward<Callback>(callback)}
+  : m_callback(std::forward<Callback>(callback)) /* use () instead of {} because
+    of DR 1467 (https://is.gd/WHmWuo), which still impacts older compilers
+    (e.g. GCC 4.x and clang <=3.6, see https://godbolt.org/g/TE9tPJ and
+    https://is.gd/Tsmh8G) */
   , m_active{true}
 {}
 
@@ -162,7 +165,7 @@ sg::detail::scope_guard<Callback>::~scope_guard() noexcept
 template<typename Callback>
 sg::detail::scope_guard<Callback>::scope_guard(scope_guard&& other)
 noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
-  : m_callback{std::forward<Callback>(other.m_callback)}
+  : m_callback(std::forward<Callback>(other.m_callback)) // idem
   , m_active{std::move(other.m_active)}
 {
   other.m_active = false;
