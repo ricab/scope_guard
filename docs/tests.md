@@ -38,8 +38,8 @@ execute in parallel. For instance:
 
 ```sh
 make -j4 # max 4 compilations needed
-make test ARGS=-j16 # I suggest twice the number of hardware threads
-                    # (to compensate for I/O)
+make test ARGS=-j16 # On an otherwise idle machine, I suggest 2x the
+                    # number of HW threads (to compensate for I/O)
 ```
 
 This will run catch and compile time tests with different combinations of
