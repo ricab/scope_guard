@@ -4,12 +4,11 @@ language: c++
 #  - linux
 #  - osx
 #
-#compiler:
-#  - gcc
-#  - clang
 
 matrix:
   include:
+    - os: linux
+      compiler: clang # default version
     - os: linux
       compiler: gcc # default version
     - os: linux
