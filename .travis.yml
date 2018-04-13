@@ -55,14 +55,12 @@ install:
   - cd ${TRAVIS_BUILD_DIR} # reset current directory
 
 script:
-  - set -e # stop on failure
   - export VERBOSE=1
   - mkdir build
   - cd build
   - cmake ..
   - make -j${BUILD_THREADS}
   - make test -j${BUILD_THREADS}
-  - set +e # restore
 
 after_failure: cat ./Testing/Temporary/LastTest.log
 
