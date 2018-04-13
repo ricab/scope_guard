@@ -9,8 +9,8 @@ language: c++
 #  - clang
 
 before_install:
-  - USE_N_THREADS=`lscpu -p | grep -c '^[0-9]'` # get number of hw threads
-  - echo ${USE_N_THREADS}
+  - BUILD_THREADS=`lscpu -p | grep -c '^[0-9]'` # get number of hw threads
+  - echo ${BUILD_THREADS}
 
 install:
   - CATCH_DIR=/tmp/catch CATCH_REMOTE=https://github.com/catchorg/Catch2.git
@@ -30,8 +30,8 @@ script:
   - mkdir build
   - cd build
   - cmake ..
-  - make -j${USE_N_THREADS}
-  - make test -j${USE_N_THREADS}
+  - make -j${BUILD_THREADS}
+  - make test -j${BUILD_THREADS}
   - set +e # restore
 
 git:
