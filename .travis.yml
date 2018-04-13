@@ -8,7 +8,19 @@ language: c++
 #  - gcc
 #  - clang
 
+matrix:
+  include:
+    - os: linux
+      compiler: gcc # default version
+    - os: linux
+      addons:
+        apt:
+          sources: ubuntu-toolchain-r-test
+          packages: g++-4.9
+      env: MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
+
 before_install:
+  - eval "${MATRIX_EVAL}" # determine the compiler
   - BUILD_THREADS=`lscpu -p | grep -c '^[0-9]'` # get number of hw threads
   - echo ${BUILD_THREADS}
 
