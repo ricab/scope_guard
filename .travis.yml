@@ -64,5 +64,7 @@ script:
   - make test -j${BUILD_THREADS}
   - set +e # restore
 
+after_failure: cat ./Testing/Temporary/LastTest.log
+
 git:
   depth: 1
