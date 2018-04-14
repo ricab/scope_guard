@@ -38,6 +38,10 @@ matrix:
             - clang-5.0
             - g++-7
       env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+    - os: osx
+      compiler: clang
+    - os: osx
+      compiler: gcc
 
 env:
   global:
