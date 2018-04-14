@@ -1,16 +1,5 @@
 language: c++
 
-#os:
-#  - linux
-#  - osx
-#
-
-env:
-  global:
-    - MAKEFLAGS="-j2"
-    - CATCH_DIR="~/catch"
-    - CATCH_REMOTE="https://github.com/catchorg/Catch2.git"
-
 matrix:
   include:
     - os: linux
@@ -50,6 +39,15 @@ matrix:
             - g++-7
       env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
+env:
+  global:
+    - MAKEFLAGS="-j2"
+    - CATCH_DIR="~/catch"
+    - CATCH_REMOTE="https://github.com/catchorg/Catch2.git"
+
+git:
+  depth: 1
+
 before_install:
   - eval "${MATRIX_EVAL}" # determine the compiler, overriding defaults
 
@@ -73,6 +71,3 @@ script:
   - make test
 
 after_failure: cat ./Testing/Temporary/LastTest.log
-
-git:
-  depth: 1
