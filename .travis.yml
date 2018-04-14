@@ -47,6 +47,18 @@ matrix:
             - clang-5.0
             - g++-7
       env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+    - os: osx
+      os_image: xcode8.3
+      compiler: clang
+    - os: osx
+      os_image: xcode8.3
+      compiler: gcc
+    - os: osx
+      os_image: xcode9.3
+      compiler: clang
+    - os: osx
+      os_image: xcode9.3
+      compiler: gcc
 
 before_install:
   - eval "${MATRIX_EVAL}" # determine the compiler, overriding defaults
