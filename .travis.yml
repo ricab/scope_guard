@@ -8,8 +8,6 @@ language: c++
 matrix:
   include:
     - os: linux
-      compiler: clang # default version
-    - os: linux
       compiler: gcc # default version
     - os: linux
       addons:
@@ -35,6 +33,16 @@ matrix:
           sources: ubuntu-toolchain-r-test
           packages: g++-7
       env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-5.0
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang-5.0
+            - g++-7
+      env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
 before_install:
   - eval "${MATRIX_EVAL}" # determine the compiler
