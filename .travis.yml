@@ -52,14 +52,14 @@ before_install:
 install:
   - CATCH_DIR=/tmp/catch CATCH_REMOTE=https://github.com/catchorg/Catch2.git
   - git clone ${CATCH_REMOTE} ${CATCH_DIR}
-  - cd ${CATCH_DIR}
+  - pushd ${CATCH_DIR}
   - git checkout $(git describe --tags --abbrev=0)
   - mkdir build
   - cd build
   - cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=FALSE ..
   - make
   - sudo make install
-  - cd ${TRAVIS_BUILD_DIR} # reset current directory
+  - popd # reset current directory
 
 script:
   - export VERBOSE=1
