@@ -7,7 +7,7 @@ language: c++
 
 env:
   global:
-    - BUILD_THREADS=`lscpu -p | grep -c '^[0-9]'` # number of hw threads
+    - MAKEFLAGS="-j2"
     - CATCH_DIR="~/catch"
     - CATCH_REMOTE="https://github.com/catchorg/Catch2.git"
 
@@ -69,8 +69,8 @@ script:
   - mkdir build
   - cd build
   - cmake ..
-  - make -j${BUILD_THREADS}
-  - make test -j${BUILD_THREADS}
+  - make
+  - make test
 
 after_failure: cat ./Testing/Temporary/LastTest.log
 
