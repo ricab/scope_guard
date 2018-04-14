@@ -5,6 +5,12 @@ language: c++
 #  - osx
 #
 
+env:
+  global:
+    - BUILD_THREADS=`lscpu -p | grep -c '^[0-9]'` # number of hw threads
+    - CATCH_DIR="~/catch"
+    - CATCH_REMOTE="https://github.com/catchorg/Catch2.git"
+
 matrix:
   include:
     - os: linux
@@ -45,12 +51,9 @@ matrix:
       env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
 
 before_install:
-  - eval "${MATRIX_EVAL}" # determine the compiler
-  - BUILD_THREADS=`lscpu -p | grep -c '^[0-9]'` # get number of hw threads
-  - echo ${BUILD_THREADS}
+  - eval "${MATRIX_EVAL}" # determine the compiler, overriding defaults
 
 install:
-  - CATCH_DIR=/tmp/catch CATCH_REMOTE=https://github.com/catchorg/Catch2.git
   - git clone ${CATCH_REMOTE} ${CATCH_DIR}
   - pushd ${CATCH_DIR}
   - git checkout $(git describe --tags --abbrev=0)
