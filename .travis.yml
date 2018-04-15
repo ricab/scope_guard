@@ -40,22 +40,10 @@ matrix:
     - os: linux
       addons:
         apt:
-          sources:
-            - llvm-toolchain-trusty-3.6
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang-3.6
+          sources: llvm-toolchain-trusty-3.6
+          packages: clang-3.6
       env:
         - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-trusty-4.0
-          packages:
-            - clang-4.0
-      env:
-        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
     - os: linux
       addons:
         apt:
@@ -88,7 +76,7 @@ matrix:
         - MATRIX_EVAL="${PREAMBLE} && brew install gcc && CC=gcc-7 && CXX=g++-7"
 
 before_install:
-  - eval "${MATRIX_EVAL}" # determine the compiler, overriding defaults
+  - eval "${MATRIX_EVAL}" # determine overriding compiler, if set
 
 install:
   - git clone ${CATCH_REMOTE} ${CATCH_DIR}
