@@ -41,12 +41,41 @@ matrix:
       addons:
         apt:
           sources:
+            - llvm-toolchain-trusty-3.6
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang-3.6
+      env:
+        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-4.0
+          packages:
+            - clang-4.0
+      env:
+        - MATRIX_EVAL="CC=clang-4.0 && CXX=clang++-4.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
             - llvm-toolchain-trusty-5.0
             - ubuntu-toolchain-r-test
           packages:
             - clang-5.0
             - g++-7
       env: MATRIX_EVAL="CC=clang-5.0 && CXX=clang++-5.0"
+    - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-trusty-6.0
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang-6.0
+            - g++-7
+      env: MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
     - os: osx
       compiler: clang
     - os: osx
