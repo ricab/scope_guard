@@ -7,5 +7,9 @@ image:
 clone_depth: 1
 clone_folder: c:\projects\scope_guard
 
+environment:
+  CATCH_DIR: c:\projects\catch
+  CATCH_REMOTE: https://github.com/catchorg/Catch2.git
+
 build:
   verbosity: normal
