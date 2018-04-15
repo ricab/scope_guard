@@ -81,7 +81,7 @@ before_install:
 install:
   - git clone ${CATCH_REMOTE} ${CATCH_DIR}
   - pushd ${CATCH_DIR}
-  - git checkout $(git describe --tags --abbrev=0)
+  - git checkout -q $(git describe --tags --abbrev=0)
   - mkdir build
   - cd build
   - cmake -DBUILD_TESTING:BOOL=FALSE ..
