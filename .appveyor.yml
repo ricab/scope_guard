@@ -14,7 +14,7 @@ environment:
 install:
   - git clone %CATCH_REMOTE% %CATCH_DIR%
   - cd %CATCH_DIR%
-  - ps: git checkout -q $(git describe --tags --abbrev=0)
+  - pwsh: git checkout -q $(git describe --tags --abbrev=0)
   - mkdir build
   - cd build
   - cmake -DBUILD_TESTING:BOOL=FALSE ..
