@@ -85,8 +85,8 @@ install:
   - mkdir build
   - cd build
   - cmake -DBUILD_TESTING:BOOL=FALSE ..
-  - make
-  - sudo make install
+  - cmake --build .
+  - sudo cmake --build . --target install
   - popd # reset current directory
 
 script:
