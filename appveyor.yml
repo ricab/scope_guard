@@ -1,0 +1,11 @@
+version: 'build #{build}'
+
+image:
+- Visual Studio 2017
+- Visual Studio 2015
+
+clone_depth: 1
+clone_folder: c:\projects\scope_guard
+
+build:
+  verbosity: normal
