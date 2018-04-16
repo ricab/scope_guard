@@ -30,3 +30,6 @@ build_script:
 
 test_script:
   - cmake --build . --target RUN_TESTS --config Debug -- %MSBUILD_OPTS%
+
+on_failure:
+  - type Testing\Temporary\LastTest.log
