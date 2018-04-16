@@ -1,14 +1,12 @@
 version: 'build_{build}'
+clone_depth: 1
+clone_folder: c:\projects\scope_guard
 
-image:
-- Visual Studio 2017
+image: Visual Studio 2017
 
 platform:
   - x86
   - x64
-
-clone_depth: 1
-clone_folder: c:\projects\scope_guard
 
 environment:
   CATCH_DIR: c:\projects\catch
