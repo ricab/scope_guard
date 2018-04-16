@@ -9,6 +9,7 @@ clone_folder: c:\projects\scope_guard
 environment:
   CATCH_DIR: c:\projects\catch
   CATCH_REMOTE: https://github.com/catchorg/Catch2.git
+  MSBUILD_OPTS: "/m:2 /p:Optimize=no /p:DebugSymbols=false"
 
 install:
   - git clone %CATCH_REMOTE% %CATCH_DIR%
@@ -25,4 +26,4 @@ build_script:
   - mkdir build
   - cd build
   - cmake ..
-  - cmake --build . --config Debug -- /m:2 /p:Optimize=no /p:DebugSymbols=false
+  - cmake --build . --config Debug -- %MSBUILD_OPTS%
