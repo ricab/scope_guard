@@ -27,3 +27,6 @@ build_script:
   - cd build
   - cmake ..
   - cmake --build . --config Debug -- %MSBUILD_OPTS%
+
+test_script:
+  - cmake --build . --target RUN_TESTS --config Debug -- %MSBUILD_OPTS%
