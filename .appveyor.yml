@@ -1,0 +1,39 @@
+version: 'build_{build}'
+clone_depth: 1
+clone_folder: c:\projects\scope_guard
+
+image: Visual Studio 2017
+
+platform:
+  - x86
+  - x64
+
+environment:
+  CATCH_DIR: c:\projects\catch
+  CATCH_REMOTE: https://github.com/catchorg/Catch2.git
+  MSBUILD_OPTS: "/m:2 /p:Optimize=no /p:DebugSymbols=false"
+
+install:
+  - git clone %CATCH_REMOTE% %CATCH_DIR%
+  - cd %CATCH_DIR%
+  - pwsh: git checkout -q $(git describe --tags --abbrev=0)
+  - mkdir build
+  - cd build
+  - cmake -DBUILD_TESTING:BOOL=FALSE ..
+  - cmake --build .
+  - cmake --build . --target install
+  - cd %APPVEYOR_BUILD_FOLDER% # reset current directory
+
+build_script:
+  - mkdir build
+  - cd build
+  - cmake ..
+  - cmake --build . --config Debug -- %MSBUILD_OPTS%
+
+test_script:
+  - cmake --build . --target RUN_TESTS --config Debug -- %MSBUILD_OPTS%
+
+deploy: off
+
+on_failure:
+  - type Testing\Temporary\LastTest.log
