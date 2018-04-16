@@ -26,4 +26,4 @@ build_script:
   - mkdir build
   - cd build
   - cmake ..
-  - cmake --build . --config Debug
+  - cmake --build . --config Debug -- /m:2 /p:Optimize=no /p:DebugSymbols=false
