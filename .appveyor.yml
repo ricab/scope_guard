@@ -27,7 +27,7 @@ install:
 build_script:
   - mkdir build
   - cd build
-  - cmake ..
+  - cmake -Wdev -Werror=dev ..
   - cmake --build . --config Debug -- %MSBUILD_OPTS%
 
 test_script:

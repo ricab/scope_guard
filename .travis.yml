@@ -93,7 +93,7 @@ script:
   - export VERBOSE=1
   - mkdir build
   - cd build
-  - cmake -DCMAKE_BUILD_TYPE=Debug ..
+  - cmake -Wdev -Werror=dev -DCMAKE_BUILD_TYPE=Debug ..
   - cmake --build .
   - cmake --build . --target test
 
