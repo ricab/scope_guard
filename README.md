@@ -64,7 +64,7 @@ penalties
 (details [here](docs/interface.md#compilation-option-sg_require_noexcept_in_cpp17))
 - [x] Modern exception specifications (`noexcept` with conditions when
 necessary)
-- [x] _SFINAE friendliness_ (see [here](docs/design.md#sfinae-friendliness))
+- [x] SFINAE friendliness (see [here](docs/design.md#sfinae-friendliness))
 
 #### Other characteristics
 - [x] No dependencies to use (besides &ge;C++11 compiler and standard library)
