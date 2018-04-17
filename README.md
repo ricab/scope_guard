@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/ricab/scope_guard.svg?branch=master)](https://travis-ci.org/ricab/scope_guard)
 [![Build status](https://ci.appveyor.com/api/projects/status/nv4eyoxlhfxvgk96/branch/master?svg=true)](https://ci.appveyor.com/project/ricab/scope-guard/branch/master)
+[![codecov](https://codecov.io/gh/ricab/scope_guard/branch/master/graph/badge.svg)](https://codecov.io/gh/ricab/scope_guard)
 [![GitHub stars](https://img.shields.io/github/stars/ricab/scope_guard.svg?style=social&label=Stars)](https://github.com/ricab/scope_guard)
 
 [![GitHub license](https://img.shields.io/github/license/ricab/scope_guard.svg)](https://github.com/ricab/scope_guard/blob/master/LICENSE)
