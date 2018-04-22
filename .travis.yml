@@ -40,6 +40,14 @@ matrix:
     - os: linux
       addons:
         apt:
+          sources: ubuntu-toolchain-r-test
+          packages: g++-7
+      env:
+        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - CMAKE_COV="-DENABLE_COVERAGE:BOOL=ON" # coverage build
+    - os: linux
+      addons:
+        apt:
           sources: llvm-toolchain-trusty-3.6
           packages: clang-3.6
       env:
@@ -93,8 +101,20 @@ script:
   - export VERBOSE=1
   - mkdir build
   - cd build
-  - cmake -Wdev -Werror=dev -DCMAKE_BUILD_TYPE=Debug ..
+  - cmake -Wdev -Werror=dev -DCMAKE_BUILD_TYPE=Debug ${CMAKE_COV} ..
   - cmake --build .
   - cmake --build . --target test
+
+after_success: |-
+  if [ ! -z "${CMAKE_COV}" ]; then
+    echo "Producing coverage reports..."
+    find . -name catch_tests.cpp.gcno -exec gcov-7 -pb {} +
+
+    echo "Finding relevant report..."
+    cov_report=$(find . -name "*scope_guard.hpp.gcov" -exec readlink -e {} +)
+
+    echo "The report is ${cov_report}. Uploading to codecov..."
+    bash <(curl -s https://codecov.io/bash) -f $cov_report
+  fi
 
 after_failure: cat ./Testing/Temporary/LastTest.log

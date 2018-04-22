@@ -30,6 +30,8 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   if(HAS_NOEXCEPT_TYPE_WARNING)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-noexcept-type")
   endif()
+
+  option(ENABLE_COVERAGE "Enable coverage reporting" FALSE)
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
   if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
     string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -107,12 +109,15 @@ endfunction()
 
 # utility to add a batch of catch tests with the specified c++ standard and
 # noexcept requirement
-function(add_catch_tests_batch src cxx17 require_noexcept)
+function(add_catch_tests_batch exe_ret src cxx17 require_noexcept)
   derive_common_test_strings(tst exe ftr # out params
       "catch_batch" TRUE ${cxx17} ${require_noexcept}) # in params
   add_test_exe(${exe} ${src} ${ftr} ${require_noexcept})
   target_link_libraries(${exe} PRIVATE Catch2::Catch)
+
   add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
+
+  set(${exe_ret} ${exe} PARENT_SCOPE) # return
 endfunction()
 
 # utility to add a compilation test, with the specified C++ standard and
@@ -182,18 +187,23 @@ endif()
 foreach(cxx17 ${cxx17_possibilities})
   foreach(reqne FALSE TRUE)
     # add catch tests for this standard/noexcept-requirement combination
-    add_catch_tests_batch(catch_tests.cpp ${cxx17} ${reqne})
+    add_catch_tests_batch(catch_batch_exe catch_tests.cpp ${cxx17} ${reqne})
 
-    # add noexcept compilation tests for this standard/noexcept-requirement
-    # combination
-    foreach(count RANGE 0 71) # range inclusive in cmake (so 72 tests)
+    if(ENABLE_COVERAGE) # configure catch tests for coverage if needed
+      target_compile_options(${catch_batch_exe} PRIVATE --coverage -O0)
+      target_link_libraries(${catch_batch_exe} PRIVATE --coverage)
+    else() # only run compile time tests in non-coverage builds
+      # add noexcept compilation tests for this standard/noexcept-requirement
+      # combination
+      foreach(count RANGE 71) # range inclusive in cmake (so 0 or 72 tests)
                               # 0-34: always succeed (0 = all test macros off)
                               # 35-51: fail when requiring noexcept
                               # 52-71: always fail
-      expect_result(success ${count} ${cxx17} ${reqne})
-      add_compilation_test(compile_time_tests.cpp
-                           ${success} ${cxx17} ${reqne} ${count})
-    endforeach()
+        expect_result(success ${count} ${cxx17} ${reqne})
+        add_compilation_test(compile_time_tests.cpp
+                             ${success} ${cxx17} ${reqne} ${count})
+      endforeach()
+    endif()
   endforeach()
 endforeach()
 
