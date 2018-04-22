@@ -108,7 +108,7 @@ script:
 after_success: |-
   if [ ! -z "${CMAKE_COV}" ]; then
     echo "Producing coverage reports..."
-    find . -name catch_tests.cpp.gcno -exec gcov -pb {} +
+    find . -name catch_tests.cpp.gcno -exec gcov-7 -pb {} +
 
     echo "Finding relevant report..."
     cov_report=$(find . -name "*scope_guard.hpp.gcov" -exec readlink -e {} +)
