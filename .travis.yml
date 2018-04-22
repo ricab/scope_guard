@@ -108,7 +108,6 @@ script:
 after_success:
   bash <(curl -s https://codecov.io/bash)
     -x /usr/bin/gcov-7
-    -f '*scope_guard.hpp.gcov'
     || echo "Codecov did not collect coverage reports"
 
 after_failure: cat ./Testing/Temporary/LastTest.log
