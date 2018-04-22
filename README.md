@@ -3,11 +3,11 @@
 [![Build Status](https://travis-ci.org/ricab/scope_guard.svg?branch=master)](https://travis-ci.org/ricab/scope_guard)
 [![Build status](https://ci.appveyor.com/api/projects/status/nv4eyoxlhfxvgk96/branch/master?svg=true)](https://ci.appveyor.com/project/ricab/scope-guard/branch/master)
 [![codecov](https://codecov.io/gh/ricab/scope_guard/branch/master/graph/badge.svg)](https://codecov.io/gh/ricab/scope_guard)
-[![GitHub stars](https://img.shields.io/github/stars/ricab/scope_guard.svg?style=social&label=Stars)](https://github.com/ricab/scope_guard)
 
 [![GitHub license](https://img.shields.io/github/license/ricab/scope_guard.svg)](https://github.com/ricab/scope_guard/blob/master/LICENSE)
 [![GitHub release](https://img.shields.io/github/release/ricab/scope_guard/all.svg)](https://github.com/ricab/scope_guard/releases)
 [![semver](https://img.shields.io/badge/semver-2.0.0-blue.svg)](https://semver.org/spec/v2.0.0.html)
+[![GitHub stars](https://img.shields.io/github/stars/ricab/scope_guard.svg?style=social&label=Stars)](https://github.com/ricab/scope_guard)
 
 A public, general, simple, and fast C++11 scope guard that
 defends against implicitly ignored returns and optionally enforces `noexcept`
