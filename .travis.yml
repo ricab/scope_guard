@@ -1,7 +1,7 @@
 language: c++
 
 git:
-  depth: 1
+  depth: 10 # leave margin for ci skips
 
 env:
   global:

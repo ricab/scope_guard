@@ -1,5 +1,5 @@
 version: 'build_{build}'
-clone_depth: 1
+clone_depth: 10 # leave margin for ci skips
 clone_folder: c:\projects\scope_guard
 
 image: Visual Studio 2017
