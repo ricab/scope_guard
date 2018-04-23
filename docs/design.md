@@ -287,8 +287,9 @@ Both intents are purely technical. They justify supporting a special state that
 is otherwise artificial and exists only because of the way C++ works. In other
 words, the inactive state represents nothing useful from any problem domain. It
 would not be required in a hypothetical programming language where local
-variables could be deleted and moved without leaving _ghosts_ behind. However,
-it enables programming approaches that would not be possible in any other way.
+variables could be deleted early and moved without leaving _ghosts_ behind.
+However, it enables programming approaches that would not be possible in any
+other way.
 
 Without any meaningful default callback, a potential default constructor could
 only create inactive scope guards (or active no-op, which would be equivalent).
