@@ -33,11 +33,11 @@ Usage is simple:
 
 A scope guard is an object that employs RAII to execute a
 provided callback when leaving scope, be it through a _fall-through_, a return,
-or an exception. That callback can be a a function, a function pointer, a
-functor, a lambda, a bind result, a std::function, a reference to any of
-these, or any other callable, as long as it respects a few
-[preconditions](docs/precond.md) &ndash; most of which are enforced
-during compilation, the rest being hopefully intuitive.
+or an exception. That callback can be a function, a function pointer, a functor,
+a lambda, a bind result, a std::function, a reference to any of these, or any
+other callable, as long as it respects a few [preconditions](docs/precond.md)
+&ndash; most of which are enforced during compilation, the rest being hopefully
+intuitive.
 
 All necessary code is provided in a [single header](scope_guard.hpp) (the
 remaining files are only for testing and documentation).
@@ -49,7 +49,7 @@ by Andrei Alexandrescu and Petru Marginean and it is well known in the
 C++ community. It has been proposed for standardization (see
 [N4189](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4189.pdf))
 but is still not part of the standard library, as of March 2018. While there
-are several implementations available, I did not find any with the
+are several implementations available, I did not find any with all the
 characteristics I aimed for here.
 
 ## Features
@@ -75,8 +75,9 @@ what have you
 - [x] Extensively tested, with both
 [compile time tests](compile_time_tests.cpp) and
 [runtime-tests](catch_tests.cpp)
-- [x] Carefully documented
-- [x] Adheres to [RFC2119](https://tools.ietf.org/html/rfc2119)
+- [x] Carefully documented (adhering to
+[RFC2119](https://tools.ietf.org/html/rfc2119))
+- [x] Standalone header that can be directly dumped into any project
 - [x] Unlicense'd
 - [x] `snake_case` style
 
