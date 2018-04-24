@@ -184,7 +184,7 @@ regarded as garbage awaiting destruction.
 
 ###### Member function signature:
 
-Unspecified.
+Standard move constructor.
 
 ###### Preconditions:
 
@@ -203,7 +203,7 @@ the moved-from guard before the move operation;
 ###### Exception specification:
 
 `noexcept` _iff_ `Callback` can be _nothrow-constructed_ from `Callback&&`
-(after reference collapse). Notice this is always the case if `Callback` is a
+(after reference collapse). Notice this is always the case when `Callback` is a
 reference type.
 
 ###### Example:
@@ -225,7 +225,7 @@ Scope guards have a (non-virtual) destructor.
 
 ###### Member function signature:
 
-Unspecified.
+Standard destructor.
 
 ###### Preconditions:
 
