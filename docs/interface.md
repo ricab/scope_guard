@@ -15,7 +15,7 @@ Here is an outline of the client interface:
   * [Invariants](#invariants)
   * [Overview of public members](#overview-of-public-members)
   * [List of deleted public members](#list-of-deleted-public-members)
-  * [Member type `calback_type`](#member-type-calback_type)
+  * [Member type `callback_type`](#member-type-callback_type)
   * [Member function `dismiss`](#member-function-dismiss)
   * [Member move constructor](#member-move-constructor)
   * [Member destructor](#member-destructor)
@@ -111,7 +111,7 @@ Note: Deleted special members cannot be used, but they participate in overload
 resolution. They are listed here because they are explicitly disallowed and
 that can be considered as part of the the client's interface.
 
-#### Member type `calback_type`
+#### Member type `callback_type`
 
 Template argument deduction allows the underlying callback type to be
 automatically derived from the function argument. That type &ndash; `Callback`
