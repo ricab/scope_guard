@@ -224,15 +224,15 @@ move constructor (and a `noexcept` destructor, but that is already
 [required](docs/precond.md#nothrow-destructible-if-non-reference-template-argument)
 in such cases)
 
-You can look for `noexcept` in [compilation tests](compile_time_tests.cpp) for
-examples of `make_scope_guard` instantiations with and without `noexcept`
+You can look for `noexcept` in [compilation tests](../compile_time_tests.cpp)
+for examples of `make_scope_guard` instantiations with and without `noexcept`
 guarantee.
 
 ### No extra arguments
 
 As the signature shows, `make_scope_guard` accepts no arguments beyond
 the callback (see the
-[related precondition](docs/precond.md#invocable-with-no-arguments)).
+[related precondition](precond.md#invocable-with-no-arguments)).
 This makes the interface (and implementation) simpler and pure. Operations
 that require arguments can be used indirectly, of course, with some form of
 wrapping. As with the [decision to forbid returns](#no-return), any potential
@@ -347,7 +347,7 @@ compiler tries to deduce a template argument, an invalid application of
 `make_scope_guard` that is caused by a failure to substitute a candidate type
 (e.g. because the argument is not callable) does not cause a compilation error
 if any other substitution is still possible. You can look for "sfinae" in
-[catch tests](catch_tests.cpp) for examples.
+[catch tests](../catch_tests.cpp) for examples.
 
 Making the scope guard SFINAE-friendly is the decision I am less sure of. It
 _felt right_, but it makes error output unclear. I welcome justified opinions on

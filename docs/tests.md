@@ -13,8 +13,8 @@ the symbol
 ### Instructions for running the tests
 (For GNU/Linux, should be analogous in other systems.)
 
-1. Install [cmake](https://cmake.org/)
-2. Install [Catch2](https://github.com/catchorg/Catch2):
+1. Install cmake
+2. Install catch
     ```sh
     $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
     $ mkdir <catch_bin_dir>
