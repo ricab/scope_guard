@@ -228,7 +228,7 @@ guard is often a _nothrow_ operation. Notice in particular that
 a reference)
 2. when `callback` is an rvalue or rvalue reference of a type with a `noexcept`
 move constructor (and a `noexcept` destructor, but that is already
-[required](docs/precond.md#nothrow-destructible-if-non-reference-template-argument)
+[required](precond.md#nothrow-destructible-if-non-reference-template-argument)
 in such cases)
 
 You can look for `noexcept` in [compilation tests](../compile_time_tests.cpp)
