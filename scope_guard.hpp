@@ -84,12 +84,10 @@ namespace sg
 
     template<typename Callback>
     detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
-    noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /* we
-    unfortunately need this intermediate step due to MSVC bugs preventing
-    sg::detail::scope_guard from befriending a sg::make_scope_guard template
-    instance (https://is.gd/xFfFhE). The compiler should be able to optimize the
-    additional wrapping level away (https://godbolt.org/g/Bzq9PB).
-    We declare it here to make it a friend below */
+    noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
+    we need this in the inner namespace due to MSVC bugs preventing
+    sg::detail::scope_guard from befriending a sg::make_scope_guard
+    template instance in the parent namespace (see https://is.gd/xFfFhE). */
 
 
     /* --- The template specialization that actually defines the class --- */
@@ -120,8 +118,8 @@ namespace sg
 
       friend scope_guard<Callback> make_scope_guard<Callback>(Callback&&)
       noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
-        only make_scope_guard_impl can create scope_guards from scratch
-        (i.e. non-move) */
+      only make_scope_guard can create scope_guards from scratch (i.e. non-move)
+      */
 
     private:
       Callback m_callback;
@@ -134,11 +132,7 @@ namespace sg
 
   /* --- Now the single public maker function --- */
 
-  template<typename Callback>
-  detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
-  noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
-  merely a wrapper that could not be a direct scope_guard friend due to MSVC
-  bugs: https://is.gd/xFfFhE. Better workaround proposals welcome. */
+  using detail::make_scope_guard; // see comment on declaration above
 
 } // namespace sg
 
@@ -185,15 +179,6 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 -> detail::scope_guard<Callback>
 {
   return detail::scope_guard<Callback>{std::forward<Callback>(callback)};
-}
-
-////////////////////////////////////////////////////////////////////////////////
-template<typename Callback>
-inline auto sg::make_scope_guard(Callback&& callback)
-noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
--> detail::scope_guard<Callback>
-{
-  return detail::make_scope_guard(std::forward<Callback>(callback));
 }
 
 #endif /* SCOPE_GUARD_HPP_ */
