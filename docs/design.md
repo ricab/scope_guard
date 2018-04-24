@@ -289,25 +289,32 @@ As they stand, inactive scope guards exist for only two purposes:
 - to allow [dismissal](interface.md#member-function-dismiss)
 - to allow [moving](interface.md#member-move-constructor)
 
-Both intents are purely technical. They justify supporting a special state that
-is otherwise artificial and exists only because of the way C++ works. In other
-words, the inactive state represents nothing useful from any problem domain. It
-would not be required in a hypothetical programming language where local
-variables could be deleted early and moved without leaving _ghosts_ behind.
-However, it enables programming approaches that would not be possible in any
-other way.
+Both intents are valid, and they justify supporting a special state that
+is otherwise artificial and purely a technical matter. But this state exists
+only because of the way C++ works. If those operations ended up with no scope
+guard at all, their purpose would be equally fulfilled.
+
+In other words, the inactive state represents nothing useful from any problem
+domain. It would not be required in a hypothetical programming language where
+local variables could be deleted early and moved without leaving _ghosts_
+behind. So, we use the inactive state here only to enable valid programming
+approaches that would otherwise not be possible in C++. But then, should we take
+it one step further and use this state to provide another common C++ operation
+&ndash; default construction?
 
 Without any meaningful default callback, a potential default constructor could
 only create inactive scope guards (or active no-op, which would be equivalent).
 If they represent nothing useful from the problem domain, the only reason to
 create them directly in such a state would be to provide placeholders to allow
-modification. That is, to artificially _defer initialization_, which would have
-to then be achieved with assignment, since no other meaningful scope guard
-modifier is supported. But having constructed objects that are not initialized
-is a practice that goes against a very important principle! The one that
-corresponds to the literal meaning of a well-known overloaded expression
-&ndash; _Resourse Acquisition Is Initialization_. Constructors are meant to
-prevent uninitialized variables, not facilitate them.
+modification. That is, to artificially _defer initialization_, which would then
+have to be achieved with assignment, since no other meaningful scope guard
+modifier is supported.
+
+But having constructed objects that are not initialized is a practice that goes
+against a very important principle! The one that corresponds to the literal
+meaning of a well-known overloaded expression &ndash; _Resourse Acquisition Is
+Initialization_. Constructors are meant to prevent uninitialized variables, not
+facilitate them.
 
 Additionally, unlike in the case of the move constructor, I see no technical
 reason to provide the default constructor plus assignment operator combo. True,
@@ -356,5 +363,5 @@ if any other substitution is still possible. You can look for "sfinae" in
 [catch tests](../catch_tests.cpp) for examples.
 
 Making the scope guard SFINAE-friendly is the decision I am less sure of. It
-_felt right_, but it makes error output unclear. I welcome justified opinions on
-the matter and improvement suggestions (on this topic as in others).
+_felt right_, but it makes error output unclear. I welcome justified opinions
+and improvement suggestions (on this topic as in others).
