@@ -46,16 +46,22 @@ This function template is [SFINAE-friendly](design.md#sfinae-friendliness).
 ###### Preconditions:
 
 The template and function arguments need to respect certain preconditions. They
-are listed here and discussed in more detail [elsewhere](precond.md).
+should all be intuitive to C++ programmers, with the possible exception of
+precondition 2. They are summarized here and discussed in more detail
+[elsewhere](precond.md).
 
-- [invocable with no arguments](precond.md#invocable-with-no-arguments)
-- [void return](precond.md#void-return)
-- [_nothrow_-invocable](precond.md#nothrow-invocable)
-- [_nothrow_-destructible if non-reference](precond.md#nothrow-destructible-if-non-reference-template-argument)
+1. [invocable with no arguments](precond.md#invocable-with-no-arguments)
+2. [void return](precond.md#void-return)
+3. [_nothrow_-invocable](precond.md#nothrow-invocable)
+4. [_nothrow_-destructible if non-reference](precond.md#nothrow-destructible-if-non-reference-template-argument)
 template argument
-- [const-invocable if const reference](precond.md#const-invocable-if-const-reference)
-- [appropriate lifetime if lvalue reference](precond.md#appropriate-lifetime-if-lvalue-reference)
-- [movable or copyable if non-reference](precond.md#movable-or-copyable-if-non-reference)
+5. [const-invocable if const reference](precond.md#const-invocable-if-const-reference)
+6. [appropriate lifetime if lvalue reference](precond.md#appropriate-lifetime-if-lvalue-reference)
+7. [movable or copyable if non-reference](precond.md#movable-or-copyable-if-non-reference)
+
+By default, precondition 3 is not enforced at compile time. Precondition 6 is
+not enforced at compile time. All other preconditions are enforced at compile
+time.
 
 ###### Postconditions:
 
@@ -78,7 +84,7 @@ const auto guard = sg::make_scope_guard([]() noexcept { /* do stuff */ });
 
 ### Scope guard objects
 
-Scope guard objects have some unspecified type that cannot be used as a base
+Scope guard objects have some unspecified type that MUST NOT be used as a base
 class.
 
 #### Invariants:
