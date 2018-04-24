@@ -25,14 +25,13 @@ Here is an outline of the client interface:
 
 The free function template `make_scope_guard` resides in `namespace sg` and
 is the primary element of the public interface &ndash; most uses do not require
-anything else. It provides a way for clients to create a scope guard object with
-the specified callback as _associated_.
+anything else. It provides a way for clients to create a scope guard object that
+is _associated_ with the specified callback.
 
 Scope guards execute their _associated_ callback when they are destroyed, unless
 they were meanwhile [dismissed](#member-function-dismiss) or
 [moved](#member-move-constructor). Like other variables, scope guards with
-automatic storage are destroyed when they go out of scope, which explains their
-name.
+automatic storage are destroyed when they go out of scope, hence the name.
 
 This function template is [SFINAE-friendly](design.md#sfinae-friendliness).
 
