@@ -16,9 +16,9 @@ rationale for some design decisions. The outline is:
 ### No exceptions
 
 Scope guards rely on the destructor to execute the client's operation. That
-elicits special consideration regarding exceptions. Possible options to deal
-with potential exceptions arising from a callback (or a callback's destruction)
-are:
+elicits special consideration regarding possible callback exceptions. Possible
+options to deal with potential exceptions arising from a callback (or a
+callback's destruction) are:
 
 1. Allowing exceptions and...
     1. ... always ignoring (silently, with logging...)
@@ -28,32 +28,36 @@ are:
     scope guard (1, 2, 3, or some custom operation)
 2. Forbidding exceptions in the first place.
 
-###### Options 1.1 and 1.2
+###### Options 1.1 and 1.2 - uniform handling
 
 Exceptions permit custom handling of distinct errors by higher level callers,
-using information available to them. Uniform default handling methods would
-contradict that purpose and should in principle be avoided. That advises against
-options 1.1 and 1.2. Ignoring errors systematically is hardly a reasonable
-option. Allowing exceptions only to abort when they arise would transmit
+so they can make use of higher level information that is only available to them.
+Uniform default handling methods would contradict that purpose and should in
+principle be avoided. That advises against options 1.1 and 1.2. Specifically,
+ignoring errors in a systematic manner is hardly a reasonable option. Idem for
+allowing exceptions only to abort when they arise, which would transmit
 conflicting ideas to the user.
 
-###### Options 1.3 and 1.2
+###### Option 1.3 (and 1.2 fallback) - rethrowing
 
 A crucial property of exceptions is that they propagate automatically, freeing
 intermediaries from boilerplate code. Option 1.3 exploits that property and
-may therefore seem like the ideal default. Alas, _exceptions do not always
-propagate_. In particular, they do not propagate when the stack is already
-unwinding. To put it another way, exception propagation is really only
-achievable from code that is not already being executed in the context of
-exception propagation. Which is one of the circumstances where scope guards are
-most useful. In those cases, the program aborts, meaning that option 1.3 implies
-falling back to 1.2.
+is usually the ideal default. To the point that no special code needs to be
+written for it (rethrowing happens automatically). Destructors are special
+though. Alas, _exceptions do not always propagate_. In particular, they do not
+propagate when the stack is already unwinding. To put it another way, exception
+propagation is really only achievable from code that is not already being
+executed in the context of exception propagation. Which is one of the
+circumstances where scope guards are most useful. In those cases, the program
+aborts, meaning that option 1.3 implies falling back on 1.2.
 
 Still, option 1.3 (with 1.2 fallback) is appealling. It can be implemented
 simply with a destructor that a) is not `noexcept` when the callback isn't
-either; and b) leaves exceptions to behave as they do by default. It allows
-using scope guards for exception throwing in regular cases and it is the most
-common approach in implementations I have seen, including
+either; and b) leaves exceptions to behave as they do by default. In other
+words, by just declaring the destructor `noexcept(noexcept(callback()))` and
+otherwise leaving exceptions alone. This would allow using scope guards for
+exception throwing in regular cases (non-stack-unwinding). It is the path
+followed by other implementations, including
 [N4189](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4189.pdf)
 (section 7.3). One I considered seriously.
 
@@ -64,7 +68,7 @@ in production. Better _fail-fast_ to discourage the client from relying on, or
 otherwise using, throwing callbacks. After all, throwing destructors are
 considered bad practice for a reason.
 
-###### Option 1.4
+###### Option 1.4 - policy
 
 Option 1.4 could be achieved with some additional policy parameter for the
 client's choice, but that would complicate an interface that is desirably
@@ -74,7 +78,7 @@ remember considering it in each case. And, critically, choosing a default means
 recurring into the present problem &ndash; of how to deal with exceptions in the
 first place &ndash; which does not have a satisfactory answer so far.
 
-###### Option 2
+###### Option 2 - forbidding exceptions
 
 That leaves option 2, which is the one I went for. It still allows throwing
 operations to be used indirectly, if they are _converted_ to non-throwing. That
@@ -127,22 +131,22 @@ clients can still use compliant alternatives to wrap anything else (e.g. a
 `noexcept` lambda).
 
 In order to maintain the same behavior accross C++ standard versions, this
-option is disabled by default. I personally favor enabling it, if possible, in
-&ge;C++17.
+option is disabled by default. I personally favor enabling it, if possible (in
+&ge;C++17).
 
 ### No return
 
 A scope guard cannot know what to do with any callback returns. It can only
 ignore and discard them. But returns express information that is usually
-important. They are often employed for error handling and, in some programming
-styles, they even transfer resource ownership. Forgetting to check returns is a
-familiar cause of bugs. Linters look for them and compilers provide special
-attributes to warn against them (e.g
+important. They are often employed for error handling and even to transfer
+resource ownership. Forgetting to check returns is a familiar cause of bugs.
+Linters look for them and compilers provide special attributes to warn against
+them (e.g
 [warn_unused_result](https://gcc.gnu.org/onlinedocs/gcc-4.7.2/gcc/Function-Attributes.html)).
 The attribute [[nodiscard]] was even added to C++17 to help addressing such
 issues.
 
-The situation is still defective in my opinion. The decision of whether to
+The situation is still suboptimal, in my opinion. The decision of whether to
 ignore a return should belong to the caller, not the provider. But it should be
 an explicit decision (just like casts for conversions). In an ideal world,
 ignored returns should never have been possible without a conscious request
@@ -176,12 +180,13 @@ std::function<void()> wrap{f}; // Accepted, return is lost
 auto r1 = wrap(); // ERROR, wrap does not return anything
 ```
 
-However, while consistency is a desirable property, it is frequently
-incompatible with improvement and hardly a critical one for new undertakings.
-Otherwise, there would never be a place for change and advance would be stalled.
-Asking the reader not to take offense at the title and headings, I suggest a
-look at [Jon Kalb's post](http://slashslash.info/2018/02/a-foolish-consistency/)
-on the matter, which guides my own perspective.
+However, while consistency is a desirable property, it is hardly a critical one
+for new undertakings. And it is frequently incompatible with improvement &ndash;
+preventing change also stalls advance. Asking the reader not to take offense at
+the title and headings, I suggest a look at
+[Jon Kalb's post](http://slashslash.info/2018/02/a-foolish-consistency/)
+on the matter, which guides my own perspective and is much more eloquent that I
+could hope to be.
 
 Notice that since it is enforced at compile-time, the user is quickly alerted
 to the approach taken here, so he cannot commit to unintentional mistakes or be
@@ -198,9 +203,11 @@ That is the price to pay. I view it as analogous to the price that is payed when
 using std::string rather than char[], vector instead of plain arrays, or lambdas
 instead of functions. As in those cases, it is negligible and almost always
 worth it. In the rare occasions where measuring shows that price to be
-significant, a scope guard is not the right tool. If you can't pay the price of
-a function wrapping, you should probably take the care to ensure manual function
-calls in every scope exit path rather than using a scope guard to begin with.
+significant, a scope guard is not the right tool. The concept of scope guard
+always proposes wrapping as a means of avoiding repetition and corner-case
+pitfalls. If you can't pay the price of a function wrapping, you should
+probably take the care to ensure manual function calls in every scope exit path
+rather than using a scope guard to begin with.
 
 ### Conditional `noexcept`
 
@@ -211,7 +218,7 @@ relatively recent feature that many programmers are not used to, `noexcept`'s
 make the code more verbose and arguably harder to read, especially when the
 condition uses type traits. But they could not be discarded by an interface that
 has strong non-throwing requirements on input. Hopefully, the way the code
-separates function declarations and definitions facilitates readability.
+separates function declarations and definitions compensates on readability.
 
 The exception specification of `make_scope_guard` is such that making a scope
 guard is often a _nothrow_ operation. Notice in particular that
@@ -224,26 +231,25 @@ move constructor (and a `noexcept` destructor, but that is already
 [required](docs/precond.md#nothrow-destructible-if-non-reference-template-argument)
 in such cases)
 
-You can look for `noexcept` in [compilation tests](compile_time_tests.cpp) for
-examples of `make_scope_guard` instantiations with and without `noexcept`
+You can look for `noexcept` in [compilation tests](../compile_time_tests.cpp)
+for examples of `make_scope_guard` instantiations with and without `noexcept`
 guarantee.
 
 ### No extra arguments
 
 As the signature shows, `make_scope_guard` accepts no arguments beyond
 the callback (see the
-[related precondition](docs/precond.md#invocable-with-no-arguments)).
-This makes the interface (and implementation) simpler and pure. Operations
-that require arguments can be used indirectly, of course, with some form of
-wrapping. As with the [decision to forbid returns](#no-return), any potential
-performance impacts of an additional wrapping level are insignificant and not a
-decisive factor. The concept of scope guard always proposes wrapping as a means
-of avoiding repetition and corner-case pitfalls.
+[related precondition](precond.md#invocable-with-no-arguments)).
+This makes the interface (and implementation) simpler and pure and I could not
+see any other compelling case for them.
 
-I could not see any other compelling case for them. When lambdas and binds are
-available, the scope guard is better off keeping a _single responsibility_ of
-guarding the scope and leaving the complementary responsibility of closure to
-those other types.
+When lambdas and binds are available, the scope guard is better off keeping the _single responsibility_ of guarding the scope, leaving the complementary responsibility of closure, with all intricacies it involves (think lambda
+captures), to those other types.
+
+So, operations that require arguments can be used indirectly, with some form of
+closure. As with the [decision to forbid returns](#no-return), the potential
+performance impacts of an additional wrapping level are hardly significant and I
+don't think they are a decisive factor.
 
 ### Private constructor
 
@@ -283,25 +289,32 @@ As they stand, inactive scope guards exist for only two purposes:
 - to allow [dismissal](interface.md#member-function-dismiss)
 - to allow [moving](interface.md#member-move-constructor)
 
-Both intents are purely technical. They justify supporting a special state that
-is otherwise artificial and exists only because of the way C++ works. In other
-words, the inactive state represents nothing useful from any problem domain. It
-would not be required in a hypothetical programming language where local
-variables could be deleted early and moved without leaving _ghosts_ behind.
-However, it enables programming approaches that would not be possible in any
-other way.
+Both intents are valid, and they justify supporting a special state that
+is otherwise artificial and purely a technical matter. But this state exists
+only because of the way C++ works. If those operations ended up with no scope
+guard at all, their purpose would be equally fulfilled.
+
+In other words, the inactive state represents nothing useful from any problem
+domain. It would not be required in a hypothetical programming language where
+local variables could be deleted early and moved without leaving _ghosts_
+behind. So, we use the inactive state here only to enable valid programming
+approaches that would otherwise not be possible in C++. But then, should we take
+it one step further and use this state to provide another common C++ operation
+&ndash; default construction?
 
 Without any meaningful default callback, a potential default constructor could
 only create inactive scope guards (or active no-op, which would be equivalent).
 If they represent nothing useful from the problem domain, the only reason to
 create them directly in such a state would be to provide placeholders to allow
-modification. That is, to artificially _defer initialization_, which would have
-to then be achieved with assignment, since no other meaningful scope guard
-modifier is supported. But having constructed objects that are not initialized
-is a practice that goes against a very important principle! The one that
-corresponds to the literal meaning of a well-known overloaded expression
-&ndash; _Resourse Acquisition Is Initialization_. Constructors are meant to
-prevent uninitialized variables, not facilitate them.
+modification. That is, to artificially _defer initialization_, which would then
+have to be achieved with assignment, since no other meaningful scope guard
+modifier is supported.
+
+But having constructed objects that are not initialized is a practice that goes
+against a very important principle! The one that corresponds to the literal
+meaning of a well-known overloaded expression &ndash; _Resourse Acquisition Is
+Initialization_. Constructors are meant to prevent uninitialized variables, not
+facilitate them.
 
 Additionally, unlike in the case of the move constructor, I see no technical
 reason to provide the default constructor plus assignment operator combo. True,
@@ -347,8 +360,8 @@ compiler tries to deduce a template argument, an invalid application of
 `make_scope_guard` that is caused by a failure to substitute a candidate type
 (e.g. because the argument is not callable) does not cause a compilation error
 if any other substitution is still possible. You can look for "sfinae" in
-[catch tests](catch_tests.cpp) for examples.
+[catch tests](../catch_tests.cpp) for examples.
 
 Making the scope guard SFINAE-friendly is the decision I am less sure of. It
-_felt right_, but it makes error output unclear. I welcome justified opinions on
-the matter and improvement suggestions (on this topic as in others).
+_felt right_, but it makes error output unclear. I welcome justified opinions
+and improvement suggestions (on this topic as in others).

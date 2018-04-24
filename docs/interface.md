@@ -15,7 +15,7 @@ Here is an outline of the client interface:
   * [Invariants](#invariants)
   * [Overview of public members](#overview-of-public-members)
   * [List of deleted public members](#list-of-deleted-public-members)
-  * [Member type `calback_type`](#member-type-calback_type)
+  * [Member type `callback_type`](#member-type-callback_type)
   * [Member function `dismiss`](#member-function-dismiss)
   * [Member move constructor](#member-move-constructor)
   * [Member destructor](#member-destructor)
@@ -25,14 +25,13 @@ Here is an outline of the client interface:
 
 The free function template `make_scope_guard` resides in `namespace sg` and
 is the primary element of the public interface &ndash; most uses do not require
-anything else. It provides a way for clients to create a scope guard object with
-the specified callback as _associated_.
+anything else. It provides a way for clients to create a scope guard object that
+is _associated_ with the specified callback.
 
 Scope guards execute their _associated_ callback when they are destroyed, unless
 they were meanwhile [dismissed](#member-function-dismiss) or
 [moved](#member-move-constructor). Like other variables, scope guards with
-automatic storage are destroyed when they go out of scope, which explains their
-name.
+automatic storage are destroyed when they go out of scope, hence the name.
 
 This function template is [SFINAE-friendly](design.md#sfinae-friendliness).
 
@@ -47,16 +46,22 @@ This function template is [SFINAE-friendly](design.md#sfinae-friendliness).
 ###### Preconditions:
 
 The template and function arguments need to respect certain preconditions. They
-are listed here and discussed in more detail [elsewhere](precond.md).
+should all be intuitive to C++ programmers, with the possible exception of
+precondition 2. They are summarized here and discussed in more detail
+[elsewhere](precond.md).
 
-- [invocable with no arguments](precond.md#invocable-with-no-arguments)
-- [void return](precond.md#void-return)
-- [_nothrow_-invocable](precond.md#nothrow-invocable)
-- [_nothrow_-destructible if non-reference](precond.md#nothrow-destructible-if-non-reference-template-argument)
+1. [invocable with no arguments](precond.md#invocable-with-no-arguments)
+2. [void return](precond.md#void-return)
+3. [_nothrow_-invocable](precond.md#nothrow-invocable)
+4. [_nothrow_-destructible if non-reference](precond.md#nothrow-destructible-if-non-reference-template-argument)
 template argument
-- [const-invocable if const reference](precond.md#const-invocable-if-const-reference)
-- [appropriate lifetime if lvalue reference](precond.md#appropriate-lifetime-if-lvalue-reference)
-- [movable or copyable if non-reference](precond.md#movable-or-copyable-if-non-reference)
+5. [const-invocable if const reference](precond.md#const-invocable-if-const-reference)
+6. [appropriate lifetime if lvalue reference](precond.md#appropriate-lifetime-if-lvalue-reference)
+7. [movable or copyable if non-reference](precond.md#movable-or-copyable-if-non-reference)
+
+By default, precondition 3 is not enforced at compile time. Precondition 6 is
+not enforced at compile time. All other preconditions are enforced at compile
+time.
 
 ###### Postconditions:
 
@@ -79,7 +84,7 @@ const auto guard = sg::make_scope_guard([]() noexcept { /* do stuff */ });
 
 ### Scope guard objects
 
-Scope guard objects have some unspecified type that cannot be used as a base
+Scope guard objects have some unspecified type that MUST NOT be used as a base
 class.
 
 #### Invariants:
@@ -106,7 +111,7 @@ Note: Deleted special members cannot be used, but they participate in overload
 resolution. They are listed here because they are explicitly disallowed and
 that can be considered as part of the the client's interface.
 
-#### Member type `calback_type`
+#### Member type `callback_type`
 
 Template argument deduction allows the underlying callback type to be
 automatically derived from the function argument. That type &ndash; `Callback`
@@ -179,7 +184,7 @@ regarded as garbage awaiting destruction.
 
 ###### Member function signature:
 
-Unspecified.
+Standard move constructor.
 
 ###### Preconditions:
 
@@ -198,7 +203,7 @@ the moved-from guard before the move operation;
 ###### Exception specification:
 
 `noexcept` _iff_ `Callback` can be _nothrow-constructed_ from `Callback&&`
-(after reference collapse). Notice this is always the case if `Callback` is a
+(after reference collapse). Notice this is always the case when `Callback` is a
 reference type.
 
 ###### Example:
@@ -220,7 +225,7 @@ Scope guards have a (non-virtual) destructor.
 
 ###### Member function signature:
 
-Unspecified.
+Standard destructor.
 
 ###### Preconditions:
 

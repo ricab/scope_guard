@@ -1,6 +1,6 @@
 ## Tests
 
-A number of compile time and run-time tests can be automatically run in multiple
+A number of compile-time and run-time tests can be automatically run in multiple
 configurations.
 
 There are a few dependencies to execute the tests:
@@ -13,8 +13,8 @@ the symbol
 ### Instructions for running the tests
 (For GNU/Linux, should be analogous in other systems.)
 
-1. Install [cmake](https://cmake.org/)
-2. Install [Catch2](https://github.com/catchorg/Catch2):
+1. Install cmake
+2. Install catch
     ```sh
     $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
     $ mkdir <catch_bin_dir>
@@ -37,12 +37,12 @@ To speed things up, the last two commands can be given a number of threads to
 execute in parallel. For instance:
 
 ```sh
-make -j4 # max 4 compilations needed
+make -j4 # only 4 compilations needed
 make test ARGS=-j16 # On an otherwise idle machine, I suggest 2x the
                     # number of HW threads (to compensate for I/O)
 ```
 
-This will run catch and compile time tests with different combinations of
+This will run catch and compile-time tests with different combinations of
 `SG_REQUIRE_NOEXCEPT_IN_CPP17` and C++ standard, depending on compiler
 capabilities. If the compiler supports exception specifications as part of the
 type system
