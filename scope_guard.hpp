@@ -85,9 +85,9 @@ namespace sg
     template<typename Callback>
     detail::scope_guard<Callback> make_scope_guard(Callback&& callback)
     noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value); /*
-    we unfortunately need this intermediate step due to MSVC bugs preventing
-    sg::detail::scope_guard from befriending a sg::make_scope_guard template
-    instance (in the parent namespace; see https://is.gd/xFfFhE). */
+    we need this in the inner namespace due to MSVC bugs preventing
+    sg::detail::scope_guard from befriending a sg::make_scope_guard
+    template instance in the parent namespace (see https://is.gd/xFfFhE). */
 
 
     /* --- The template specialization that actually defines the class --- */
@@ -132,7 +132,7 @@ namespace sg
 
   /* --- Now the single public maker function --- */
 
-  using detail::make_scope_guard;
+  using detail::make_scope_guard; // see comment on declaration above
 
 } // namespace sg
 
