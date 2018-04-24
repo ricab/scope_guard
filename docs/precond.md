@@ -5,7 +5,8 @@ document are to be interpreted as described in RFC 2119._</sup>
 ## Preconditions in detail
 
 This section explains the preconditions that the callback passed to
-`make_scope_guard` is subject to. They are:
+`make_scope_guard` is subject to. They are hopefully all intuitive, with the
+possible exception of [void return](#void-return).
 
 - [invocable with no arguments](#invocable-with-no-arguments)
 - [void return](#void-return)
@@ -21,8 +22,10 @@ template argument
 
 ### invocable with no arguments
 
-The callback MUST be invocable with no arguments. The client MAY use a capturing
-lambda to easily pass something that takes arguments in its original form.
+The callback MUST be invocable with no arguments. Additional arguments are
+[intentionally](design.md#no-extra-arguments) not supported. The client MAY use
+a capturing lambda to easily pass something that takes arguments in its original
+form.
 
 ###### Compile time enforcement:
 
@@ -42,7 +45,7 @@ sg::make_scope_guard([&my_resource]() noexcept
 
 The callback MUST return void. Returning anything else is
 [intentionally](design.md#no-return) rejected. The user MAY wrap their call in a
-lambda that ignores the return.
+lambda that ignores the return value.
 
 ###### Compile time enforcement:
 
@@ -101,7 +104,7 @@ try
 {
   throwing_dtor tmp;
   sg::make_scope_guard([&tmp](){ tmp(); })
-  // tmp still alive
+  // guard destroyed, tmp still alive
 } // tmp only destroyed here
 catch(...) { /* handle somehow */ }
 ```
@@ -131,7 +134,7 @@ This precondition _is enforced_ at compile time.
 ### appropriate lifetime if lvalue reference
 
 If the template argument is an lvalue reference, then the function argument MUST
-be valid at least until all _associated_ are either destroyed or dismissed.
+be valid at least until it is not _associated_ with any active scope guard.
 Notice this is the case when the template argument is deduced from both lvalues
 and lvalue references.
 
