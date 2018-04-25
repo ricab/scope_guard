@@ -24,7 +24,7 @@ namespace
   void inc() noexcept { incc(count); }
   void resetc(unsigned& c) noexcept { c = 0u; }
   void reset() noexcept { resetc(count); }
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Showing that direct constructor is not desirable.")
@@ -571,7 +571,7 @@ namespace
     unfortunately in C++17 std::function does not accept a noexcept target type
     (results in incomplete type - at least in gcc and clang) */
   }
-}
+} // namespace
 
 #ifndef SG_REQUIRE_NOEXCEPT
 ////////////////////////////////////////////////////////////////////////////////
@@ -789,7 +789,7 @@ TEST_CASE("A dismissed scope_guard that was created with a "
 namespace
 {
   auto lambda_no_capture_count = 0u;
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda function with no capture can be used to create a "
@@ -1130,7 +1130,7 @@ namespace
     nocopy_nomove(nocopy_nomove&&) = delete;
     nocopy_nomove& operator=(nocopy_nomove&&) = delete;
   };
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A stateless custom functor can be used to create a scope_guard")
@@ -1377,7 +1377,7 @@ namespace
       --m_count;
     }
   };
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A lambda-wrapped regular method can be used to create a scope_guard")
@@ -1603,7 +1603,7 @@ namespace
   {
     return make_scope_guard(fallback);
   }
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Example usage relying on SFINAE-friendliness")
@@ -1662,7 +1662,7 @@ namespace
   }
 
   void noop() noexcept {}
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("The SFINAE testing tool creates a make_scope_guard, preferentially "
@@ -1961,7 +1961,7 @@ namespace
 
     return 0u;
   }
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("scope_guards execute their callback exactly once when leaving "
@@ -2100,7 +2100,7 @@ namespace
     return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
   }
 #endif
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A scope_guard that is moved from does not call its callback when "
@@ -2167,7 +2167,7 @@ namespace
   bool is_fake_done = false;
   void fake_do() noexcept { is_fake_done = true; }
   void fake_undo() noexcept { is_fake_done = false; }
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Test custom rollback")
@@ -2211,7 +2211,7 @@ namespace
 
     return false;
   }
-}
+} // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("Test rollback due to return")
