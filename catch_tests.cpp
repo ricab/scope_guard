@@ -8,11 +8,11 @@
 #define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
 #include "catch/catch.hpp"
 
-#include <type_traits>
 #include <functional>
-#include <utility>
-#include <memory>
 #include <list>
+#include <memory>
+#include <type_traits>
+#include <utility>
 
 using namespace sg;
 
