@@ -50,6 +50,8 @@ C++ community. It has been proposed for standardization (see
 [N4189](http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2014/n4189.pdf))
 but is still not part of the standard library, as of March 2018.
 
+#### Why
+
 While there are several implementations available, I did not find any with all
 the characteristics I aimed for here - safe, tested, documented, public domain, thin wrapping, general, standalone, simple interface... (see feature list below).
 
