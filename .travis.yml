@@ -73,15 +73,11 @@ matrix:
             - g++-7
       env: MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
     - os: osx
+      osx_image: xcode10.2
       compiler: clang
     - os: osx
+      osx_image: xcode10.2
       compiler: gcc
-    - os: osx
-      os_image: xcode9.3
-      compiler: gcc
-      env: >- # preamble works around #8826 (https://is.gd/Ajub8r)
-        MATRIX_EVAL="brew cask uninstall oclint
-        && brew install gcc && CC=gcc-7 && CXX=g++-7"
 
 before_install:
   - eval "${MATRIX_EVAL}" # determine overriding compiler, if set
