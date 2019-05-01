@@ -15,4 +15,4 @@ class ScopeguardConan(ConanFile):
     no_copy_source = True
 
     def package(self):
-        self.copy("*scope_guard.hpp", dst="include")
+        self.copy("scope_guard.hpp", dst="include")
