@@ -73,11 +73,10 @@ matrix:
             - g++-7
       env: MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
     - os: osx
+      osx_image: xcode10.2
       compiler: clang
     - os: osx
-      compiler: gcc
-    - os: osx
-      osx_image: xcode9.3
+      osx_image: xcode10.2
       compiler: gcc
 
 before_install:
