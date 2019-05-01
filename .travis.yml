@@ -77,7 +77,7 @@ matrix:
     - os: osx
       compiler: gcc
     - os: osx
-      os_image: xcode9.3
+      osx_image: xcode9.3
       compiler: gcc
       env: >- # preamble works around #8826 (https://is.gd/Ajub8r)
         MATRIX_EVAL="brew cask uninstall oclint
