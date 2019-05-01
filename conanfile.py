@@ -3,7 +3,7 @@ from conans import ConanFile
 
 class ScopeguardConan(ConanFile):
     name = "scope_guard"
-    version = "0.2.3"
+    version = "0.2.4-dev.1"
     license = "The Unlicense"
     author = "Ricardo Abreu ricardo.abreu@canonical.com"
     url = "https://github.com/Lawrencemm/scope_guard"
