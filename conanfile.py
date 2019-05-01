@@ -8,10 +8,9 @@ class ScopeguardConan(ConanFile):
     author = "Ricardo Abreu ricab@ricabhome.org"
     url = "https://github.com/ricab/scope_guard"
     homepage = "https://ricab.github.io/scope_guard/"
-        "A modern C++ scope guard that is easy to use but hard to misuse. "
-        "https://ricab.github.io/scope_guard/"
-    )
-    topics = ("scope guard", "RAII", "resource management")
+    description = "A modern C++ scope guard that is easy to use but hard to misuse."
+    topics = ("scope guard", "RAII", "resource management", "idioms",
+              "header-only", "single-file")
     exports_sources = "scope_guard.hpp"
     no_copy_source = True
 
