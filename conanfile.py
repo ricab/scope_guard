@@ -6,8 +6,8 @@ class ScopeguardConan(ConanFile):
     version = "0.2.4-dev.1"
     license = "The Unlicense"
     author = "Ricardo Abreu ricab@ricabhome.org"
-    url = "https://github.com/Lawrencemm/scope_guard"
-    description = (
+    url = "https://github.com/ricab/scope_guard"
+    homepage = "https://ricab.github.io/scope_guard/"
         "A modern C++ scope guard that is easy to use but hard to misuse. "
         "https://ricab.github.io/scope_guard/"
     )
