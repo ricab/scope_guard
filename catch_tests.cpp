@@ -803,7 +803,7 @@ TEST_CASE("A no-capture-lambda-based scope_guard executes the lambda exactly "
           "once when leaving scope.")
 {
   {
-    REQUIRE_FALSE(lambda_no_capture_count);
+    resetc(lambda_no_capture_count);
     const auto guard = make_scope_guard([]() noexcept
                                         { incc(lambda_no_capture_count); });
     REQUIRE_FALSE(lambda_no_capture_count);
@@ -823,7 +823,7 @@ TEST_CASE("A dismissed no-capture-lambda-based scope_guard does not execute "
           "its callback at all.")
 {
   {
-    REQUIRE_FALSE(lambda_no_capture_count);
+    resetc(lambda_no_capture_count);
     auto guard = make_scope_guard([]() noexcept
                                   { incc(lambda_no_capture_count); });
     REQUIRE_FALSE(lambda_no_capture_count);
