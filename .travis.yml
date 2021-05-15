@@ -8,6 +8,7 @@ env:
     - MAKEFLAGS="-j2"
     - CATCH_DIR="~/catch"
     - CATCH_REMOTE="https://github.com/catchorg/Catch2.git"
+    - CATCH_VERSION=v2.13.6
 
 matrix:
   include:
@@ -85,7 +86,7 @@ before_install:
 install:
   - git clone ${CATCH_REMOTE} ${CATCH_DIR}
   - pushd ${CATCH_DIR}
-  - git checkout -q $(git describe --tags --abbrev=0)
+  - git checkout -q ${CATCH_VERSION}
   - mkdir build
   - cd build
   - cmake -DBUILD_TESTING:BOOL=FALSE ..
