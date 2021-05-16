@@ -13,20 +13,22 @@ env:
 matrix:
   include:
     - os: linux
-      compiler: gcc # default version
+      compiler: gcc-4.9 # old gcc
     - os: linux
+      dist: focal
       addons:
         apt:
           sources: ubuntu-toolchain-r-test
-          packages: g++-7
-      env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+          packages: g++-11
+      env: MATRIX_EVAL="CC=gcc-11 && CXX=g++-11"
     - os: linux
+      dist: focal
       addons:
         apt:
           sources: ubuntu-toolchain-r-test
-          packages: g++-7
+          packages: g++-11
       env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+        - MATRIX_EVAL="CC=gcc-11 && CXX=g++-11"
         - CMAKE_COV="-DENABLE_COVERAGE:BOOL=ON" # coverage build
     - os: linux
       addons:
