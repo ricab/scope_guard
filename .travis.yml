@@ -18,14 +18,16 @@ matrix:
       dist: focal
       addons:
         apt:
-          sources: ubuntu-toolchain-r-test
+          sources: # for some reason, travis doesn't like the src alias on focal
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages: g++-11
       env: MATRIX_EVAL="CC=gcc-11 && CXX=g++-11"
     - os: linux
       dist: focal
       addons:
         apt:
-          sources: ubuntu-toolchain-r-test
+          sources: # for some reason, travis doesn't like the src alias on focal
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages: g++-11
       env:
         - MATRIX_EVAL="CC=gcc-11 && CXX=g++-11"
