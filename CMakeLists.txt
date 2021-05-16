@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD 11)
 
 # compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(clang_warnings "-Weverything -pedantic -Wno-c++98-compat \
+  set(clang_warnings "-Wall -Wextra -pedantic -Wno-c++98-compat \
     -Wno-unreachable-code -Wno-padded -Wno-exit-time-destructors \
     -Wno-global-constructors -Wno-exit-time-destructors -Wno-unused-variable \
     -Wno-unused-member-function -Wno-unused-function -Wno-class-varargs")
