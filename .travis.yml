@@ -15,6 +15,16 @@ matrix:
     - os: linux
       compiler: gcc-4.9 # old gcc
     - os: linux
+      addons:
+        apt:
+          sources:
+            - llvm-toolchain-xenial-8
+            - ubuntu-toolchain-r-test
+          packages:
+            - clang-8
+            - g++-8
+      env: MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
+    - os: linux
       dist: focal
       addons:
         apt:
@@ -32,16 +42,6 @@ matrix:
       env:
         - MATRIX_EVAL="CC=gcc-11 && CXX=g++-11"
         - CMAKE_COV="-DENABLE_COVERAGE:BOOL=ON" # coverage build
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-xenial-8
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang-8
-            - g++-8
-      env: MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
     - os: osx
       osx_image: xcode10.3
       compiler: clang
