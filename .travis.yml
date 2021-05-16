@@ -18,24 +18,6 @@ matrix:
       addons:
         apt:
           sources: ubuntu-toolchain-r-test
-          packages: g++-4.9
-      env: MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
-          packages: g++-5
-      env: MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
-          packages: g++-6
-      env: MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
           packages: g++-7
       env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
     - os: linux
@@ -49,13 +31,6 @@ matrix:
     - os: linux
       addons:
         apt:
-          sources: llvm-toolchain-trusty-3.6
-          packages: clang-3.6
-      env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
-    - os: linux
-      addons:
-        apt:
           sources:
             - llvm-toolchain-xenial-8
             - ubuntu-toolchain-r-test
@@ -63,27 +38,11 @@ matrix:
             - clang-8
             - g++-8
       env: MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
-    - os: linux
-      addons:
-        apt:
-          sources:
-            - llvm-toolchain-xenial-6.0
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang-6.0
-            - g++-7
-      env: MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
     - os: osx
       osx_image: xcode10.3
       compiler: clang
     - os: osx
       osx_image: xcode10.3
-      compiler: gcc
-    - os: osx
-      osx_image: xcode11.6
-      compiler: clang
-    - os: osx
-      osx_image: xcode11.6
       compiler: gcc
     - os: osx
       osx_image: xcode12.5
