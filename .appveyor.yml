@@ -11,12 +11,13 @@ platform:
 environment:
   CATCH_DIR: c:\projects\catch
   CATCH_REMOTE: https://github.com/catchorg/Catch2.git
+  CATCH_VERSION: v2.13.6
   MSBUILD_OPTS: "/m:2 /p:Optimize=no /p:DebugSymbols=false"
 
 install:
   - git clone %CATCH_REMOTE% %CATCH_DIR%
   - cd %CATCH_DIR%
-  - pwsh: git checkout -q $(git describe --tags --abbrev=0)
+  - git checkout -q %CATCH_VERSION%
   - mkdir build
   - cd build
   - cmake -DBUILD_TESTING:BOOL=FALSE ..
