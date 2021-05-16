@@ -5,7 +5,8 @@ git:
 
 env:
   global:
-    - MAKEFLAGS="-j2"
+    - NPROC=$(nproc)
+    - MAKEFLAGS="-j${NPROC}"
     - CATCH_DIR="~/catch"
     - CATCH_REMOTE="https://github.com/catchorg/Catch2.git"
     - CATCH_VERSION=v2.13.6
@@ -56,6 +57,7 @@ matrix:
       compiler: gcc
 
 before_install:
+  - echo ${NPROC}
   - eval "${MATRIX_EVAL}" # determine overriding compiler, if set
 
 install:
@@ -75,7 +77,9 @@ script:
   - cd build
   - cmake -Wdev -Werror=dev -DCMAKE_BUILD_TYPE=Debug ${CMAKE_COV} ..
   - cmake --build .
-  - cmake --build . --target test
+  - unset MAKEFLAGS # drop MAKEFLAGS, (which would affect compilation tests)
+  - make test ARGS=-j$((${NPROC} * 2)) # but run twice as many compilation tests
+                                       # as the number of available `nproc`
 
 after_success: |-
   if [ ! -z "${CMAKE_COV}" ]; then
