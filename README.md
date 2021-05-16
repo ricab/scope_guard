@@ -4,7 +4,7 @@
 [![Build status](https://img.shields.io/appveyor/ci/ricab/scope-guard.svg)](https://ci.appveyor.com/project/ricab/scope-guard/branch/master)
 [![codecov](https://img.shields.io/codecov/c/github/ricab/scope_guard.svg)](https://codecov.io/gh/ricab/scope_guard)
 
-[![GitHub release](https://img.shields.io/github/release/ricab/scope_guard/all.svg)](https://github.com/ricab/scope_guard/releases)
+[![GitHub release](https://img.shields.io/github/v/release/ricab/scope_guard?include_prereleases)](https://github.com/ricab/scope_guard/releases)
 [![semver](https://img.shields.io/badge/semver-2.0.0-blue.svg)](https://semver.org/spec/v2.0.0.html)
 [![GitHub license](https://img.shields.io/github/license/ricab/scope_guard.svg)](https://github.com/ricab/scope_guard/blob/master/LICENSE)
 
