@@ -5,7 +5,8 @@ git:
 
 env:
   global:
-    - MAKEFLAGS="-j2"
+    - NPROC=$(nproc)
+    - MAKEFLAGS="-j${NPROC}"
     - CATCH_DIR="~/catch"
     - CATCH_REMOTE="https://github.com/catchorg/Catch2.git"
     - CATCH_VERSION=v2.13.6
@@ -13,46 +14,7 @@ env:
 matrix:
   include:
     - os: linux
-      compiler: gcc # default version
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
-          packages: g++-4.9
-      env: MATRIX_EVAL="CC=gcc-4.9 && CXX=g++-4.9"
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
-          packages: g++-5
-      env: MATRIX_EVAL="CC=gcc-5 && CXX=g++-5"
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
-          packages: g++-6
-      env: MATRIX_EVAL="CC=gcc-6 && CXX=g++-6"
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
-          packages: g++-7
-      env: MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-    - os: linux
-      addons:
-        apt:
-          sources: ubuntu-toolchain-r-test
-          packages: g++-7
-      env:
-        - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
-        - CMAKE_COV="-DENABLE_COVERAGE:BOOL=ON" # coverage build
-    - os: linux
-      addons:
-        apt:
-          sources: llvm-toolchain-trusty-3.6
-          packages: clang-3.6
-      env:
-        - MATRIX_EVAL="CC=clang-3.6 && CXX=clang++-3.6"
+      compiler: gcc-4.9 # old gcc
     - os: linux
       addons:
         apt:
@@ -64,26 +26,28 @@ matrix:
             - g++-8
       env: MATRIX_EVAL="CC=clang-8 && CXX=clang++-8"
     - os: linux
+      dist: focal
       addons:
         apt:
-          sources:
-            - llvm-toolchain-xenial-6.0
-            - ubuntu-toolchain-r-test
-          packages:
-            - clang-6.0
-            - g++-7
-      env: MATRIX_EVAL="CC=clang-6.0 && CXX=clang++-6.0"
+          sources: # for some reason, travis doesn't like the src alias on focal
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages: g++-11
+      env: MATRIX_EVAL="CC=gcc-11 && CXX=g++-11"
+    - os: linux
+      dist: focal
+      addons:
+        apt:
+          sources: # for some reason, travis doesn't like the src alias on focal
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
+          packages: g++-11
+      env:
+        - MATRIX_EVAL="CC=gcc-11 && CXX=g++-11"
+        - CMAKE_COV="-DENABLE_COVERAGE:BOOL=ON" # coverage build
     - os: osx
       osx_image: xcode10.3
       compiler: clang
     - os: osx
       osx_image: xcode10.3
-      compiler: gcc
-    - os: osx
-      osx_image: xcode11.6
-      compiler: clang
-    - os: osx
-      osx_image: xcode11.6
       compiler: gcc
     - os: osx
       osx_image: xcode12.5
@@ -93,6 +57,7 @@ matrix:
       compiler: gcc
 
 before_install:
+  - echo ${NPROC}
   - eval "${MATRIX_EVAL}" # determine overriding compiler, if set
 
 install:
@@ -112,7 +77,9 @@ script:
   - cd build
   - cmake -Wdev -Werror=dev -DCMAKE_BUILD_TYPE=Debug ${CMAKE_COV} ..
   - cmake --build .
-  - cmake --build . --target test
+  - unset MAKEFLAGS # drop MAKEFLAGS, (which would affect compilation tests)
+  - make test ARGS=-j$((${NPROC} * 2)) # but run twice as many compilation tests
+                                       # as the number of available `nproc`
 
 after_success: |-
   if [ ! -z "${CMAKE_COV}" ]; then
