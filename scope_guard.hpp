@@ -127,6 +127,14 @@ namespace sg
 
     };
 
+    ////////////////////////////////////////////////////////////////////////////////
+    template<typename Callback>
+    scope_guard<Callback>::~scope_guard() noexcept
+    {
+      if(m_active)
+        m_callback();
+    }
+
   } // namespace detail
 
 
@@ -146,14 +154,6 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
     https://is.gd/Tsmh8G) */
   , m_active{true}
 {}
-
-////////////////////////////////////////////////////////////////////////////////
-template<typename Callback>
-sg::detail::scope_guard<Callback>::~scope_guard<Callback>() noexcept
-{
-  if(m_active)
-    m_callback();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
