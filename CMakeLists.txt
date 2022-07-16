@@ -5,7 +5,16 @@ project(scope_guard)
 include(CheckCXXSymbolExists)
 include(CheckCXXCompilerFlag)
 include(GNUInstallDirs)
-find_package(Catch2 REQUIRED)
+
+Include(FetchContent)
+
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v2.13.6
+)
+
+FetchContent_MakeAvailable(Catch2)
 
 # global configurations
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
