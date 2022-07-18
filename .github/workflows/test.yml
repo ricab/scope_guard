@@ -13,14 +13,37 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            compiler: g++-9
+          - os: ubuntu-latest
+            compiler: g++-10
+          - os: ubuntu-latest
+            compiler: clang++-10
+          - os: ubuntu-latest
+            compiler: clang++-11
+          - os: ubuntu-latest
+            compiler: clang++-12
+          - os: macos-latest
+            compiler: g++-9
+          - os: macos-latest
+            compiler: g++-10
+          - os: macos-latest
+            compiler: g++-11
+          - os: macos-latest # with default compiler (AppleClang)
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v3
 
+    - name: Determine compiler flag
+      if: ${{matrix.compiler}}
+      run: |
+        echo "CXX=${{matrix.compiler}}" >> $GITHUB_ENV
+
     - name: Configure CMake
-      run: cmake -Wdev -Werror=dev -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: |
+        cmake -Wdev -Werror=dev -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
