@@ -67,7 +67,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: |
         echo "Producing coverage reports..."
-        find . -name catch_tests.cpp.gcno -exec gcov-7 -pb {} +
+        find . -name catch_tests.cpp.gcno -exec gcov -pb {} +
 
         echo "Finding relevant report..."
         cov_report=$(find . -name "*scope_guard.hpp.gcov" -exec readlink -e {} +)
