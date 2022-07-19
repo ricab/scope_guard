@@ -31,8 +31,9 @@ jobs:
           - os: macos-latest
             compiler: g++-11
           - os: macos-latest
-            comp: AppleClang # unused: this is the default compiler and not obvious to specify explicitly, but we still
-                             # want to see the compiler string in the GH UI, so use a different var altogether
+            comp: AppleClang # unused: this is the default compiler and not obvious to specify
+                             # explicitly, but we still want to see the compiler string in the
+                             # GH UI, so use a different var altogether
 
     runs-on: ${{matrix.os}}
     steps:
@@ -63,8 +64,9 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       run: cmake --build . --config ${BUILD_TYPE} --target test
-        ARGS=-j$((${num_cpus} * 2)) # don't pass --parallel, which would affect compilation tests, but do run
-                                    # twice as many compilation tests as the number of available threads
+        ARGS=-j$((${num_cpus} * 2)) # don't pass --parallel, which would affect compilation tests,
+                                    # but do run twice as many compilation tests as the number of
+                                    # available threads
       
     - name: Codecov
       if: contains(matrix.extra_build_flags, 'coverage')
