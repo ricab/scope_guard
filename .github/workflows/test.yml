@@ -30,7 +30,9 @@ jobs:
             compiler: g++-10
           - os: macos-latest
             compiler: g++-11
-          - os: macos-latest # with default compiler (AppleClang)
+          - os: macos-latest
+            comp: AppleClang # unused: this is the default compiler and not obvious to specify explicitly, but we still
+                             # want to see the compiler string in the GH UI, so use a different var altogether
 
     runs-on: ${{matrix.os}}
     steps:
