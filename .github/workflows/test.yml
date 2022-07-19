@@ -17,6 +17,7 @@ jobs:
             compiler: g++-9
           - os: ubuntu-latest
             compiler: g++-10
+            extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
           - os: ubuntu-latest
             compiler: clang++-10
           - os: ubuntu-latest
@@ -52,7 +53,8 @@ jobs:
 
     - name: Configure CMake
       run: |
-        cmake -Wdev -Werror=dev -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+        cmake -Wdev -Werror=dev -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          ${{matrix.extra_build_flags}}
 
     - name: Build
       working-directory: ${{github.workspace}}/build
@@ -64,3 +66,15 @@ jobs:
         ARGS=-j$((${{env.num_cpus}} * 2)) # don't pass --parallel, which would affect compilation tests, but do run
                                           # twice as many compilation tests as the number of available threads
       
+    - name: Codecov
+      if: contains(matrix.extra_build_flags, 'coverage')
+      working-directory: ${{github.workspace}}/build
+      run: |
+        echo "Producing coverage reports..."
+        find . -name catch_tests.cpp.gcno -exec gcov-7 -pb {} +
+
+        echo "Finding relevant report..."
+        cov_report=$(find . -name "*scope_guard.hpp.gcov" -exec readlink -e {} +)
+
+        echo "The report is ${cov_report}. Uploading to codecov..."
+        bash <(curl -s https://codecov.io/bash) -f $cov_report
