@@ -1,0 +1,82 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            compiler: g++-9
+          - os: ubuntu-latest
+            compiler: g++-10
+            extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
+          - os: ubuntu-latest
+            compiler: clang++-10
+          - os: ubuntu-latest
+            compiler: clang++-11
+          - os: ubuntu-latest
+            compiler: clang++-12
+          - os: macos-latest
+            compiler: g++-9
+          - os: macos-latest
+            compiler: g++-10
+          - os: macos-latest
+            compiler: g++-11
+          - os: macos-latest
+            comp: AppleClang # unused: this is the default compiler and not obvious to specify
+                             # explicitly, but we still want to see the compiler string in the
+                             # GH UI, so use a different var altogether
+
+    runs-on: ${{matrix.os}}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 2 # Codecov requests >1
+
+    - name: Determine number of cpus on Linux
+      if: startsWith(matrix.os, 'ubuntu')
+      run: echo "num_cpus=$(nproc)" >> $GITHUB_ENV # TODO use set-output instead
+
+    - name: Determine number of cpus on macOS
+      if: startsWith(matrix.os, 'macos')
+      run: echo "num_cpus=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV # TODO use set-output instead
+
+    - name: Determine compiler flag
+      if: ${{matrix.compiler}}
+      run: echo "CXX=${{matrix.compiler}}" >> $GITHUB_ENV
+
+    - name: Configure CMake
+      run: cmake -Wdev -Werror=dev -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+          ${{matrix.extra_build_flags}}
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${BUILD_TYPE} --parallel ${num_cpus}
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: cmake --build . --config ${BUILD_TYPE} --target test
+        ARGS=-j$((${num_cpus} * 2)) # don't pass --parallel, which would affect compilation tests,
+                                    # but do run twice as many compilation tests as the number of
+                                    # available threads
+      
+    - name: Codecov
+      if: contains(matrix.extra_build_flags, 'coverage')
+      working-directory: ${{github.workspace}}/build
+      run: |
+        echo "Producing coverage reports..."
+        find . -name catch_tests.cpp.gcno -exec gcov -pb {} +
+
+        echo "Finding relevant report..."
+        cov_report=$(find . -name "*scope_guard.hpp.gcov" -exec readlink -e {} +)
+
+        echo "The report is ${cov_report}. Uploading to codecov..."
+        bash <(curl -s https://codecov.io/bash) -f $cov_report
