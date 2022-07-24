@@ -28,8 +28,6 @@ jobs:
             compiler: clang++-7
             install: clang-7
           - os: ubuntu-latest
-            compiler: clang++-10
-          - os: ubuntu-latest
             compiler: clang++-11
           - os: ubuntu-latest
             compiler: clang++-12
@@ -38,8 +36,6 @@ jobs:
             install: clang-13
           - os: macos-latest
             compiler: g++-9
-          - os: macos-latest
-            compiler: g++-10
           - os: macos-latest
             compiler: g++-11
           - os: macos-latest
