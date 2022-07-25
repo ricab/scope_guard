@@ -8,23 +8,13 @@ There are a few dependencies to execute the tests:
 the symbol
 [__cpp_noexcept_function_type](http://en.cppreference.com/w/cpp/experimental/feature_test))
 - [Cmake](https://cmake.org/) &ndash; a version in the interval [3.8, 4)
-- [Catch2](https://github.com/catchorg/Catch2) &ndash; any sub-version of v2
+- [Catch2](https://github.com/catchorg/Catch2) &ndash; any sub-version of v2 (now obtained automatically via CMake's FetchContent module)
 
 ### Instructions for running the tests
 (For GNU/Linux, should be analogous in other systems.)
 
 1. Install cmake
-2. Install catch
-    ```sh
-    $ git clone https://github.com/catchorg/Catch2 <catch_src_dir>
-    $ git checkout v2.x
-    $ mkdir <catch_bin_dir>
-    $ cd <catch_bin_dir>
-    $ cmake -DBUILD_TESTING:BOOL=FALSE <catch_src_dir>
-    $ make
-    $ make install
-    ```
-3. Clone and build this repo:
+2. Clone and build this repo:
     ```sh
     $ git clone https://github.com/ricab/scope_guard.git <guard_src_dir>
     $ mkdir <guard_bin_dir>
