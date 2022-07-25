@@ -1,6 +1,6 @@
 # scope_guard
 
-[![Build Status](https://img.shields.io/travis/ricab/scope_guard.svg)](https://travis-ci.org/ricab/scope_guard)
+[![Build Status](https://github.com/ricab/scope_guard/actions/workflows/test.yml/badge.svg)](https://github.com/ricab/scope_guard/actions/workflows/test.yml)
 [![Build status](https://img.shields.io/appveyor/ci/ricab/scope-guard.svg)](https://ci.appveyor.com/project/ricab/scope-guard/branch/master)
 [![codecov](https://img.shields.io/codecov/c/github/ricab/scope_guard.svg)](https://codecov.io/gh/ricab/scope_guard)
 
