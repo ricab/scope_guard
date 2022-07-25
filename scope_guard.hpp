@@ -149,7 +149,8 @@ noexcept(std::is_nothrow_constructible<Callback, Callback&&>::value)
 
 ////////////////////////////////////////////////////////////////////////////////
 template<typename Callback>
-sg::detail::scope_guard<Callback>::~scope_guard<Callback>() noexcept
+sg::detail::scope_guard<Callback>::scope_guard::~scope_guard() noexcept  /*
+need the extra injected-class-name here to make different compilers happy */
 {
   if(m_active)
     m_callback();
