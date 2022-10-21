@@ -254,7 +254,7 @@ can be defined to require _nothrow-invocable_ callbacks in `make_scope_guard`
 at compile time.
 
 Notice however, that this restricts accepted callback types
-[considerably](design#implications-of-requiring-noexcept-callbacks-at-compile-time).
+[considerably](design.md#implications-of-requiring-noexcept-callbacks-at-compile-time).
 
 This option is disabled by default and enabling it has no effect unless
 &ge;C++17 is used.
