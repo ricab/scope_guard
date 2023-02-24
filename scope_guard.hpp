@@ -11,8 +11,13 @@
 #include <type_traits>
 #include <utility>
 
-#if __cplusplus >= 201703L && defined(SG_REQUIRE_NOEXCEPT_IN_CPP17)
+#if __cplusplus >= 201703L
+#define SG_NODISCARD [[nodiscard]]
+#ifdef SG_REQUIRE_NOEXCEPT_IN_CPP17
 #define SG_REQUIRE_NOEXCEPT
+#endif
+#else
+#define SG_NODISCARD
 #endif
 
 namespace sg
@@ -93,7 +98,7 @@ namespace sg
     /* --- The template specialization that actually defines the class --- */
 
     template<typename Callback>
-    class scope_guard<Callback> final
+    class SG_NODISCARD scope_guard<Callback> final
     {
     public:
       typedef Callback callback_type;
