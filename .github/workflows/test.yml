@@ -16,7 +16,7 @@ jobs:
           - os: ubuntu-18.04
             compiler: g++-4.8
             install: g++-4.8
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             compiler: g++-7
             install: g++-7
           - os: ubuntu-latest
@@ -25,16 +25,15 @@ jobs:
             compiler: g++-11
             install: g++-11
             extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             compiler: clang++-7
             install: clang-7
           - os: ubuntu-latest
-            compiler: clang++-11
-          - os: ubuntu-latest
             compiler: clang++-12
-          - os: ubuntu-22.04 # beta, not latest ATTOW
+          - os: ubuntu-latest
             compiler: clang++-13
-            install: clang-13
+          - os: ubuntu-latest
+            compiler: clang++-14
           - os: macos-latest
             compiler: g++-9
           - os: macos-latest
