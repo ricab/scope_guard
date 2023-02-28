@@ -4,9 +4,10 @@
  */
 
 #include "scope_guard.hpp"
-#include <utility>
 #include <functional>
 #include <stdexcept>
+#include <tuple>
+#include <utility>
 
 using namespace sg;
 
@@ -365,17 +366,17 @@ namespace
   {
 #ifdef test_26
     nocopy_nomove ncnm{};
-    make_scope_guard(ncnm);
+    std::ignore = make_scope_guard(ncnm);
 #endif
 #ifdef test_27
     nocopy_nomove ncnm{};
     auto& ncnmr = ncnm;
-    make_scope_guard(ncnmr);
+    std::ignore = make_scope_guard(ncnmr);
 #endif
 #ifdef test_28
     nocopy_nomove ncnm{};
     const auto& ncnmcr = ncnm;
-    make_scope_guard(ncnmcr);
+    std::ignore = make_scope_guard(ncnmcr);
 #endif
   }
 
@@ -404,13 +405,13 @@ namespace
   void test_noexcept_good()
   {
 #ifdef test_32
-    make_scope_guard(non_throwing);
+    std::ignore = make_scope_guard(non_throwing);
 #endif
 #ifdef test_33
-    make_scope_guard(non_throwing_lambda);
+    std::ignore = make_scope_guard(non_throwing_lambda);
 #endif
 #ifdef test_34
-    make_scope_guard(non_throwing_functor);
+    std::ignore = make_scope_guard(non_throwing_functor);
 #endif
   }
 
@@ -424,19 +425,19 @@ namespace
   void test_noexcept_bad()
   {
 #ifdef test_35
-    make_scope_guard(throwing);
+    std::ignore = make_scope_guard(throwing);
 #endif
 #ifdef test_36
-    make_scope_guard(throwing_stdfun);
+    std::ignore = make_scope_guard(throwing_stdfun);
 #endif
 #ifdef test_37
-    make_scope_guard(throwing_lambda);
+    std::ignore = make_scope_guard(throwing_lambda);
 #endif
 #ifdef test_38
-    make_scope_guard(throwing_bound);
+    std::ignore = make_scope_guard(throwing_bound);
 #endif
 #ifdef test_39
-    make_scope_guard(throwing_functor);
+    std::ignore = make_scope_guard(throwing_functor);
 #endif
   }
 
@@ -448,19 +449,19 @@ namespace
   void test_noexcept_fixable()
   {
 #ifdef test_40
-    make_scope_guard(meh);
+    std::ignore = make_scope_guard(meh);
 #endif
 #ifdef test_41
-    make_scope_guard(meh_stdfun);
+    std::ignore = make_scope_guard(meh_stdfun);
 #endif
 #ifdef test_42
-    make_scope_guard(meh_lambda);
+    std::ignore = make_scope_guard(meh_lambda);
 #endif
 #ifdef test_43
-    make_scope_guard(meh_bound);
+    std::ignore = make_scope_guard(meh_bound);
 #endif
 #ifdef test_44
-    make_scope_guard(meh_functor);
+    std::ignore = make_scope_guard(meh_functor);
 #endif
   }
 
@@ -473,10 +474,10 @@ namespace
   void test_noexcept_unfortunate()
   {
 #ifdef test_45
-    make_scope_guard(non_throwing_stdfun);
+    std::ignore = make_scope_guard(non_throwing_stdfun);
 #endif
 #ifdef test_46
-    make_scope_guard(non_throwing_bound);
+    std::ignore = make_scope_guard(non_throwing_bound);
 #endif
   }
 
@@ -510,11 +511,11 @@ namespace
   void test_throwing_dtor_throw_spec_bad()
   {
 #ifdef test_52
-    make_scope_guard(potentially_throwing_dtor{});
+    std::ignore = make_scope_guard(potentially_throwing_dtor{});
 #endif
 #ifdef test_53
     potentially_throwing_dtor x;
-    make_scope_guard(std::move(x));
+    std::ignore = make_scope_guard(std::move(x));
 #endif
   }
 
@@ -559,19 +560,19 @@ namespace
   void test_disallowed_return()
   {
 #ifdef test_57
-    make_scope_guard(returning);
+    std::ignore = make_scope_guard(returning);
 #endif
 #ifdef test_58
-    make_scope_guard(returning_stdfun);
+    std::ignore = make_scope_guard(returning_stdfun);
 #endif
 #ifdef test_59
-    make_scope_guard(returning_lambda);
+    std::ignore = make_scope_guard(returning_lambda);
 #endif
 #ifdef test_60
-    make_scope_guard(returning_bound);
+    std::ignore = make_scope_guard(returning_bound);
 #endif
 #ifdef test_61
-    make_scope_guard(returning_functor);
+    std::ignore = make_scope_guard(returning_functor);
 #endif
   }
 
@@ -582,11 +583,11 @@ namespace
   void test_noncopyable_nonmovable_bad()
   {
 #ifdef test_62
-    make_scope_guard(nocopy_nomove{});
+    std::ignore = make_scope_guard(nocopy_nomove{});
 #endif
 #ifdef test_63
     nocopy_nomove ncnm{};
-    make_scope_guard(std::move(ncnm));
+    std::ignore = make_scope_guard(std::move(ncnm));
 #endif
   }
 
