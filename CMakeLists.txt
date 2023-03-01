@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8) # for cxx_std_17 in CMAKE_CXX_KNOWN_FEATURES
+cmake_minimum_required(VERSION 3.11) # for FetchContent
 project(scope_guard)
 
 # handle inclusions and dependencies
