@@ -11,6 +11,7 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <tuple>
 #include <type_traits>
 #include <utility>
 
@@ -49,7 +50,8 @@ TEST_CASE("Showing that direct constructor is not desirable.")
                                                   with functions is treated
                                                   just like an lvalue... */
 
-  make_scope_guard(inc); // ... but the BEST is really to use the make function
+  std::ignore = make_scope_guard(inc); // ... but the BEST is really to use the
+                                       // make function
 }
 
 /* --- Plain functions, lvalues, rvalues, plain references, consts --- */
@@ -57,7 +59,7 @@ TEST_CASE("Showing that direct constructor is not desirable.")
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A plain function can be used to create a scope_guard.")
 {
-  make_scope_guard(inc);
+  std::ignore = make_scope_guard(inc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -103,7 +105,7 @@ TEST_CASE("An lvalue reference to a plain function can be used to create a "
           "scope_guard.")
 {
   auto& inc_ref = inc;
-  make_scope_guard(inc_ref);
+  std::ignore = make_scope_guard(inc_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +155,7 @@ TEST_CASE("An lvalue const reference to a plain function can be used to create "
           "a scope_guard.")
 {
   const auto& inc_ref = inc;
-  make_scope_guard(inc_ref);
+  std::ignore = make_scope_guard(inc_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -208,7 +210,7 @@ type, which is treated as lvalue reference. */
 TEST_CASE("An rvalue reference to a plain function can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard(std::move(inc)); // rvalue ref to function treated as lvalue
+  std::ignore = make_scope_guard(std::move(inc)); // rvalue ref to function treated as lvalue
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,7 +259,7 @@ TEST_CASE("A dismissed rvalue-reference-to-plain-function-based scope_guard "
 TEST_CASE("A reference wrapper to a plain function can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard(std::ref(inc));
+  std::ignore = make_scope_guard(std::ref(inc));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -302,7 +304,7 @@ TEST_CASE("A dismissed reference-wrapper-to-plain-function-based scope_guard "
 TEST_CASE("A const reference wrapper to a plain function can be used to create "
           "a scope_guard.")
 {
-  make_scope_guard(std::cref(inc));
+  std::ignore = make_scope_guard(std::cref(inc));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -351,7 +353,7 @@ TEST_CASE("An lvalue plain function pointer can be used to create a "
           "scope_guard.")
 {
   const auto fp = &inc;
-  make_scope_guard(fp);
+  std::ignore = make_scope_guard(fp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -399,7 +401,7 @@ TEST_CASE("A dismissed lvalue-plain-function-pointer-based scope_guard does "
 TEST_CASE("An rvalue plain function pointer can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard(&inc);
+  std::ignore = make_scope_guard(&inc);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -446,7 +448,7 @@ TEST_CASE("An lvalue reference to a plain function pointer can be used to "
 {
   const auto fp = &inc;
   const auto& fp_ref = fp;
-  make_scope_guard(fp_ref);
+  std::ignore = make_scope_guard(fp_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -498,7 +500,7 @@ TEST_CASE("An rvalue reference to a plain function pointer can be used to "
           "create a scope_guard.")
 {
   const auto fp = &inc;
-  make_scope_guard(std::move(fp));
+  std::ignore = make_scope_guard(std::move(fp));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -579,7 +581,7 @@ TEST_CASE("An lvalue std::function that wraps a regular function can be used "
           "to create a scope_guard.")
 {
   const auto stdf = make_std_function(inc);
-  make_scope_guard(stdf);
+  std::ignore = make_scope_guard(stdf);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,8 +631,8 @@ TEST_CASE("A dismissed scope_guard that was created with a "
 TEST_CASE("An rvalue std::function that wraps a regular function can be used "
           "to create a scope_guard.")
 {
-  make_scope_guard(make_std_function(inc));
-  make_scope_guard(std::function<void()>{inc});
+  std::ignore = make_scope_guard(make_std_function(inc));
+  std::ignore = make_scope_guard(std::function<void()>{inc});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -680,7 +682,7 @@ TEST_CASE("An lvalue reference to a std::function that wraps a regular "
 {
   const auto stdf = make_std_function(inc);
   const auto& stdf_ref = stdf;
-  make_scope_guard(stdf_ref);
+  std::ignore = make_scope_guard(stdf_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -735,7 +737,7 @@ TEST_CASE("An rvalue reference to a std::function that wraps a regular "
           "function can be used to create a scope_guard.")
 {
   const auto stdf = make_std_function(inc);
-  make_scope_guard(std::move(stdf));
+  std::ignore = make_scope_guard(std::move(stdf));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -795,7 +797,7 @@ namespace
 TEST_CASE("A lambda function with no capture can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard([]()noexcept{});
+  std::ignore = make_scope_guard([]()noexcept{});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -840,7 +842,8 @@ TEST_CASE("A lambda function with capture can be used to create a scope_guard.")
 {
   auto f = 0.0f;
   const auto i = -1;
-  make_scope_guard([&f, i]()noexcept{ f = static_cast<float>(*&i); });
+  std::ignore = make_scope_guard([&f, i]() noexcept
+                                 { f = static_cast<float>(*&i); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -891,7 +894,7 @@ TEST_CASE("A const lambda function with capture can be used to create a "
   auto f = 0.0f;
   const auto i = -1;
   const auto lambda = [&f, i]() noexcept { f = static_cast<float>(*&i); };
-  make_scope_guard(lambda);
+  std::ignore = make_scope_guard(lambda);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -987,7 +990,7 @@ TEST_CASE("A dismissed scope_guard that was created with a "
 TEST_CASE("A lambda function calling a std::function can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard([]()noexcept{ make_std_function(inc)(); });
+  std::ignore = make_scope_guard([]()noexcept{ make_std_function(inc)(); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1019,7 +1022,7 @@ TEST_CASE("A scope_guard created with a std::function-calling lambda calls "
 TEST_CASE("A std::function wrapping a lambda function can be used to create a "
           "scope_guard.")
 {
-  make_scope_guard(std::function<void()>([](){}));
+  std::ignore = make_scope_guard(std::function<void()>([](){}));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1042,7 +1045,7 @@ TEST_CASE("A scope_guard created with a lambda-wrapping std::function calls "
 TEST_CASE("A bound function can be used to create a scope_guard.")
 {
   auto boundf_count = 0u;
-  make_scope_guard(std::bind(incc, std::ref(boundf_count)));
+  std::ignore = make_scope_guard(std::bind(incc, std::ref(boundf_count)));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1080,7 +1083,7 @@ TEST_CASE("A dismissed bound-function-based scope_guard does not execute its "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A bound lambda can be used to create a scope_guard.")
 {
-  make_scope_guard(std::bind([](int /*unused*/){}, 42));
+  std::ignore = make_scope_guard(std::bind([](int /*unused*/){}, 42));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1135,7 +1138,7 @@ namespace
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A stateless custom functor can be used to create a scope_guard")
 {
-  make_scope_guard(StatelessFunctor{});
+  std::ignore = make_scope_guard(StatelessFunctor{});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1156,7 +1159,7 @@ TEST_CASE("A stateless-custom-functor-based scope_guard calls the functor "
 TEST_CASE("A stateful custom functor can be used to create a scope_guard")
 {
   auto u = 123u;
-  make_scope_guard(StatefulFunctor{u});
+  std::ignore = make_scope_guard(StatefulFunctor{u});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1177,7 +1180,7 @@ TEST_CASE("A stateful-custom-functor-based scope_guard calls the functor "
 TEST_CASE("A const custom functor can be used to create a scope_guard")
 {
   const auto fun = StatelessFunctor{};
-  make_scope_guard(fun);
+  std::ignore = make_scope_guard(fun);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1201,7 +1204,7 @@ TEST_CASE("An lvalue reference to a noncopyable and nonmovable functor can be "
 {
   nocopy_nomove ncnm{};
   const auto& ncnm_ref = ncnm;
-  make_scope_guard(ncnm_ref);
+  std::ignore = make_scope_guard(ncnm_ref);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1248,7 +1251,7 @@ TEST_CASE("An lvalue noncopyable and nonmovable functor can be used to create "
           "a scope_guard, because it binds to an lvalue reference")
 {
   nocopy_nomove ncnm{};
-  make_scope_guard(ncnm);
+  std::ignore = make_scope_guard(ncnm);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1273,7 +1276,7 @@ TEST_CASE("A const lvalue noncopyable and nonmovable functor can be used to "
           "binds to a const lvalue reference")
 {
   const nocopy_nomove ncnm{};
-  make_scope_guard(ncnm);
+  std::ignore = make_scope_guard(ncnm);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1383,7 +1386,7 @@ namespace
 TEST_CASE("A lambda-wrapped regular method can be used to create a scope_guard")
 {
   regular_method_holder h{};
-  make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
+  std::ignore = make_scope_guard([&h]() noexcept { h.regular_inc_method(); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1423,7 +1426,8 @@ TEST_CASE("A dismissed lambda-wrapped-regular-method-based scope_guard does "
 TEST_CASE("A bound regular method can be used to create a scope_guard")
 {
   regular_method_holder h{};
-  make_scope_guard(std::bind(&regular_method_holder::regular_inc_method, h));
+  std::ignore = make_scope_guard(
+      std::bind(&regular_method_holder::regular_inc_method, h));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1446,7 +1450,7 @@ TEST_CASE("A bound-regular-method-based scope_guard executes the method "
 TEST_CASE("A lambda-wrapped const method can be used to create a scope_guard")
 {
   const const_method_holder h{};
-  make_scope_guard([&h]() noexcept { h.const_inc_method(); });
+  std::ignore = make_scope_guard([&h]() noexcept { h.const_inc_method(); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1469,7 +1473,8 @@ TEST_CASE("A lambda-wrapped-const-method-based scope_guard executes the "
 TEST_CASE("A bound const method can be used to create a scope_guard")
 {
   const const_method_holder h{};
-  make_scope_guard(std::bind(&const_method_holder::const_inc_method, h));
+  std::ignore =
+      make_scope_guard(std::bind(&const_method_holder::const_inc_method, h));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1509,7 +1514,7 @@ TEST_CASE("A dismissed, bound-const-method-based scope_guard does not execute "
 ////////////////////////////////////////////////////////////////////////////////
 TEST_CASE("A static method can be used to create a scope_guard")
 {
-  make_scope_guard(static_method_holder::static_inc_method);
+  std::ignore = make_scope_guard(static_method_holder::static_inc_method);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1530,7 +1535,7 @@ TEST_CASE("A static-method-based scope_guard executes the static method "
 TEST_CASE("A lambda-wrapped virtual method can be used to create a scope_guard")
 {
   virtual_method_holder h{};
-  make_scope_guard([&h]() noexcept { h.virtual_inc_method(); });
+  std::ignore = make_scope_guard([&h]() noexcept { h.virtual_inc_method(); });
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1640,14 +1645,14 @@ namespace
   auto sfinae_tester_impl(T&& t, tag_prefered_overload&& /*ignored*/)
   -> decltype(make_scope_guard(std::forward<T>(t)), std::declval<void>())
   {
-    make_scope_guard(std::forward<T>(t));
+    std::ignore = make_scope_guard(std::forward<T>(t));
   }
 
   template<typename T>
   void sfinae_tester_impl(T&& /*ignored*/,
                           ... /* less specific, so 2nd choice */)
   {
-    make_scope_guard(inc);
+    std::ignore = make_scope_guard(inc);
   }
 
   template<typename T>
