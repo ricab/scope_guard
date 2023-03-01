@@ -39,6 +39,12 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wpedantic \
                                           -Wno-unused")
+  if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10)
+    # earlier versions complain of unused "nodiscard" results in unevaluated contexts
+    # (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=89070)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=unused-result")
+  endif()
+
   check_cxx_compiler_flag("-Wnoexcept-type" HAS_NOEXCEPT_TYPE_WARNING)
   if(HAS_NOEXCEPT_TYPE_WARNING)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-noexcept-type")
