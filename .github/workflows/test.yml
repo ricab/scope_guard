@@ -13,9 +13,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-18.04
-            compiler: g++-4.8
-            install: g++-4.8
           - os: ubuntu-20.04
             compiler: g++-7
             install: g++-7
