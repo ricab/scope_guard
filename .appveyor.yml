@@ -11,7 +11,7 @@ platform:
 environment:
   CATCH_DIR: c:\projects\catch
   CATCH_REMOTE: https://github.com/catchorg/Catch2.git
-  CATCH_VERSION: v2.13.6
+  CATCH_VERSION: v2.13.10
   MSBUILD_OPTS: "/m:2 /p:Optimize=no /p:DebugSymbols=false"
 
 install:
