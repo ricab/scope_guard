@@ -17,8 +17,6 @@ jobs:
             compiler: g++-7
             install: g++-7
           - os: ubuntu-latest
-            compiler: g++-10
-          - os: ubuntu-latest
             compiler: g++-11
             install: g++-11
             extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
