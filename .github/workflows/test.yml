@@ -20,8 +20,6 @@ jobs:
             compiler: g++-16
             install: g++-16
             extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
-          - os: ubuntu-latest
-            compiler: clang++-18
           - os: macos-13
             compiler: g++-12
           - os: macos-latest
@@ -33,7 +31,7 @@ jobs:
 
     runs-on: ${{matrix.os}}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 2 # Codecov requests >1
 
