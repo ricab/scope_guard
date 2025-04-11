@@ -23,8 +23,6 @@ jobs:
           - os: macos-13
             compiler: g++-12
           - os: macos-latest
-            compiler: g++-13
-          - os: macos-latest
             comp: AppleClang # unused: this is the default compiler and not obvious to specify
                              # explicitly, but we still want to see the compiler string in the
                              # GH UI, so use a different var altogether
