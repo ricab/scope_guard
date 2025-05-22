@@ -11,7 +11,7 @@ Include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v2.13.6
+        GIT_TAG        v2.13.10
 )
 
 FetchContent_MakeAvailable(Catch2)
@@ -26,8 +26,8 @@ CHECK_CXX_SYMBOL_EXISTS(__cpp_noexcept_function_type "" HAS_NOEXCEPT_IN_TYPE)
 unset(CMAKE_REQUIRED_FLAGS)
 
 # request C++11 explicitly by default - works around newer compilers otherwise
-# omitting `-std=c++11` despite 11 being requested with target_compile_features
-set(CMAKE_CXX_STANDARD 11)
+# omitting `-std=c++14` despite 14 being requested with target_compile_features
+set(CMAKE_CXX_STANDARD 14)
 
 # compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
