@@ -26,8 +26,8 @@ CHECK_CXX_SYMBOL_EXISTS(__cpp_noexcept_function_type "" HAS_NOEXCEPT_IN_TYPE)
 unset(CMAKE_REQUIRED_FLAGS)
 
 # request C++11 explicitly by default - works around newer compilers otherwise
-# omitting `-std=c++14` despite 14 being requested with target_compile_features
-set(CMAKE_CXX_STANDARD 14)
+# omitting `-std=c++11` despite 11 being requested with target_compile_features
+set(CMAKE_CXX_STANDARD 11)
 
 # compiler warnings
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
