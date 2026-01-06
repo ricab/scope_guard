@@ -91,13 +91,9 @@ jobs:
       
     - name: Codecov
       if: contains(matrix.extra_build_flags, 'coverage')
+      uses: codecov/codecov-action@v5
       working-directory: ${{github.workspace}}/build
-      run: |
-        echo "Producing coverage reports..."
-        find . -name catch_tests.cpp.gcno -exec gcov -pb {} +
-
-        echo "Finding relevant report..."
-        cov_report=$(find . -name "*scope_guard.hpp.gcov" -exec readlink -e {} +)
-
-        echo "The report is ${cov_report}. Uploading to codecov..."
-        bash <(curl -s https://codecov.io/bash) -f $cov_report
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: . /**/*scope_guard.hpp.gcov
+        flags: unittests
