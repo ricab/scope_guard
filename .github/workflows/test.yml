@@ -3,6 +3,7 @@ name: Test
 on:
   workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [ "main" ]
 
@@ -92,8 +93,8 @@ jobs:
     - name: Codecov
       if: contains(matrix.extra_build_flags, 'coverage')
       uses: codecov/codecov-action@v5
-      working-directory: ${{github.workspace}}/build
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
+        directory: ${{github.workspace}}/build
         files: . /**/*scope_guard.hpp.gcov
         flags: unittests
