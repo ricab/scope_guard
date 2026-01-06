@@ -11,7 +11,7 @@ Include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v2.13.6
+        GIT_TAG        v3.12.0
 )
 
 FetchContent_MakeAvailable(Catch2)
@@ -133,7 +133,7 @@ function(add_catch_tests_batch exe_ret src cxx17 require_noexcept)
   derive_common_test_strings(tst exe ftr # out params
       "catch_batch" TRUE ${cxx17} ${require_noexcept}) # in params
   add_test_exe(${exe} ${src} ${ftr} ${require_noexcept})
-  target_link_libraries(${exe} PRIVATE Catch2::Catch2)
+  target_link_libraries(${exe} PRIVATE Catch2::Catch2WithMain)
 
   add_test(NAME ${tst} COMMAND ${exe} "--order" "lex")
 
