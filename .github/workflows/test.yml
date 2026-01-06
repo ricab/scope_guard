@@ -42,6 +42,9 @@ jobs:
             compiler: clang++-17
           - os: ubuntu-24.04
             compiler: clang++-18
+          - os: ubuntu-24.04
+            compiler: clang++-19
+            install: clang-19
           # GCC on macOS
           - os: macos-15
             compiler: g++-13
