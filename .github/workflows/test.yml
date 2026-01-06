@@ -14,32 +14,41 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
-            compiler: g++-7
-            install: g++-7
-          - os: ubuntu-latest
+          # GCC on Ubuntu 22.04 (older GCC versions)
+          - os: ubuntu-22.04
             compiler: g++-10
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             compiler: g++-11
-            install: g++-11
-            extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
-          - os: ubuntu-20.04
-            compiler: clang++-7
-            install: clang-7
-          - os: ubuntu-latest
-            compiler: clang++-12
-          - os: ubuntu-latest
-            compiler: clang++-13
-          - os: ubuntu-latest
-            compiler: clang++-14
-          - os: macos-11
-            compiler: g++-10
-          - os: macos-latest
+          - os: ubuntu-22.04
             compiler: g++-12
-          - os: macos-latest
-            comp: AppleClang # unused: this is the default compiler and not obvious to specify
-                             # explicitly, but we still want to see the compiler string in the
-                             # GH UI, so use a different var altogether
+          # GCC on Ubuntu 24.04 (newer GCC versions)
+          - os: ubuntu-24.04
+            compiler: g++-13
+          - os: ubuntu-24.04
+            compiler: g++-14
+            extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
+          # Clang on Ubuntu 22.04 (older Clang versions)
+          - os: ubuntu-22.04
+            compiler: clang++-13
+          - os: ubuntu-22.04
+            compiler: clang++-14
+          - os: ubuntu-22.04
+            compiler: clang++-15
+          # Clang on Ubuntu 24.04 (newer Clang versions)
+          - os: ubuntu-24.04
+            compiler: clang++-16
+          - os: ubuntu-24.04
+            compiler: clang++-17
+          - os: ubuntu-24.04
+            compiler: clang++-18
+          # GCC on macOS
+          - os: macos-15
+            compiler: g++-13
+          - os: macos-15
+            compiler: g++-15
+          # AppleClang on macOS
+          - os: macos-15
+            comp: AppleClang # default compiler, unused var to show in GH UI
 
     runs-on: ${{matrix.os}}
     steps:
