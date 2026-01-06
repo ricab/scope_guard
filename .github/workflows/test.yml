@@ -93,6 +93,11 @@ jobs:
                                     # but do run twice as many compilation tests as the number of
                                     # available threads
       
+    - name: Generate coverage reports
+      if: contains(matrix.extra_build_flags, 'coverage')
+      working-directory: ${{github.workspace}}/build
+      run: find . -name catch_tests.cpp.gcno -exec gcov -pb {} +
+      
     - name: Codecov
       if: contains(matrix.extra_build_flags, 'coverage')
       uses: codecov/codecov-action@v5
