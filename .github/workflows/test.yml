@@ -97,8 +97,9 @@ jobs:
       if: contains(matrix.extra_build_flags, 'coverage')
       working-directory: ${{github.workspace}}/build
       run: |
-        for gcno_file in $(find . -name "*.gcno"); do
-          gcov -pb "$gcno_file"
+        # Only process project source files, not dependencies
+        find . -name "catch_tests.cpp.gcno" -o -name "compile_time_tests.cpp.gcno" | while read gcno_file; do
+          gcov -pb "$gcno_file" || true
         done
       
     - name: Codecov
