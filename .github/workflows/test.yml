@@ -54,6 +54,11 @@ jobs:
           # AppleClang on macOS
           - os: macos-15
             comp: AppleClang # default compiler, unused var to show in GH UI
+          # MSVC on Windows
+          - os: windows-2019
+            comp: MSVC # Visual Studio 2019 ATTOW
+          - os: windows-2025
+            comp: MSVC # Visual Studio 2022 ATTOW
 
     runs-on: ${{matrix.os}}
     steps:
@@ -69,30 +74,42 @@ jobs:
 
     - name: Determine number of cpus on Linux
       if: startsWith(matrix.os, 'ubuntu')
-      run: echo "num_cpus=$(nproc)" >> $GITHUB_ENV # TODO use set-output instead
+      run: echo "num_cpus=$(nproc)" >> $GITHUB_ENV
 
     - name: Determine number of cpus on macOS
       if: startsWith(matrix.os, 'macos')
-      run: echo "num_cpus=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV # TODO use set-output instead
+      run: echo "num_cpus=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
+
+    - name: Determine number of cpus on Windows
+      if: startsWith(matrix.os, 'windows')
+      run: echo "num_cpus=$env:NUMBER_OF_PROCESSORS" >> $env:GITHUB_ENV
+
+    - name: Determine number of compilation test jobs on macOS and Linux
+      if: ${{ !startsWith(matrix.os, 'windows') }}
+      shell: bash
+      run: echo "num_comp_tests=$((${{env.num_cpus}} * 2))" >> $GITHUB_ENV
+
+    - name: Determine number of compilation test jobs on Windows
+      if: startsWith(matrix.os, 'windows')
+      shell: bash
+      run: echo "num_comp_tests=1" >> $GITHUB_ENV
 
     - name: Determine compiler flag
       if: ${{matrix.compiler}}
       run: echo "CXX=${{matrix.compiler}}" >> $GITHUB_ENV
 
     - name: Configure CMake
-      run: cmake -Wdev -Werror=dev -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
+      run: cmake -Wdev -Werror=dev -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
           ${{matrix.extra_build_flags}}
 
     - name: Build
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${BUILD_TYPE} --parallel ${num_cpus}
+      run: cmake --build . --config ${{env.BUILD_TYPE}} --parallel ${{env.num_cpus}}
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: cmake --build . --config ${BUILD_TYPE} --target test
-        ARGS=-j$((${num_cpus} * 2)) # don't pass --parallel, which would affect compilation tests,
-                                    # but do run twice as many compilation tests as the number of
-                                    # available threads
+      run: cmake --build . --config ${{env.BUILD_TYPE}} --target test
+        ARGS=-j${{env.num_comp_tests}} # don't pass --parallel, which would affect compilation tests
 
     - name: Produce coverage reports
       if: contains(matrix.extra_build_flags, 'coverage')
