@@ -74,12 +74,15 @@ jobs:
 
     - name: Determine number of cpus on Linux
       if: startsWith(matrix.os, 'ubuntu')
-      run: echo "num_cpus=$(nproc)" >> $GITHUB_ENV # TODO use set-output instead
+      run: echo "num_cpus=$(nproc)" >> $GITHUB_ENV
 
     - name: Determine number of cpus on macOS
       if: startsWith(matrix.os, 'macos')
-      run: echo "num_cpus=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV # TODO use set-output instead
+      run: echo "num_cpus=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
 
+    - name: Determine number of cpus on Windows
+      if: startsWith(matrix.os, 'windows')
+      run: echo "num_cpus=$env:NUMBER_OF_PROCESSORS" >> $env:GITHUB_ENV
     - name: Determine compiler flag
       if: ${{matrix.compiler}}
       run: echo "CXX=${{matrix.compiler}}" >> $GITHUB_ENV
