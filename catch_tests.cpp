@@ -5,8 +5,7 @@
 
 #include "scope_guard.hpp"
 
-#define CATCH_CONFIG_MAIN  // This tells Catch to provide a main()
-#include "catch2/catch.hpp"
+#include <catch2/catch_test_macros.hpp>
 
 #include <functional>
 #include <list>

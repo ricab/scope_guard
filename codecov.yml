@@ -1,0 +1,4 @@
+coverage:
+  ignore:
+    - "_deps/**"
+    - "build/_deps/**"

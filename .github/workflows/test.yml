@@ -3,6 +3,7 @@ name: Test
 on:
   workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [ "main" ]
 
@@ -14,36 +15,49 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-20.04
-            compiler: g++-7
-            install: g++-7
-          - os: ubuntu-latest
+          # GCC on Ubuntu 22.04 (older GCC versions)
+          - os: ubuntu-22.04
             compiler: g++-10
-          - os: ubuntu-latest
+          - os: ubuntu-22.04
             compiler: g++-11
-            install: g++-11
-            extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
-          - os: ubuntu-20.04
-            compiler: clang++-7
-            install: clang-7
-          - os: ubuntu-latest
-            compiler: clang++-12
-          - os: ubuntu-latest
-            compiler: clang++-13
-          - os: ubuntu-latest
-            compiler: clang++-14
-          - os: macos-11
-            compiler: g++-10
-          - os: macos-latest
+          - os: ubuntu-22.04
             compiler: g++-12
-          - os: macos-latest
-            comp: AppleClang # unused: this is the default compiler and not obvious to specify
-                             # explicitly, but we still want to see the compiler string in the
-                             # GH UI, so use a different var altogether
+          # GCC on Ubuntu 24.04 (newer GCC versions)
+          - os: ubuntu-24.04
+            compiler: g++-13
+          - os: ubuntu-24.04
+            compiler: g++-14
+            gcov: gcov-14
+            extra_build_flags: -DENABLE_COVERAGE:BOOL=ON # coverage build
+          # Clang on Ubuntu 22.04 (older Clang versions)
+          - os: ubuntu-22.04
+            compiler: clang++-13
+          - os: ubuntu-22.04
+            compiler: clang++-14
+          - os: ubuntu-22.04
+            compiler: clang++-15
+          # Clang on Ubuntu 24.04 (newer Clang versions)
+          - os: ubuntu-24.04
+            compiler: clang++-16
+          - os: ubuntu-24.04
+            compiler: clang++-17
+          - os: ubuntu-24.04
+            compiler: clang++-18
+          - os: ubuntu-24.04
+            compiler: clang++-19
+            install: clang-19
+          # GCC on macOS
+          - os: macos-15
+            compiler: g++-13
+          - os: macos-15
+            compiler: g++-15
+          # AppleClang on macOS
+          - os: macos-15
+            comp: AppleClang # default compiler, unused var to show in GH UI
 
     runs-on: ${{matrix.os}}
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
       with:
         fetch-depth: 2 # Codecov requests >1
 
@@ -79,16 +93,24 @@ jobs:
         ARGS=-j$((${num_cpus} * 2)) # don't pass --parallel, which would affect compilation tests,
                                     # but do run twice as many compilation tests as the number of
                                     # available threads
-      
-    - name: Codecov
+
+    - name: Produce coverage reports
       if: contains(matrix.extra_build_flags, 'coverage')
       working-directory: ${{github.workspace}}/build
       run: |
         echo "Producing coverage reports..."
-        find . -name catch_tests.cpp.gcno -exec gcov -pb {} +
+        find . -name catch_tests.cpp.gcno -exec "${{matrix.gcov}}" -p {} +
 
         echo "Finding relevant report..."
         cov_report=$(find . -name "*scope_guard.hpp.gcov" -exec readlink -e {} +)
+        echo "COV_REPORT=$cov_report" >> $GITHUB_ENV
 
-        echo "The report is ${cov_report}. Uploading to codecov..."
-        bash <(curl -s https://codecov.io/bash) -f $cov_report
+    - name: Codecov
+      if: contains(matrix.extra_build_flags, 'coverage')
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ${{ env.COV_REPORT }}
+        disable_search: true
+        flags: unittests
+        fail_ci_if_error: 'true'
