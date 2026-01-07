@@ -110,5 +110,6 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ${{ env.COV_REPORT }}
+        disable_search: true
         flags: unittests
         fail_ci_if_error: 'true'
