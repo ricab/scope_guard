@@ -114,3 +114,13 @@ jobs:
         disable_search: true
         flags: unittests
         fail_ci_if_error: 'true'
+
+  overall-status:
+    name: Overall Status
+    runs-on: ubuntu-latest
+    needs:  build
+    if: always()
+    steps:
+      - name: Check overall workflow status, to provide a single pass/fail result
+        if: needs.build.result != 'success'
+        run:  exit 1
