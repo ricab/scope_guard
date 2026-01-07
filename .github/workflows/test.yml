@@ -54,6 +54,11 @@ jobs:
           # AppleClang on macOS
           - os: macos-15
             comp: AppleClang # default compiler, unused var to show in GH UI
+          # MSVC on Windows
+          - os: windows-2019
+            comp: MSVC # Visual Studio 2019 ATTOW
+          - os: windows-2025
+            comp: MSVC # Visual Studio 2022 ATTOW
 
     runs-on: ${{matrix.os}}
     steps:
